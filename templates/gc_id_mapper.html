@@ -1,0 +1,24 @@
+<!-- Step 3: Mapping identifiers -->
+<form id="id_mapper" action="/graph_creation/gc_id_mapper" method="post">
+    <div class="form-group">
+        <h3>Mapping Result</h3>
+        {% if bridgdb_df_empty %}
+        <p>Number of input identifiers: {{ len(ids_df) }}.</p>
+        <p>Selected identifier type: {{ id_type }}.</p>
+        {% else %}
+        <p>The input is not valid.</p>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <input type="button" value="Confirm" onclick="submitStepThree()">
+    </div>
+</form>
+<div id="step4" style="display: none;">
+    {% include 'gc_datasource.html' %}
+</div>
+<script>
+    function submitStepThree() {
+        // Submit the bridgdb_df form
+        document.getElementById('bridgdb_df').submit();
+    }
+</script>

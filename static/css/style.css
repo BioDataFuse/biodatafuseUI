@@ -1,0 +1,157 @@
+/* Apply margin to the content */
+#content {
+    padding: 40px;
+    margin: 40px;
+}
+
+/* Style paragraphs */
+p {
+    margin-bottom: 20px;
+    line-height: 1.6;
+    text-align: justify
+}
+
+/* Style headers */
+h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Apply background color to the entire app */
+body {
+    background: linear-gradient(#d2d2df, #2d51ab);
+    animation: gradient 15s ease infinite;
+    background-size: 400% 400%;
+    background-attachment: fixed;
+    color: #000;
+    margin: 40;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Apply background color to the header */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+}
+
+/* Adjust logo size and add margin */
+header img {
+    width: 80px;
+    height: auto;
+    margin-right: 10px;
+    margin-top: 10px; /* Adjusted margin-top to match the logo */
+}
+
+/* Style the app name */
+header h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+/* Style the navigation menu */
+nav {
+    background-color: #1a0856; /* Dark blue background color */
+    padding: 10px 0;
+    text-align: center;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+}
+
+nav ul li a {
+    display: inline-block;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #fff; /* Light text color */
+}
+
+nav ul li a:hover {
+    background-color: #465985; /* Darker shade of blue on hover */
+}
+
+nav ul li a.active {
+    background-color: #465985;
+}
+
+main {
+    flex: 1;
+    padding: 20px;
+}
+
+.container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+h2 {
+    font-size: 25px;
+    color: #2d51ab;
+    margin-bottom: 20px;
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-group textarea,
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.form-group input[type="file"] {
+    cursor: pointer;
+}
+
+.form-group input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.form-group input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+/* Warning styles */
+.warnings {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #f0ad4e;
+    border-radius: 5px;
+    background-color: #fcf8e3;
+}
+
+.warnings ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.warnings li {
+    list-style-type: square;
+}

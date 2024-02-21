@@ -1,0 +1,39 @@
+<h2>2. Select Identifier Type</h2>
+<!-- Step 2: Select identifier type -->
+<form id="id_type" action="/graph_creation/gc_id_type" method="post">
+    <div class="form-group">
+        <label for="identifier_type">Identifier Type:</label>
+        <select id="identifier_type" name="identifier_type">
+            <option value="" disabled selected>Select identifier type</option>
+            <option value="Ensembl">Ensembl</option>
+            <option value="HGNC Accession Number">HGNC Accession Number</option>
+            <option value="HGNC Symbol">HGNC</option>
+            <option value="RefSeq">RefSeq</option>
+            <option value="NCBI Gene">NCBI Gene</option>
+            <option value="OMIM">OMIM</option>
+            <option value="PDB">PDB</option>
+            <option value="Uniprot-TrEMBL">Uniprot-TrEMBL</option>
+            <option value="WikiGenes">WikiGenes</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <input type="button" value="Next Step" onclick="submitStepTwo()">
+    </div>
+</form>
+<div id="step3" style="display: none;">
+    {% include 'gc_id_mapper.html' %}
+</div>
+<div id="warnings">
+    {% if warnings %}
+    <!-- Display warnings if any -->
+    <div class="alert alert-warning" role="alert">
+        {{ warnings }}
+    </div>
+    {% endif %}
+</div>
+<script>
+    function submitStepTwo() {
+        // Submit the form with id_type
+        document.getElementById('id_type').submit();
+    }
+</script>

@@ -1,0 +1,57 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<body>
+    <main>
+        <div class="container">
+            <h2>1. Import Identifiers</h2>
+            <!-- Step 1: Import identifiers -->
+            <form id="id_input" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="text_input">Enter identifiers (one per line):</label>
+                    <textarea id="text_input" name="text_input" rows="4" cols="50">{{ request.form['text'] }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="file_upload">Or upload a file containing identifiers:</label>
+                    <input type="file" id="file_upload" name="file_upload">
+                </div>
+                <div class="form-group">
+                    <input type="button" value="Next Step" onclick="submitStepOne()">
+                </div>
+            </form>
+            <div id="step2" style="display: none;">
+                {% include 'gc_id_type.html' %}
+            </div>
+            <div id="warnings">
+                {% if warnings %}
+                <!-- Display warnings if any -->
+                <div class="alert alert-warning" role="alert">
+                    {{ warnings }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+    <script>
+        function submitStepOne() {
+            var formData = new FormData(document.getElementById('id_input'));
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/graph_creation', true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById('step2').innerHTML = xhr.responseText;
+                    document.getElementById('step2').style.display = 'block';
+                } else {
+                    console.error(xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error('Network Error');
+            };
+            xhr.send(formData);
+        }
+    </script>
+</body>
+</html>
+{% endblock %}
+
