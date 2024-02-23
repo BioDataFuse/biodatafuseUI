@@ -13,7 +13,7 @@
                 </div>
                 <div class="form-group">
                     <label for="file_upload">Or upload a file containing identifiers:</label>
-                    <input type="file" id="file_upload" name="file_upload">
+                    <input type="file" id="file_upload" name="file_upload" onchange="validateFile()">
                 </div>
                 <div class="form-group">
                     <input type="button" value="Next Step" onclick="submitStepOne()">
@@ -22,17 +22,23 @@
             <div id="step2" style="display: none;">
                 {% include 'gc_id_type.html' %}
             </div>
-            <div id="warnings">
-                {% if warnings %}
-                <!-- Display warnings if any -->
-                <div class="alert alert-warning" role="alert">
-                    {{ warnings }}
-                </div>
-                {% endif %}
-            </div>
         </div>
     </main>
     <script>
+        function validateFile() {
+            var fileInput = document.getElementById('file_upload');
+            var file = fileInput.files[0];
+            if (file) {
+                var fileName = file.name;
+                var fileExt = fileName.split('.').pop().toLowerCase();
+                if (!['txt', 'csv'].includes(fileExt)) {
+                    alert('Unsupported file format. Please upload a CSV or TXT file.');
+                    // Clear the file input field
+                    fileInput.value = '';
+                }
+            }
+        }
+        
         function submitStepOne() {
             var formData = new FormData(document.getElementById('id_input'));
             var xhr = new XMLHttpRequest();
@@ -54,4 +60,3 @@
 </body>
 </html>
 {% endblock %}
-
