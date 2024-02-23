@@ -7,7 +7,7 @@
             <option value="" disabled selected>Select identifier type</option>
             <option value="Ensembl">Ensembl</option>
             <option value="HGNC Accession Number">HGNC Accession Number</option>
-            <option value="HGNC Symbol">HGNC</option>
+            <option value="HGNC">HGNC Symbol</option>
             <option value="RefSeq">RefSeq</option>
             <option value="NCBI Gene">NCBI Gene</option>
             <option value="OMIM">OMIM</option>
@@ -26,7 +26,20 @@
 
 <script>
     function submitStepTwo() {
-        // Submit the form with id_type
-        document.getElementById('id_type').submit();
+        var formData = new FormData(document.getElementById('id_type')); // Get form data
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/graph_creation/gc_id_type', true);
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                document.getElementById('step3').innerHTML = xhr.responseText; // Update step 3 content
+                document.getElementById('step3').style.display = 'block'; // Show step 3
+            } else {
+                console.error(xhr.statusText);
+            }
+        };
+        xhr.onerror = function () {
+            console.error('Network Error');
+        };
+        xhr.send(formData);
     }
 </script>
