@@ -21,3 +21,13 @@
     {% block content %}{% endblock %}
 </body>
 </html>
+
+{% with messages = get_flashed_messages() %}
+ {% if messages %}
+  <h3>
+  {% for message in messages %}
+    {{ message }}
+  {% endfor %}
+  </h3>
+ {% endif %}
+{% endwith %}
