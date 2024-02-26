@@ -81,8 +81,7 @@ def gc_id_mapper():
 @app.route('/graph_creation/gc_datasource',  methods=['GET', 'POST'])
 def gc_datasource():
     if request.method == 'POST':
-        datasource = request.form.get('datasource_selected')
-        print(datasource)
+        datasource = request.form.getlist('datasource_selected')
         if not datasource:
             return jsonify({'error': 'Please select at least one datasource'})
         if datasource:
