@@ -2,13 +2,14 @@
 <div class="container">
     <form id="id_mapper" action="/graph_creation/gc_id_mapper" method="post">   
         <div class="form-group">
-            <h3>Mapping Result</h3>
-            
             {% if not bridgdb_df_empty %}
             <div class="alert alert-success alert-sm" role="alert">
-                Selected identifier type: {{ id_type }}.<br>
-                Your input is valid.<br>
-                Number of input identifiers: {{ no_input_ids }}.
+                <h4>Mapping Result</h4>
+                Your input is valid:<br>
+                <ul>
+                    <li>Identifier type: {{ id_type }}</li>
+                    <li>Number of input identifiers: {{ no_input_ids }}</li>
+                </ul> 
             </div>
             {% else %}
             <div class="alert alert-danger alert-sm" role="alert">
@@ -26,7 +27,18 @@
 </div>
 <script>
     function submitStepThree() {
-        // Submit the bridgdb_df form
-        document.getElementById('bridgdb_df').submit();
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/graph_creation/gc_id_mapper', true);
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                window.location.href = "/graph_creation/gc_datasource";
+            } else {
+                console.error(xhr.statusText);
+            }
+        };
+        xhr.onerror = function () {
+            console.error('Network Error');
+        };
+        xhr.send();
     }
 </script>

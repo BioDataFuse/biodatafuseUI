@@ -55,11 +55,10 @@ def gc_id_type():
         no_input_ids=session.get('no_input_ids')
         )
 
-@app.route('/graph_creation/gc_id_mapper')
+@app.route('/graph_creation/gc_id_mapper', methods=['GET', 'POST'])
 def gc_id_mapper():
     ids_df = pd.DataFrame(session.get('ids_df'))
     id_type = session.get('id_type')
-
     bridgdb_df, bridgdb_metadata = bridgedb_xref(
         identifiers=ids_df,
         input_species="Human",
@@ -68,7 +67,6 @@ def gc_id_mapper():
 
     session['bridgdb_df'] = bridgdb_df.to_dict('records')
     session['bridgdb_metadata'] = bridgdb_metadata
-    
     return render_template(
         'gc_id_mapper.html',
         ids_df=session['ids_df'],
@@ -76,6 +74,12 @@ def gc_id_mapper():
         no_input_ids=session['no_input_ids'],
         bridgdb_df_empty = bridgdb_df.empty)
   
+@app.route('/graph_creation/gc_datasource')
+def gc_datasource():
+    print('I am here')
+    return render_template('gc_datasource.html')
+
+
 @app.route('/graph_analysis')
 def graph_analysis():
     return render_template('graph_analysis.html')
