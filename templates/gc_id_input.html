@@ -47,6 +47,7 @@
                 if (xhr.status === 200) {
                     document.getElementById('step2').innerHTML = xhr.responseText;
                     document.getElementById('step2').style.display = 'block';
+                    document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
                 } else {
                     console.error(xhr.statusText);
                 }

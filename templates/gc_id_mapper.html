@@ -31,7 +31,9 @@
         xhr.open('POST', '/graph_creation/gc_id_mapper', true);
         xhr.onload = function () {
             if (xhr.status === 200) {
-                window.location.href = "/graph_creation/gc_datasource";
+                document.getElementById('step4').innerHTML = xhr.responseText; 
+                document.getElementById('step4').style.display = 'block'; 
+                document.getElementById('step4').scrollIntoView({ behavior: 'smooth' });
             } else {
                 console.error(xhr.statusText);
             }

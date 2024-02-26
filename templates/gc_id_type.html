@@ -25,13 +25,14 @@
 </div>
 <script>
     function submitStepTwo() {
-        var formData = new FormData(document.getElementById('id_type')); // Get form data
+        var formData = new FormData(document.getElementById('id_type')); 
         var xhr = new XMLHttpRequest();
         xhr.open('POST', '/graph_creation/gc_id_type', true);
         xhr.onload = function () {
             if (xhr.status === 200) {
-                document.getElementById('step3').innerHTML = xhr.responseText; // Update step 3 content
-                document.getElementById('step3').style.display = 'block'; // Show step 3
+                document.getElementById('step3').innerHTML = xhr.responseText;
+                document.getElementById('step3').style.display = 'block';
+                document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
             } else {
                 console.error(xhr.statusText);
             }
