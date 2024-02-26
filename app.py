@@ -67,6 +67,10 @@ def gc_id_mapper():
 
     session['bridgdb_df'] = bridgdb_df.to_dict('records')
     session['bridgdb_metadata'] = bridgdb_metadata
+
+    if request.method == 'POST':
+        return redirect(url_for('gc_datasource'))
+
     return render_template(
         'gc_id_mapper.html',
         ids_df=session['ids_df'],
