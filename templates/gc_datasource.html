@@ -1,22 +1,46 @@
-<h2>3. Select datasources</h2>
+<h2>3. Select Datasources</h2>
 <!-- Step 4: Select datasources -->
-<form id="datasource" action="/graph_creation/gc_datasource" method="post">
-    <div class="form-group">
-        <label for="datasource">Datasource:</label>
-        <select id="datasource" name="datasource">
-            <option value="" disabled selected>Select datasource</option>
-            <option value="Ensembl">Ensembl</option>
-            <option value="HGNC Accession Number">HGNC Accession Number</option>
-            <option value="HGNC Symbol">HGNC</option>
-            <option value="RefSeq">RefSeq</option>
-            <option value="NCBI Gene">NCBI Gene</option>
-            <option value="OMIM">OMIM</option>
-            <option value="PDB">PDB</option>
-            <option value="Uniprot-TrEMBL">Uniprot-TrEMBL</option>
-            <option value="WikiGenes">WikiGenes</option>
-        </select>
+<div class="container">
+    <form id="datasource" action="/graph_creation/gc_datasource" method="post">
+        <div class="form-group">
+            <label for="datasource">Datasource:</label>
+            <select id="datasource" name="datasource">
+                <option value="" disabled selected>Select datasource</option>
+                <option value="Ensembl">Ensembl</option>
+                <option value="HGNC Accession Number">HGNC Accession Number</option>
+                <option value="HGNC Symbol">HGNC</option>
+                <option value="RefSeq">RefSeq</option>
+                <option value="NCBI Gene">NCBI Gene</option>
+                <option value="OMIM">OMIM</option>
+                <option value="PDB">PDB</option>
+                <option value="Uniprot-TrEMBL">Uniprot-TrEMBL</option>
+                <option value="WikiGenes">WikiGenes</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <input type="button" value="Next Step" onclick="submitStepFour()">
+        </div>
+    </form>
+</div>
+<div id="step5" style="display: none;">
+        {% include 'gc_annotators.html' %}
     </div>
-    <div class="form-group">
-        <input type="button" value="Next Step" onclick="submitStepFour()">
-    </div>
-</form>
+    <script>
+        function submitStepFour() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/graph_creation/gc_datasource', true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById('step5').innerHTML = xhr.responseText;
+                    document.getElementById('step5').style.display = 'block'; 
+                    document.getElementById('step5').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    console.error(xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error('Network Error');
+            };
+            xhr.send();
+        }
+    </script>
