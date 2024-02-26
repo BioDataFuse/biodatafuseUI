@@ -78,11 +78,24 @@ def gc_id_mapper():
         no_input_ids=session['no_input_ids'],
         bridgdb_df_empty = bridgdb_df.empty)
   
-@app.route('/graph_creation/gc_datasource')
+@app.route('/graph_creation/gc_datasource',  methods=['GET', 'POST'])
 def gc_datasource():
-    print('I am here')
-    return render_template('gc_datasource.html')
+    if request.method == 'POST':
+        datasource = request.form.get('datasource_selected')
+        print(datasource)
+        if not datasource:
+            return jsonify({'error': 'Please select at least one datasource'})
+        if datasource:
+            session['datasource'] = datasource
 
+        return redirect(url_for('gc_annotators'))
+ 
+    return render_template('gc_datasource.html')    
+
+@app.route('/graph_creation/gc_annotators', methods=['GET', 'POST'])
+def gc_annotators():
+    print('I am here')
+    return render_template('gc_annotators.html')
 
 @app.route('/graph_analysis')
 def graph_analysis():
