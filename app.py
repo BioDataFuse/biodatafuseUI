@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify, send_file
 from components.graph_creation.id_mapper import bridgedb_xref
 from components.graph_creation.id_input import process_identifiers
+from components.graph_creation.id_annotator import process_selected_sources
+
 import pandas as pd
 
 app = Flask(__name__)
@@ -86,15 +88,41 @@ def gc_datasource():
             return jsonify({'error': 'Please select at least one datasource'})
         if datasource:
             session['datasource'] = datasource
-
-        return redirect(url_for('gc_annotators'))
+        return redirect(url_for('gc_annotator'))
  
     return render_template('gc_datasource.html')    
 
-@app.route('/graph_creation/gc_annotators', methods=['GET', 'POST'])
-def gc_annotators():
-    print('I am here')
-    return render_template('gc_annotators.html')
+@app.route('/graph_creation/gc_annotator', methods=['GET', 'POST'])
+def gc_annotator():
+    datasource = session['datasource']
+    bridgdb_df = pd.DataFrame(session['bridgdb_df'])
+    combined_data, combined_metadata = process_selected_sources(bridgdb_df, datasource)
+    session['combined_data'] = combined_data.to_dict('records')
+    session['combined_metadata'] = combined_metadata
+
+    if request.method == 'POST':
+        return redirect(url_for('gc_graph_generator'))
+    
+    return render_template(
+        'gc_annotator.html',
+        datasource = datasource,
+        combined_data = session['combined_data'],
+        combined_metadata = combined_metadata 
+        )
+
+@app.route('/graph_creation/get_combined_data')
+def get_combined_data():
+    combined_data = session.get('combined_data')
+    combined_data = pd.DataFrame(combined_data)
+    temp_file_path = 'temp_combined_data.tsv'
+    combined_data.to_csv(temp_file_path, sep='\t', index=False)
+    
+    return send_file(temp_file_path, as_attachment=True, download_name='combined_data.tsv')
+
+@app.route('/graph_creation/get_metadata')
+def get_metadata():
+    combined_metadata = session.get('combined_metadata')
+    return combined_metadata
 
 @app.route('/graph_analysis')
 def graph_analysis():
