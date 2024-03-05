@@ -124,6 +124,20 @@ def get_metadata():
     combined_metadata = session.get('combined_metadata')
     return combined_metadata
 
+@app.route('/graph_creation/gc_graph_generator', methods=['GET', 'POST'])
+def gc_graph_generator():
+    combined_data = session['combined_data']
+    combined_data = pd.DataFrame(combined_data)
+
+    
+    if request.method == 'POST':
+        return redirect(url_for('ga_graph_statistics.html'))
+    
+    return render_template(
+        'gc_graph_generator.html'
+        )
+
+
 @app.route('/graph_analysis')
 def graph_analysis():
     return render_template('graph_analysis.html')
