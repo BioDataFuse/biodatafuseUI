@@ -205,18 +205,3 @@ def bridgedb_xref(
     }
 
     return bridgedb, bridgedb_metadata
-
-genes_of_interest = """DMD"""
-gene_list = genes_of_interest.split("\n")
-print(len(gene_list))
-
-data_input = pd.DataFrame(gene_list, columns=["identifier"])
-print(data_input.head())
-
-bridgdb_df, bridgdb_metadata = bridgedb_xref(
-    identifiers=data_input,
-    input_species="Human",
-    input_datasource="HGNC",
-    output_datasource="All",
-)
-print(bridgdb_df.head())
