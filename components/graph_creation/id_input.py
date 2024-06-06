@@ -25,6 +25,6 @@ def process_identifiers(uploaded_file, text_input) -> pd.DataFrame:
         
     # Check if neither uploaded file nor text input provided
     if identifiers_df.empty and not warnings:
-        warnings.append("Please provide your identifiers!")
+        warnings.append("Please provide your identifier(s)!")
 
     return identifiers_df.to_dict('records'), warnings
