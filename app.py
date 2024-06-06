@@ -17,32 +17,21 @@ def index():
 def about():
     return render_template('about.html')
 
-@app.route('/graph_creation', methods=['GET', 'POST'])
+@app.route('/graph_creation/', methods=['GET', 'POST'])
 def gc_id_input():
     if request.method == 'POST':
         text_input = request.form.get('text_input')
         file_upload = request.files.get('file_upload')
 
         ids_df, warnings = process_identifiers(file_upload, text_input)
-
         if ids_df:
             session['ids_df'] = ids_df
             ids_df = pd.DataFrame(ids_df)
             no_input_ids = len(ids_df['identifier'].unique())
             session['no_input_ids'] = no_input_ids
-
         if warnings:
             return jsonify({'error': warnings})
 
-        return redirect(url_for('gc_id_type'))
-   
-    return render_template('gc_id_input.html')
-
-@app.route('/graph_creation/gc_id_type', methods=['GET', 'POST'])
-def gc_id_type():
-    ids_df = session.get('ids_df')
-
-    if request.method == 'POST':
         id_type = request.form.get('identifier_type')
         if not id_type:
             return jsonify({'error': 'Please select an identifier type'})
@@ -50,12 +39,12 @@ def gc_id_type():
             session['id_type'] = id_type
 
         return redirect(url_for('gc_id_mapper'))
- 
+    
     return render_template(
-        'gc_id_type.html',
-        ids_df=ids_df,
+        'gc_id_input.html',
         no_input_ids=session.get('no_input_ids')
-        )
+    )
+
 
 @app.route('/graph_creation/gc_id_mapper', methods=['GET', 'POST'])
 def gc_id_mapper():
@@ -84,11 +73,13 @@ def gc_id_mapper():
 def gc_datasource():
     if request.method == 'POST':
         datasource = request.form.getlist('datasource_selected')
+        print(datasource)
         if not datasource:
             return jsonify({'error': 'Please select at least one datasource'})
         if datasource:
             session['datasource'] = datasource
         return redirect(url_for('gc_annotator'))
+
  
     return render_template('gc_datasource.html')    
 
