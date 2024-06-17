@@ -13,7 +13,7 @@
             </div>
         </div>
         <div class="form-group">
-            <input type="button" value="Confirm" onclick="submitStepTwo()">
+            <input type="button" value="Confirm" onclick="submitConfirmInput()">
         </div>
         {% else %}
         <div class="alert alert-danger alert-sm" role="alert">
@@ -22,24 +22,25 @@
         {% endif %}
     </form>
 </div>    
-<div id="step3" style="display: none;">
+<div id="get_datasource" style="display: none;">
     {% include 'gc_datasource.html' %}
 </div>
+
 <script>
-    function submitStepTwo() {
+    function submitConfirmInput() {
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/graph_creation/gc_id_mapper', true);
+        xhr.open("POST", "/graph_creation/gc_id_mapper", true);
         xhr.onload = function () {
             if (xhr.status === 200) {
-                document.getElementById('step3').innerHTML = xhr.responseText; 
-                document.getElementById('step3').style.display = 'block'; 
-                document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById("get_datasource").innerHTML = xhr.responseText; 
+                document.getElementById("get_datasource").style.display = "block"; 
+                document.getElementById("get_datasource").scrollIntoView({ behavior: "smooth" });
             } else {
                 console.error(xhr.statusText);
             }
         };
         xhr.onerror = function () {
-            console.error('Network Error');
+            console.error("Network Error");
         };
         xhr.send();
     }
