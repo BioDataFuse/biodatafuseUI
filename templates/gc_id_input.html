@@ -1,8 +1,7 @@
 {% extends 'index.html' %}
-
 {% block content %}
 
-<div class="container">
+<div class="id_input_container">
     <h2>1. Import Identifiers</h2>
     <!-- Import identifiers -->
     <form id="id_input" action="/graph_creation" method="post" enctype="multipart/form-data">
@@ -38,39 +37,8 @@
     </form>
 </div>
 
-<script>
-    function validateFile() {
-        var fileInput = document.getElementById("file_upload");
-        var file = fileInput.files[0];
-        if (file) {
-            var fileName = file.name;
-            var fileExt = fileName.split(".").pop().toLowerCase();
-            if (!["txt", "csv"].includes(fileExt)) {
-                alert("Unsupported file format. Please upload a CSV or TXT file.");
-                // Clear the file input field
-                fileInput.value = "";
-            }
-        }
-    }
-    
-    function submitInput() {
-        var formData = new FormData(document.getElementById("id_input"));
-
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/graph_creation", true);
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                document.getElementById("id_mapper").innerHTML = xhr.responseText;
-                document.getElementById("id_mapper").style.display = "block";
-                document.getElementById("id_mapper").scrollIntoView({ behavior: "smooth" });
-            } else {
-                console.error(xhr.statusText);
-            }
-        };
-        xhr.onerror = function () {
-            console.error("Network Error");
-        };
-        xhr.send(formData);
-    }
-</script>
+<div id="id_mapper" style="display:none;"></div>
+<div id="get_datasource" style="display:none;"></div>
+<div id="input_annotator" style="display:none;"></div>
+<div id="graph_generator" style="display:none;"></div>
 {% endblock %}
