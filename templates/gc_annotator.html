@@ -1,47 +1,24 @@
-<!-- Step 5: Using annotators -->
-<div class="container">
-    <form id="id_annotator" action="/graph_creation/id_annotator" method="post">   
-        <div class="form-group">
-            {% if combined_data %}
-            <div class="alert alert-success alert-sm" role="alert">
-                <h4>Query Result</h4>
-            </div>
-            <div class="form-group">
-                <a id="downloadCombinedData" href="/graph_creation/get_combined_data" download="combined_data.tsv">Download Combined Data (TSV)</a><br>
-                <a id="downloadMetadata" href="/graph_creation/get_metadata" download="combined_metadata.json">Download Metadata (JSON)</a><br>
-            </div>
-            {% else %}
-            <div class="alert alert-danger alert-sm" role="alert">
-                <h4>Query Result</h4>
-                The DataFrame is empty.
-            </div>
-            {% endif %}
+<!-- Using annotators -->
+<form id="id_annotator" action="/graph_creation/gc_annotator/" method="post">   
+    <div class="form-group">
+        {% if combined_data %}
+        <div class="alert alert-success alert-sm" role="alert">
+            <h4>Query Result</h4>
         </div>
         <div class="form-group">
-            <input type="button" value="Create graph" onclick="submitStepFive()">
+            <a id="downloadCombinedData" href="/graph_creation/get_combined_data" download="combined_data.tsv">Download Combined Data (TSV)</a><br>
+            <a id="downloadMetadata" href="/graph_creation/get_metadata" download="combined_metadata.json">Download Metadata (JSON)</a><br>
+            <br>
         </div>
-    </form>
-</div>    
-<div id="step6" style="display: none;">
-    {% include 'gc_graph_generator.html' %}
-</div>
-<script>
-    function submitStepFive() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/graph_creation/id_annotator', true);
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                document.getElementById('step6').innerHTML = xhr.responseText; 
-                document.getElementById('step6').style.display = 'block'; 
-                document.getElementById('step6').scrollIntoView({ behavior: 'smooth' });
-            } else {
-                console.error(xhr.statusText);
-            }
-        };
-        xhr.onerror = function () {
-            console.error('Network Error');
-        };
-        xhr.send();
-    }
-
-</script>
+        {% else %}
+        <div class="alert alert-danger alert-sm" role="alert">
+            <h4>Query Result</h4>
+            The DataFrame is empty.
+            <br>
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Create graph" onclick="submitGraph()">
+    </div>
+</form>
