@@ -5,6 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BioDataFuse</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script>
+        function validateFile() {
+            var fileInput = document.getElementById("file_upload");
+            var file = fileInput.files[0];
+            if (file) {
+                var fileName = file.name;
+                var fileExt = fileName.split(".").pop().toLowerCase();
+                if (!["txt", "csv"].includes(fileExt)) {
+                    alert("Unsupported file format. Please upload a CSV or TXT file.");
+                    fileInput.value = "";
+                }
+            }
+        }
+
+        function loadContent(url, containerId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById(containerId).innerHTML = xhr.responseText;
+                    document.getElementById(containerId).style.display = "block";
+                    document.getElementById(containerId).scrollIntoView({ behavior: "smooth" });
+                } else {
+                    console.error(xhr.statusText);
+                }
+            };
+            xhr.onerror = function() {
+                console.error("Network Error");
+            };
+            xhr.send();
+        }
+
+        function submitInput() {
+            var formData = new FormData(document.getElementById("id_input"));
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/graph_creation", true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    loadContent("/graph_creation/gc_id_mapper/", "id_mapper");
+                } else {
+                    console.error(xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error("Network Error");
+            };
+            xhr.send(formData);
+        }
+
+        function submitConfirmInput() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/graph_creation/gc_id_mapper/", true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    loadContent("/graph_creation/gc_datasource/", "get_datasource");
+                } else {
+                    console.error(xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error("Network Error");
+            };
+            xhr.send();
+        }
+
+        function submitDatasource() {
+            var formData = new FormData(document.getElementById("datasource"));
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/graph_creation/gc_datasource/", true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    loadContent("/graph_creation/gc_annotator/", "input_annotator");
+                } else {
+                    console.error(xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error("Network Error");
+            };
+            xhr.send(formData);
+        }
+
+        function submitGraph() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/graph_creation/gc_annotator/', true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    loadContent("/graph_creation/gc_graph_generator/", "graph_generator");
+                } else {
+                    console.error(xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error('Network Error');
+            };
+            xhr.send();
+        }
+    </script>
 </head>
 <body>
     <header>
