@@ -114,7 +114,7 @@
 
         function submitGraph() {
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/graph_creation/gc_annotator/', true);
+            xhr.open("POST", "/graph_creation/gc_annotator/", true);
             xhr.onload = function () {
                 if (xhr.status === 200) {
                     loadContent("/graph_creation/gc_graph_generator/", "graph_generator");
@@ -123,7 +123,7 @@
                 }
             };
             xhr.onerror = function () {
-                console.error('Network Error');
+                console.error("Network Error");
             };
             xhr.send();
         }
