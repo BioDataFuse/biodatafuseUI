@@ -39,6 +39,21 @@
         }
 
         function submitInput() {
+            var textInput = document.getElementById("text_input").value.trim();
+            var fileUpload = document.getElementById("file_upload").files.length;
+
+            if (textInput === "" && fileUpload === 0) {
+                alert("Please enter identifier(s) or upload a file.");
+                return;
+            }
+
+            // Validate identifier type selection
+            var identifierType = document.getElementById("identifier_type").value;
+            if (identifierType === "") {
+                alert("Please select an identifier type.");
+                return;
+            }
+
             var formData = new FormData(document.getElementById("id_input"));
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "/graph_creation", true);
@@ -103,6 +118,10 @@
             };
             xhr.send();
         }
+
+        window.addEventListener("beforeunload", function (event) {
+            navigator.sendBeacon("/clear_session/");
+        });
     </script>
 </head>
 <body>
