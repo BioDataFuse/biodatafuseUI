@@ -39,6 +39,7 @@
         }
 
         function submitInput() {
+            // Validate identifier selection
             var textInput = document.getElementById("text_input").value.trim();
             var fileUpload = document.getElementById("file_upload").files.length;
 
@@ -87,6 +88,14 @@
         }
 
         function submitDatasource() {
+            // Check if at least one checkbox is checked
+            var checkboxes = document.querySelectorAll('input[name="datasource_selected"]:checked');
+            console.log(checkboxes.length)
+            if (checkboxes.length === 0) {
+                alert("Please select at least one datasource.");
+                return;
+            }
+
             var formData = new FormData(document.getElementById("datasource"));
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "/graph_creation/gc_datasource/", true);
