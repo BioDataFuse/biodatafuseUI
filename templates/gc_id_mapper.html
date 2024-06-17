@@ -1,7 +1,7 @@
 <!-- Mapping identifiers -->
 <div class="container">
     <form id="id_mapper" action="/graph_creation/gc_id_mapper" method="post">   
-        {% if not bridgdb_df_empty %}
+        {% if not bridgedb_df_empty %}
         <div class="form-group">
             <div class="alert alert-success alert-sm" role="alert">
                 <h4>Mapping Result</h4>
@@ -22,26 +22,3 @@
         {% endif %}
     </form>
 </div>    
-<div id="get_datasource" style="display: none;">
-    {% include 'gc_datasource.html' %}
-</div>
-
-<script>
-    function submitConfirmInput() {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/graph_creation/gc_id_mapper", true);
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                document.getElementById("get_datasource").innerHTML = xhr.responseText; 
-                document.getElementById("get_datasource").style.display = "block"; 
-                document.getElementById("get_datasource").scrollIntoView({ behavior: "smooth" });
-            } else {
-                console.error(xhr.statusText);
-            }
-        };
-        xhr.onerror = function () {
-            console.error("Network Error");
-        };
-        xhr.send();
-    }
-</script>
