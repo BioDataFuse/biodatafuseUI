@@ -21,6 +21,7 @@ def process_selected_sources(
         "disGeNet": disgenet.get_gene_disease,
         ## TODO: "minerva": minera.get,
         ## TODO: "molmedb": molmedb.get_mol_gene_inhibitor,
+        ## TODO: "pubchem"
         "opentarget.gene_location": opentargets.get_gene_location,
         "opentarget.gene_ontology": opentargets.get_gene_go_process,
         "opentarget.reactome": opentargets.get_gene_reactome_pathways,
