@@ -1,0 +1,22 @@
+<h2>3. Great Graph</h2>
+<div class="options">
+    <h3>See your graph in:</h2>
+    <button onclick="alert('Please run Cytoscape locally to view your graph.')">Cytoscape</button>
+    <button onclick="showNeo4jInstructions()">Neo4j</button>
+    <div id="neo4j-instructions" style="display:none;"> 
+        <h3>Guidelines for Neo4J:</h3>
+        <p>1. Start your Neo4J server.</p>
+        <p>...</p>
+        <p>3. Use the Neo4J browser to explore your graph.</p>
+    </div>
+</div>
+<div class="download-links">
+    <h2>Download compatible files:</h2>
+    <a href="/download/cytoscape">Download for Cytoscape</a>
+    <a href="/download/neo4j">Download for Neo4J</a>
+</div>
+<script>
+    function showNeo4jInstructions() {
+        document.getElementById('neo4j-instructions').style.display = 'block';
+    }
+</script>
