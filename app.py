@@ -68,7 +68,11 @@ def gc_datasource():
         datasource = request.form.getlist("datasource_selected")
         if not datasource:
             return jsonify({"error": "Please select at least one datasource"})
-        
+        if "disgenet" in datasource :
+            api_key = request.form.get('api_key')
+            if not api_key:
+                return jsonify({"error": "The Api key field for DisGeNET datasource is required"})
+            session["api_key"] = api_key
         session["datasource"] = datasource
         return redirect(url_for("gc_annotator"))
     else:
@@ -77,8 +81,9 @@ def gc_datasource():
 @app.route("/graph_creation/gc_annotator/", methods=["GET", "POST"])
 def gc_annotator():
     datasource = session["datasource"]
+    api_key = session["api_key"] if "api_key" in session else ""
     bridgedb_df = pd.DataFrame(session["bridgedb_df"])
-    combined_data, combined_metadata = process_selected_sources(bridgedb_df, datasource)
+    combined_data, combined_metadata = process_selected_sources(bridgedb_df, datasource, api_key)
     session["combined_data"] = combined_data.to_dict("records")
     session["combined_metadata"] = combined_metadata
 

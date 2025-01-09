@@ -95,7 +95,13 @@
                 alert("Please select at least one datasource.");
                 return;
             }
-
+            var datasources = document.getElementById("disgenet-checkbox").checked
+            var api_key = document.getElementById("api_key").value
+            console.log(datasources, api_key)
+            if (datasources && !api_key) {
+                alert("The Api key value for DisGeNET datasource is required");
+                return;
+            }
             var formData = new FormData(document.getElementById("datasource"));
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "/graph_creation/gc_datasource/", true);
@@ -153,11 +159,11 @@
 </html>
 
 {% with messages = get_flashed_messages() %}
- {% if messages %}
-  <h3>
-  {% for message in messages %}
+{% if messages %}
+<h3>
+    {% for message in messages %}
     {{ message }}
-  {% endfor %}
-  </h3>
- {% endif %}
+    {% endfor %}
+</h3>
+{% endif %}
 {% endwith %}
