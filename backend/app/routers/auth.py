@@ -55,13 +55,25 @@ async def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.post("/register", response_model=schemas.UserResponse)
+@router.post("/register", response_model=schemas.UserLogin)
 async def register_user(
     user: schemas.UserCreate,
     db: AsyncSession = Depends(get_db)
 ):
     user_service = UserService(db)
-    return await user_service.create_user(user)
+    created_user = await user_service.create_user(user)
+    
+    # Generate token for the new user
+    access_token = security.create_access_token(data={"sub": created_user.email})
+    
+    # Return format matching UserLogin schema
+    return {
+        "token": access_token,
+        "user": {
+            "email": created_user.email,
+            "name": created_user.name
+        }
+    }
 
 @router.post("/login", response_model=schemas.UserLogin)
 async def login(
@@ -76,11 +88,16 @@ async def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = security.create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
-    return {"user": user, "token": access_token, "token_type": "bearer"}
+    access_token = security.create_access_token(data={"sub": user.email})
+    
+    # Return format matching UserLogin schema
+    return {
+        "token": access_token,
+        "user": {
+            "email": user.email,
+            "name": user.name
+        }
+    }
 
 @router.get("/me", response_model=schemas.UserResponse)
 async def get_user_info(current_user = Depends(get_current_user)):

@@ -19,6 +19,13 @@ class PasswordUpdate(BaseModel):
     current_password: str
     new_password: str
 
+class UserInfo(BaseModel):
+    email: EmailStr
+    name: str
+
+    class Config:
+        from_attributes = True
+
 class UserResponse(UserBase):
     id: int
     api_key: str
@@ -30,10 +37,9 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True
 
-class UserLogin(UserBase):
-    user: UserResponse
+class UserLogin(BaseModel):
     token: str
-    token_type: str
+    user: UserInfo
 
 class Token(BaseModel):
     access_token: str
@@ -58,7 +64,7 @@ class IdentifierMappingResponse(BaseModel):
     identifier_type: str
     input_species: str
     input_identifiers: List[str]
-    mapped_identifiers: Optional[Dict] = None
+    mapped_identifiers: Optional[List] = None
     status: str
     error_message: Optional[str] = None
     created_at: datetime
