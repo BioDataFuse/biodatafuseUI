@@ -116,66 +116,127 @@
 
             <!-- Settings Panel -->
             <div class="lg:col-span-2">
-              <div class="bg-gray-50 rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Query Settings</h3>
-
-                <!-- Identifier Type Selection -->
-                <div class="space-y-4">
-                  <div>
-                    <label for="identifier-type" class="block text-sm font-medium text-gray-700">
-                      Identifier Type
-                    </label>
-                    <select
-                      id="identifier-type"
-                      v-model="formData.identifierType"
-                      class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
-                    >
-                      <option value="" disabled>Select type</option>
-                      <optgroup label="Gene Identifiers">
-                        <option value="Ensembl">Ensembl</option>
-                        <option value="HGNC">HGNC Symbol</option>
-                        <option value="HGNC Accession Number">HGNC Accession Number</option>
-                        <option value="RefSeq">RefSeq</option>
-                        <option value="NCBI Gene">NCBI Gene</option>
-                      </optgroup>
-                      <optgroup label="Compound Identifiers">
-                        <option value="HMDB">HMDB</option>
-                        <option value="ChEBI">ChEBI</option>
-                        <option value="SMILES">SMILES</option>
-                      </optgroup>
-                    </select>
-                  </div>
-
-                  <!-- Validation Summary -->
-                  <div class="rounded-md bg-yellow-50 p-4" v-if="!isFormValid">
-                    <div class="flex">
-                      <ExclamationTriangleIcon class="h-5 w-5 text-yellow-400" />
-                      <div class="ml-3">
-                        <h3 class="text-sm font-medium text-yellow-800">Required:</h3>
-                        <ul class="mt-2 text-sm text-yellow-700 list-disc pl-5">
-                          <li v-if="!hasInput">Enter identifiers or upload a file</li>
-                          <li v-if="!formData.identifierType">Select identifier type</li>
-                        </ul>
-                      </div>
+              <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <!-- Panel Header -->
+                <div class="bg-gradient-to-r from-indigo-500/5 via-indigo-500/10 to-transparent px-6 py-5 border-b border-gray-100">
+                  <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-white rounded-lg shadow-sm border border-indigo-100">
+                      <BeakerIcon class="h-5 w-5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-semibold text-gray-900">Query Settings</h3>
+                      <p class="text-sm text-gray-500 mt-0.5">Configure your query parameters</p>
                     </div>
                   </div>
+                </div>
 
-                  <!-- Submit Button -->
-                  <button
-                    type="button"
-                    @click="submitForm"
-                    :disabled="loading || !isFormValid"
-                    class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span v-if="loading" class="flex items-center">
-                      <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                      </svg>
-                      Processing...
-                    </span>
-                    <span v-else>Continue to Mapping</span>
-                  </button>
+                <div class="p-6">
+                  <!-- Identifier Type Section -->
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <label for="identifier-type" class="block text-sm font-medium text-gray-900">
+                          Identifier Type
+                        </label>
+                        <p class="text-xs text-gray-500 mt-0.5">Select the format of your identifiers</p>
+                      </div>
+                      <div v-if="formData.identifierType" 
+                          class="flex items-center space-x-1 text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                        <CheckCircleIcon class="h-4 w-4" />
+                        <span class="text-xs font-medium">Selected</span>
+                      </div>
+                    </div>
+
+                    <!-- Enhanced Select -->
+                    <div class="relative mt-1 group">
+                      <select
+                        id="identifier-type"
+                        v-model="formData.identifierType"
+                        class="block w-full pl-4 pr-10 py-3 text-base border-2 border-gray-200 
+                               rounded-lg bg-white shadow-sm appearance-none
+                               focus:border-indigo-500 focus:ring focus:ring-indigo-200 
+                               group-hover:border-gray-300
+                               transition-all duration-200"
+                      >
+                        <option value="" disabled class="text-gray-500">Select type...</option>
+                        <optgroup label="Gene Identifiers" class="font-semibold">
+                          <option value="Ensembl" class="py-1.5">Ensembl ID</option>
+                          <option value="HGNC" class="py-1.5">HGNC Symbol</option>
+                          <option value="HGNC Accession Number" class="py-1.5">HGNC Accession</option>
+                          <option value="RefSeq" class="py-1.5">RefSeq ID</option>
+                          <option value="NCBI Gene" class="py-1.5">NCBI Gene ID</option>
+                        </optgroup>
+                        <optgroup label="Compound Identifiers" class="font-semibold">
+                          <option value="HMDB" class="py-1.5">HMDB ID</option>
+                          <option value="ChEBI" class="py-1.5">ChEBI ID</option>
+                          <option value="SMILES" class="py-1.5">SMILES Notation</option>
+                        </optgroup>
+                      </select>
+                      <ChevronDownIcon class="absolute right-3 top-3.5 h-5 w-5 text-gray-400 
+                                       group-hover:text-indigo-500 pointer-events-none transition-colors duration-200" />
+                    </div>
+
+                    <!-- Type Description -->
+                    <div v-if="formData.identifierType" 
+                         class="mt-3 bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
+                      <div class="flex items-start space-x-3">
+                        <InformationCircleIcon class="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p class="text-sm text-gray-700">
+                            {{ getIdentifierTypeDescription(formData.identifierType) }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Validation Summary -->
+                    <div v-if="!isFormValid" 
+                         class="mt-4 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                      <div class="flex">
+                        <div class="flex-shrink-0">
+                          <ExclamationTriangleIcon class="h-5 w-5 text-yellow-400" />
+                        </div>
+                        <div class="ml-3">
+                          <h3 class="text-sm font-medium text-yellow-800">Required Fields</h3>
+                          <ul class="mt-2 text-sm text-yellow-700 space-y-1">
+                            <li v-if="!hasInput" class="flex items-center">
+                              <MinusIcon class="h-4 w-4 text-yellow-400 mr-2" />
+                              <span>Enter identifiers or upload a file</span>
+                            </li>
+                            <li v-if="!formData.identifierType" class="flex items-center">
+                              <MinusIcon class="h-4 w-4 text-yellow-400 mr-2" />
+                              <span>Select identifier type</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button
+                      type="button"
+                      @click="submitForm"
+                      :disabled="loading || !isFormValid"
+                      class="relative w-full flex justify-center items-center px-4 py-3 mt-6
+                             border border-transparent text-sm font-semibold rounded-lg shadow-sm 
+                             text-white bg-indigo-600 hover:bg-indigo-700 
+                             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
+                             disabled:opacity-50 disabled:cursor-not-allowed 
+                             transition-colors duration-200"
+                    >
+                      <span v-if="loading" class="flex items-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        Processing...
+                      </span>
+                      <span v-else class="flex items-center">
+                        Continue to Mapping
+                        <ArrowRightIcon class="ml-2 -mr-1 h-5 w-5" />
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -205,6 +266,12 @@ import {
   ExclamationTriangleIcon,
   XCircleIcon,
   ArrowUpTrayIcon,
+  BeakerIcon,
+  ChevronDownIcon,
+  ArrowRightIcon,
+  CheckCircleIcon,
+  InformationCircleIcon,
+  MinusIcon,
 } from '@heroicons/vue/24/outline'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
@@ -242,6 +309,32 @@ const isFormValid = computed(() => {
   return hasInput.value && formData.value.identifierType
 })
 
+const getInputSummary = computed(() => {
+  const input = formData.value.textInput.trim()
+  if (!input) return 'No text input'
+  
+  const lines = input.split('\n').filter(line => line.trim())
+  const count = lines.length
+  
+  if (count === 0) return 'No identifiers entered'
+  if (count === 1) return '1 identifier entered'
+  return `${count} identifiers entered`
+})
+
+function getIdentifierTypeDescription(type) {
+  const descriptions = {
+    'Ensembl': 'Standard stable identifier format for genes, transcripts, and proteins from the Ensembl database.',
+    'HGNC': 'Human Gene Nomenclature Committee approved gene symbols and names.',
+    'HGNC Accession Number': 'Unique identifiers assigned by HGNC to human genes.',
+    'RefSeq': 'Reference sequence standards from NCBI Reference Sequence Database.',
+    'NCBI Gene': 'Unique identifiers from the NCBI Gene Database.',
+    'HMDB': 'Human Metabolome Database compound identifiers.',
+    'ChEBI': 'Chemical Entities of Biological Interest standardized identifiers.',
+    'SMILES': 'Simplified Molecular Input Line Entry System notation.'
+  }
+  return descriptions[type] || 'Standard identifier format'
+}
+
 function handleFileUpload(event) {
   const file = event.target.files[0]
   if (file) {
@@ -264,6 +357,7 @@ function handleFileUpload(event) {
 
     selectedFile.value = file
     formData.value.file = file
+    error.value = null
   }
 }
 

@@ -3,7 +3,8 @@ import pandas as pd
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from .. import models
-from pyBiodatafuse.datasources import DisGeNETDataSource, STRINGDataSource, KEGGDataSource
+from pyBiodatafuse.annotators import wikipathways, disgenet, opentargets, stringdb
+from pyBiodatafuse.utils import combine_sources
 import asyncio
 
 class DataSourceService:
@@ -20,14 +21,46 @@ class DataSourceService:
                 "description": "Protein-protein interaction network",
                 "requires_key": False
             },
-            "kegg": {
-                "name": "KEGG",
-                "description": "Pathway database",
+            "wikipathways": {
+                "name": "WikiPathways",
+                "description": "Biological pathway database",
+                "requires_key": False
+            },
+            "opentarget.gene_ontology": {
+                "name": "OpenTargets Gene Ontology",
+                "description": "Gene ontology process annotations",
+                "requires_key": False
+            },
+            "opentarget.reactome": {
+                "name": "OpenTargets Reactome",
+                "description": "Reactome pathway associations",
+                "requires_key": False
+            },
+            "opentarget.drug_interactions": {
+                "name": "OpenTargets Drug Interactions",
+                "description": "Gene-drug interaction data",
+                "requires_key": False
+            },
+            "opentarget.disease_associations": {
+                "name": "OpenTargets Disease Associations",
+                "description": "Gene-disease association data",
                 "requires_key": False
             }
         }
 
+        # Map sources to their corresponding functions
+        self.data_source_functions = {
+            "disgenet": disgenet.get_gene_disease,
+            "opentarget.gene_ontology": opentargets.get_gene_go_process,
+            "opentarget.reactome": opentargets.get_gene_reactome_pathways,
+            "opentarget.drug_interactions": opentargets.get_gene_drug_interactions,
+            "opentarget.disease_associations": opentargets.get_gene_disease_associations,
+            "string": stringdb.get_ppi,
+            "wikipathways": wikipathways.get_gene_wikipathways
+        }
+
     async def get_available_sources(self) -> List[Dict]:
+        """Get list of available data sources"""
         return [
             {"id": key, **value}
             for key, value in self.available_sources.items()
@@ -48,139 +81,74 @@ class DataSourceService:
             raise ValueError("Identifier set not found")
 
         # Convert mapped identifiers to DataFrame
-        mappings_df = pd.DataFrame(identifier_set.mapped_identifiers)
-        
-        combined_data = []
-        metadata = {
-            "total_associations": 0,
-            "sources_processed": [],
-            "source_counts": {}
-        }
+        bridgedb_df = pd.DataFrame(identifier_set.mapped_identifiers)
 
+        # Initialize variables for combined results
+        combined_data = pd.DataFrame()
+        combined_metadata = {}
+        warnings = []
+        
         try:
-            # Process each data source
+            # Process each selected data source
             for source_info in datasources:
                 source_name = source_info["source"]
                 api_key = source_info.get("api_key")
 
-                if source_name == "disgenet":
-                    data = await self._process_disgenet(mappings_df, api_key)
-                elif source_name == "string":
-                    data = await self._process_string(mappings_df)
-                elif source_name == "kegg":
-                    data = await self._process_kegg(mappings_df)
-                else:
+                if source_name not in self.data_source_functions:
+                    warnings.append(f"Unsupported data source: {source_name}")
                     continue
 
-                if data:
-                    combined_data.extend(data)
-                    metadata["sources_processed"].append(source_name)
-                    metadata["source_counts"][source_name] = len(data)
-                    metadata["total_associations"] += len(data)
+                # Process the data source
+                try:
+                    if source_name == "disgenet":
+                        tmp_data, tmp_metadata = await asyncio.to_thread(
+                            self.data_source_functions[source_name],
+                            api_key=api_key,
+                            bridgedb_df=bridgedb_df
+                        )
+                    else:
+                        tmp_data, tmp_metadata = await asyncio.to_thread(
+                            self.data_source_functions[source_name],
+                            bridgedb_df
+                        )
 
-            # Convert to DataFrame and remove duplicates
-            result_df = pd.DataFrame(combined_data).drop_duplicates()
-            
+                    combined_metadata[source_name] = tmp_metadata
+
+                    if tmp_data.empty:
+                        warnings.append(f"No annotation available for {source_name}")
+                    else:
+                        if combined_data.empty:
+                            combined_data = tmp_data
+                        else:
+                            combined_data = combine_sources(bridgedb_df, [combined_data, tmp_data])
+
+                except Exception as e:
+                    warnings.append(f"Error processing {source_name}: {str(e)}")
+                    continue
+
+            # Prepare metadata for response
+            metadata = {
+                "total_associations": len(combined_data) if not combined_data.empty else 0,
+                "sources_processed": list(combined_metadata.keys()),
+                "source_counts": {
+                    source: metadata.get("count", 0) 
+                    for source, metadata in combined_metadata.items()
+                },
+                "warnings": warnings
+            }
+
             # Store results in database
-            identifier_set.combined_data = result_df.to_dict("records")
+            identifier_set.combined_data = combined_data.to_dict("records") if not combined_data.empty else []
             identifier_set.metadata.update(metadata)
             await self.db.commit()
 
-            return result_df, metadata
+            return combined_data, metadata
 
         except Exception as e:
             raise ValueError(f"Error processing data sources: {str(e)}")
 
-    async def _process_disgenet(self, mappings_df: pd.DataFrame, api_key: str) -> List[Dict]:
-        """Process DisGeNET data using pyBiodatafuse"""
-        try:
-            # Initialize DisGeNET data source
-            disgenet = DisGeNETDataSource(api_key=api_key)
-            
-            # Get gene identifiers (prefer NCBI Gene IDs)
-            gene_ids = mappings_df['ncbi'].dropna().tolist() if 'ncbi' in mappings_df.columns else mappings_df['input_id'].tolist()
-
-            # Query DisGeNET asynchronously
-            # Note: We'll simulate async here since pyBiodatafuse might not be async
-            associations = await asyncio.to_thread(
-                disgenet.get_gene_disease_associations,
-                gene_ids
-            )
-
-            # Format results
-            results = []
-            for assoc in associations:
-                results.append({
-                    "source": "DisGeNET",
-                    "gene_id": assoc.gene_id,
-                    "gene_symbol": assoc.gene_symbol,
-                    "disease_id": assoc.disease_id,
-                    "disease_name": assoc.disease_name,
-                    "score": assoc.score,
-                    "evidence": assoc.evidence_count
-                })
-
-            return results
-        except Exception as e:
-            raise ValueError(f"Error processing DisGeNET data: {str(e)}")
-
-    async def _process_string(self, mappings_df: pd.DataFrame) -> List[Dict]:
-        """Process STRING data using pyBiodatafuse"""
-        try:
-            # Initialize STRING data source
-            string_db = STRINGDataSource()
-            
-            # Get protein IDs (prefer UniProt IDs)
-            protein_ids = mappings_df['uniprot'].dropna().tolist() if 'uniprot' in mappings_df.columns else mappings_df['input_id'].tolist()
-
-            # Query STRING asynchronously
-            interactions = await asyncio.to_thread(
-                string_db.get_protein_interactions,
-                protein_ids,
-                score_threshold=0.7  # High confidence
-            )
-
-            # Format results
-            results = []
-            for inter in interactions:
-                results.append({
-                    "source": "STRING",
-                    "protein_a": inter.protein_a,
-                    "protein_b": inter.protein_b,
-                    "score": inter.combined_score,
-                    "interaction_types": inter.interaction_types
-                })
-
-            return results
-        except Exception as e:
-            raise ValueError(f"Error processing STRING data: {str(e)}")
-
-    async def _process_kegg(self, mappings_df: pd.DataFrame) -> List[Dict]:
-        """Process KEGG data using pyBiodatafuse"""
-        try:
-            # Initialize KEGG data source
-            kegg = KEGGDataSource()
-            
-            # Get gene IDs (prefer NCBI Gene IDs)
-            gene_ids = mappings_df['ncbi'].dropna().tolist() if 'ncbi' in mappings_df.columns else mappings_df['input_id'].tolist()
-
-            # Query KEGG asynchronously
-            pathways = await asyncio.to_thread(
-                kegg.get_pathways,
-                gene_ids
-            )
-
-            # Format results
-            results = []
-            for pathway in pathways:
-                results.append({
-                    "source": "KEGG",
-                    "gene_id": pathway.gene_id,
-                    "pathway_id": pathway.pathway_id,
-                    "pathway_name": pathway.pathway_name,
-                    "pathway_class": pathway.pathway_class
-                })
-
-            return results
-        except Exception as e:
-            raise ValueError(f"Error processing KEGG data: {str(e)}")
+    async def get_source_metadata(self, source_name: str) -> Dict:
+        """Get metadata for a specific data source"""
+        if source_name not in self.available_sources:
+            raise ValueError(f"Unknown data source: {source_name}")
+        return self.available_sources[source_name]

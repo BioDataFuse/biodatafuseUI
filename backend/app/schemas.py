@@ -30,6 +30,11 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True
 
+class UserLogin(UserBase):
+    user: UserResponse
+    token: str
+    token_type: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -91,7 +96,7 @@ class DataSourceProcessingResponse(BaseModel):
     status: str
     metadata: Dict
     message: str
-    
+
 class DataSourceRequest(BaseModel):
     source: str
     api_key: Optional[str] = None
