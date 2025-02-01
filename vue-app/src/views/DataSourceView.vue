@@ -44,18 +44,21 @@
                     class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                   />
                 </div>
-                <div class="ml-3">
+                <div class="ml-3 flex-grow">
                   <label :for="source.id" class="font-medium text-gray-700">{{ source.name }}</label>
                   <p class="text-sm text-gray-500">{{ source.description }}</p>
                   
-                  <!-- API Key Input for DisGeNET -->
-                  <div v-if="source.id === 'disgenet' && selectedSources.includes('disgenet')" class="mt-2">
-                    <label class="block text-sm font-medium text-gray-700">API Key</label>
+                  <!-- API Key Input Field (shown if source requires API key and is selected) -->
+                  <div v-if="source.requiresApiKey && selectedSources.includes(source.id)" class="mt-2">
+                    <label :for="source.id + '-api-key'" class="block text-sm font-medium text-gray-700">
+                      {{ source.name }} API Key
+                    </label>
                     <input
+                      :id="source.id + '-api-key'"
                       type="password"
-                      v-model="apiKey"
+                      v-model="sourceApiKeys[source.id]"
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      placeholder="Enter your DisGeNET API key"
+                      :placeholder="'Enter your ' + source.name + ' API key'"
                     />
                   </div>
                 </div>
@@ -151,7 +154,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const availableSources = ref([])
 const selectedSources = ref([])
-const apiKey = ref('')
+const sourceApiKeys = ref({})
 const loading = ref(false)
 const error = ref(null)
 const results = ref(null)
@@ -170,8 +173,14 @@ const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 
 const isFormValid = computed(() => {
   if (selectedSources.value.length === 0) return false
-  if (selectedSources.value.includes('disgenet') && !apiKey.value) return false
-  return true
+  
+  // Check if all selected sources that require API keys have them
+  const hasAllRequiredKeys = selectedSources.value.every(sourceId => {
+    const source = availableSources.value.find(s => s.id === sourceId)
+    return !source.requiresApiKey || (source.requiresApiKey && sourceApiKeys.value[sourceId])
+  })
+  
+  return hasAllRequiredKeys
 })
 
 onMounted(async () => {
@@ -182,7 +191,10 @@ onMounted(async () => {
 
   try {
     const response = await axios.get('/api/datasources')
-    availableSources.value = response.data
+    availableSources.value = response.data.map(source => ({
+      ...source,
+      requiresApiKey: source.id === 'disgenet' // Add more sources here if they require API keys
+    }))
   } catch (err) {
     error.value = 'Error loading data sources'
     console.error('Error:', err)
@@ -194,9 +206,14 @@ async function submitForm() {
     error.value = null
     loading.value = true
 
+    // Prepare datasources array with their respective API keys
+    const datasources = selectedSources.value.map(sourceId => ({
+      source: sourceId,
+      api_key: sourceApiKeys.value[sourceId]
+    }))
+
     const response = await axios.post(`/api/datasources/${identifierSetId}/process`, {
-      selected_sources: selectedSources.value,
-      api_key: selectedSources.value.includes('disgenet') ? apiKey.value : undefined
+      datasources
     })
 
     results.value = response.data

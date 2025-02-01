@@ -91,6 +91,10 @@ class DataSourceProcessingResponse(BaseModel):
     status: str
     metadata: Dict
     message: str
+    
+class DataSourceRequest(BaseModel):
+    source: str
+    api_key: Optional[str] = None
 
 # Combined Data Result Schemas
 class NodeData(BaseModel):
