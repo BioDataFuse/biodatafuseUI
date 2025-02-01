@@ -1,138 +1,194 @@
 <template>
-  <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 sm:px-0">
-      <h2 class="text-2xl font-semibold text-gray-900">Query Biological Databases</h2>
-      <p class="mt-1 text-sm text-gray-600">
-        Search and integrate data from multiple biological databases.
-      </p>
-    </div>
+  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <!-- Header Section with Steps -->
+      <div class="mb-10">
+        <div class="text-center">
+          <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl">
+            Query Builder
+          </h1>
+          <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
+            Build your biological query in three simple steps
+          </p>
+        </div>
 
-    <div class="mt-6">
-      <div class="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-        <div class="md:grid md:grid-cols-3 md:gap-6">
-          <div class="md:col-span-1">
-            <h3 class="text-lg font-medium leading-6 text-gray-900">Input Parameters</h3>
-            <p class="mt-1 text-sm text-gray-500">
-              Enter identifiers or upload a file to query the databases.
-            </p>
-          </div>
-          
-          <div class="mt-5 md:mt-0 md:col-span-2">
-            <form @submit.prevent="submitQuery">
-              <!-- Input Type Selection -->
-              <div class="grid grid-cols-6 gap-6">
-                <div class="col-span-6 sm:col-span-3">
-                  <label for="input-type" class="block text-sm font-medium text-gray-700">Input Type</label>
-                  <select
-                    id="input-type"
-                    v-model="inputType"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  >
-                    <option value="text">Text Input</option>
-                    <option value="file">File Upload</option>
-                  </select>
-                </div>
-
-                <div class="col-span-6 sm:col-span-3">
-                  <label for="identifier-type" class="block text-sm font-medium text-gray-700">Identifier Type</label>
-                  <select
-                    id="identifier-type"
-                    v-model="identifierType"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  >
-                    <option value="gene">Gene Symbol</option>
-                    <option value="protein">Protein ID</option>
-                    <option value="disease">Disease ID</option>
-                  </select>
-                </div>
+        <!-- Steps Progress -->
+        <div class="mt-8">
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-between">
+              <div v-for="(step, index) in steps" :key="step.name"
+                   :class="[
+                     index <= currentStep ? 'text-indigo-600' : 'text-gray-500',
+                     'bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200'
+                   ]">
+                <span class="font-medium">{{ step.name }}</span>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <!-- Main Content Area -->
+      <div class="mt-12 bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Top Bar -->
+        <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
+          <h2 class="text-xl font-semibold text-white">Step 1: Import Your Identifiers</h2>
+          <p class="mt-1 text-indigo-200">Choose your input method and identifier type</p>
+        </div>
+
+        <div class="p-6">
+          <!-- Input Method Tabs -->
+          <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+              <button
+                v-for="tab in tabs"
+                :key="tab.name"
+                @click="activeTab = tab.id"
+                :class="[
+                  activeTab === tab.id
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center'
+                ]"
+              >
+                <component :is="tab.icon" class="h-5 w-5 mr-2" />
+                {{ tab.name }}
+              </button>
+            </nav>
+          </div>
+
+          <div class="mt-6 grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- Input Section -->
+            <div class="lg:col-span-3">
               <!-- Text Input -->
-              <div v-if="inputType === 'text'" class="mt-6">
-                <label for="identifiers" class="block text-sm font-medium text-gray-700">
-                  Identifiers (one per line)
-                </label>
-                <textarea
-                  id="identifiers"
-                  v-model="textInput"
-                  rows="4"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  placeholder="Enter your identifiers..."
-                ></textarea>
+              <div v-show="activeTab === 'text'" class="space-y-4">
+                <div>
+                  <label for="text-input" class="block text-sm font-medium text-gray-700">
+                    Enter identifiers (one per line)
+                  </label>
+                  <div class="mt-1">
+                    <textarea
+                      id="text-input"
+                      v-model="formData.textInput"
+                      rows="10"
+                      class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-lg"
+                      placeholder="e.g.&#10;BRCA1&#10;TP53&#10;EGFR"
+                    ></textarea>
+                  </div>
+                  <p class="mt-2 text-sm text-gray-500">
+                    Enter each identifier on a new line
+                  </p>
+                </div>
               </div>
 
               <!-- File Upload -->
-              <div v-else class="mt-6">
-                <label class="block text-sm font-medium text-gray-700">File Upload</label>
-                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                  <div class="space-y-1 text-center">
-                    <svg
-                      class="mx-auto h-12 w-12 text-gray-400"
-                      stroke="currentColor"
-                      fill="none"
-                      viewBox="0 0 48 48"
-                      aria-hidden="true"
+              <div v-show="activeTab === 'file'" class="space-y-4">
+                <div class="flex justify-center items-center w-full">
+                  <label class="flex flex-col w-full h-64 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-gray-50 hover:border-indigo-400 transition-all cursor-pointer">
+                    <div class="flex flex-col items-center justify-center pt-7">
+                      <DocumentArrowUpIcon v-if="!selectedFile" class="w-12 h-12 text-indigo-400" />
+                      <DocumentCheckIcon v-else class="w-12 h-12 text-green-500" />
+                      <p class="pt-4 text-sm tracking-wider text-gray-600">
+                        <span v-if="!selectedFile">
+                          Drag and drop your file here or click to select
+                        </span>
+                        <span v-else class="text-green-600 font-medium">
+                          {{ selectedFile.name }}
+                        </span>
+                      </p>
+                      <p class="pt-2 text-xs text-gray-500">
+                        Support for CSV or TXT files up to 10MB
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      class="hidden"
+                      @change="handleFileUpload"
+                      accept=".txt,.csv"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Settings Panel -->
+            <div class="lg:col-span-2">
+              <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Query Settings</h3>
+
+                <!-- Identifier Type Selection -->
+                <div class="space-y-4">
+                  <div>
+                    <label for="identifier-type" class="block text-sm font-medium text-gray-700">
+                      Identifier Type
+                    </label>
+                    <select
+                      id="identifier-type"
+                      v-model="formData.identifierType"
+                      class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
                     >
-                      <path
-                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                    <div class="flex text-sm text-gray-600">
-                      <label
-                        for="file-upload"
-                        class="relative cursor-pointer rounded-md font-medium text-indigo-600 hover:text-indigo-500"
-                      >
-                        <span>Upload a file</span>
-                        <input 
-                          id="file-upload" 
-                          type="file" 
-                          class="sr-only"
-                          @change="handleFileUpload"
-                          accept=".txt,.csv"
-                        >
-                      </label>
-                      <p class="pl-1">or drag and drop</p>
-                    </div>
-                    <p class="text-xs text-gray-500">CSV or TXT up to 10MB</p>
+                      <option value="" disabled>Select type</option>
+                      <optgroup label="Gene Identifiers">
+                        <option value="Ensembl">Ensembl</option>
+                        <option value="HGNC">HGNC Symbol</option>
+                        <option value="HGNC Accession Number">HGNC Accession Number</option>
+                        <option value="RefSeq">RefSeq</option>
+                        <option value="NCBI Gene">NCBI Gene</option>
+                      </optgroup>
+                      <optgroup label="Compound Identifiers">
+                        <option value="HMDB">HMDB</option>
+                        <option value="ChEBI">ChEBI</option>
+                        <option value="SMILES">SMILES</option>
+                      </optgroup>
+                    </select>
                   </div>
-                </div>
-              </div>
 
-              <!-- Database Selection -->
-              <div class="mt-6">
-                <h3 class="text-sm font-medium text-gray-700">Select Databases</h3>
-                <div class="mt-4 space-y-4">
-                  <div class="flex items-start" v-for="db in databases" :key="db.id">
-                    <div class="flex items-center h-5">
-                      <input
-                        :id="db.id"
-                        type="checkbox"
-                        v-model="selectedDatabases"
-                        :value="db.id"
-                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      >
-                    </div>
-                    <div class="ml-3 text-sm">
-                      <label :for="db.id" class="font-medium text-gray-700">{{ db.name }}</label>
-                      <p class="text-gray-500">{{ db.description }}</p>
+                  <!-- Validation Summary -->
+                  <div class="rounded-md bg-yellow-50 p-4" v-if="!isFormValid">
+                    <div class="flex">
+                      <ExclamationTriangleIcon class="h-5 w-5 text-yellow-400" />
+                      <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">Required:</h3>
+                        <ul class="mt-2 text-sm text-yellow-700 list-disc pl-5">
+                          <li v-if="!hasInput">Enter identifiers or upload a file</li>
+                          <li v-if="!formData.identifierType">Select identifier type</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
+
+                  <!-- Submit Button -->
+                  <button
+                    type="button"
+                    @click="submitForm"
+                    :disabled="loading || !isFormValid"
+                    class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span v-if="loading" class="flex items-center">
+                      <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                      Processing...
+                    </span>
+                    <span v-else>Continue to Mapping</span>
+                  </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-              <div class="mt-6">
-                <button
-                  type="submit"
-                  :disabled="!isFormValid || loading"
-                  class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                >
-                  {{ loading ? 'Processing...' : 'Submit Query' }}
-                </button>
-              </div>
-            </form>
+      <!-- Error Display -->
+      <div v-if="error" class="mt-6 rounded-md bg-red-50 p-4">
+        <div class="flex">
+          <XCircleIcon class="h-5 w-5 text-red-400" />
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
           </div>
         </div>
       </div>
@@ -142,66 +198,108 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import {
+  DocumentArrowUpIcon,
+  DocumentCheckIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  XCircleIcon,
+  ArrowUpTrayIcon,
+} from '@heroicons/vue/24/outline'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
 
-const inputType = ref('text')
-const identifierType = ref('gene')
-const textInput = ref('')
-const selectedFile = ref(null)
-const selectedDatabases = ref([])
+const router = useRouter()
 const loading = ref(false)
+const error = ref(null)
+const selectedFile = ref(null)
+const activeTab = ref('text')
 
-const databases = [
-  {
-    id: 'disgenet',
-    name: 'DisGeNET',
-    description: 'Database of gene-disease associations'
-  },
-  {
-    id: 'string',
-    name: 'STRING',
-    description: 'Protein-protein interaction network'
-  },
-  {
-    id: 'reactome',
-    name: 'Reactome',
-    description: 'Pathway database'
-  }
+const tabs = [
+  { id: 'text', name: 'Text Input', icon: DocumentTextIcon },
+  { id: 'file', name: 'File Upload', icon: ArrowUpTrayIcon },
 ]
 
+const steps = [
+  { name: 'Input Identifiers', status: 'current' },
+  { name: 'Map IDs', status: 'upcoming' },
+  { name: 'Select Sources', status: 'upcoming' }
+]
+
+const currentStep = ref(0)
+
+const formData = ref({
+  textInput: '',
+  identifierType: '',
+  file: null
+})
+
+const hasInput = computed(() => {
+  return formData.value.textInput.trim() || selectedFile.value
+})
+
 const isFormValid = computed(() => {
-  if (selectedDatabases.value.length === 0) return false
-  if (inputType.value === 'text' && !textInput.value.trim()) return false
-  if (inputType.value === 'file' && !selectedFile.value) return false
-  return true
+  return hasInput.value && formData.value.identifierType
 })
 
 function handleFileUpload(event) {
   const file = event.target.files[0]
   if (file) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB')
+    // Validate file type
+    const validTypes = ['text/plain', 'text/csv']
+    if (!validTypes.includes(file.type)) {
+      error.value = 'Please upload a TXT or CSV file'
       event.target.value = ''
+      selectedFile.value = null
       return
     }
+
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      error.value = 'File size must be less than 10MB'
+      event.target.value = ''
+      selectedFile.value = null
+      return
+    }
+
     selectedFile.value = file
+    formData.value.file = file
   }
 }
 
-async function submitQuery() {
+async function submitForm() {
   if (!isFormValid.value) return
-  
+
+  error.value = null
   loading.value = true
+
   try {
-    // TODO: Implement query submission
-    console.log('Submitting query:', {
-      inputType: inputType.value,
-      identifierType: identifierType.value,
-      textInput: textInput.value,
-      selectedFile: selectedFile.value,
-      selectedDatabases: selectedDatabases.value
+    const form = new FormData()
+    form.append('identifier_type', formData.value.identifierType)
+    
+    if (formData.value.textInput.trim()) {
+      form.append('text_input', formData.value.textInput)
+    }
+    
+    if (formData.value.file) {
+      form.append('file', formData.value.file)
+    }
+
+    const response = await axios.post('/api/identifiers', form, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     })
-  } catch (error) {
-    console.error('Error submitting query:', error)
+
+    // Store the identifier set ID for the next step
+    localStorage.setItem('currentIdentifierSetId', response.data.set_id)
+    
+    // Navigate to mapping results
+    router.push('/query/mapping')
+
+  } catch (err) {
+    error.value = err.response?.data?.detail || 'Error processing identifiers'
+    console.error('Error:', err)
   } finally {
     loading.value = false
   }

@@ -7,6 +7,8 @@ import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
 import ProfileView from './views/ProfileView.vue'
 import QueryView from './views/QueryView.vue'
+import MappingResultsView from './views/MappingResultsView.vue'
+import DataSourceView from './views/DataSourceView.vue'
 import AnalysisView from './views/AnalysisView.vue'
 import AboutView from './views/AboutView.vue'
 import NotFoundView from './views/NotFoundView.vue'
@@ -39,6 +41,18 @@ const routes = [
     path: '/query',
     name: 'Query',
     component: QueryView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/query/mapping',
+    name: 'Mapping',
+    component: MappingResultsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/query/datasources',
+    name: 'DataSource',
+    component: DataSourceView,
     meta: { requiresAuth: true }
   },
   {

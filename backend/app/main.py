@@ -24,7 +24,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(api.router, prefix="/api")
+app.include_router(api.api_router)
 
 # Startup event
 @app.on_event("startup")
@@ -34,7 +34,3 @@ async def startup_event():
         await conn.run_sync(models.Base.metadata.create_all)
     logger.info("Database tables created")
 
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "version": "1.0.0"}

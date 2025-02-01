@@ -1,6 +1,22 @@
 <template>
   <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 py-6 sm:px-0">
+    <!-- Loading state -->
+    <div v-if="isLoading" class="px-4 py-6 sm:px-0">
+      <div class="bg-white shadow overflow-hidden sm:rounded-lg p-4">
+        <div class="animate-pulse flex space-x-4">
+          <div class="flex-1 space-y-4 py-1">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="space-y-2">
+              <div class="h-4 bg-gray-200 rounded"></div>
+              <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile content -->
+    <div v-else class="px-4 py-6 sm:px-0">
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
@@ -13,7 +29,7 @@
               <dt class="text-sm font-medium text-gray-500">Full name</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <div v-if="!editingName" class="flex justify-between items-center">
-                  {{ user.name }}
+                  {{ user.name || 'Not set' }}
                   <button
                     @click="startEditName"
                     class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
@@ -225,20 +241,29 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, watchEffect } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionRoot, TransitionChild } from '@headlessui/vue'
 import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
-const user = auth.user
+const user = computed(() => auth.user || {})
+const isLoading = ref(true)
 
 // Name editing
 const editingName = ref(false)
-const nameEdit = ref(user.name)
+const nameEdit = ref('')
+
+// Initialize nameEdit when user data is available
+watchEffect(() => {
+  if (user.value?.name) {
+    nameEdit.value = user.value.name
+    isLoading.value = false
+  }
+})
 
 function startEditName() {
-  nameEdit.value = user.name
+  nameEdit.value = user.value.name
   editingName.value = true
 }
 
@@ -253,7 +278,7 @@ async function saveName() {
 
 function cancelEditName() {
   editingName.value = false
-  nameEdit.value = user.name
+  nameEdit.value = user.value.name
 }
 
 // API Key handling
@@ -303,10 +328,10 @@ async function handlePasswordChange() {
   }
 }
 
-// Notification settings
+// Notification settings with safe defaults
 const notificationSettings = reactive({
-  email: user.preferences?.emailNotifications ?? true,
-  analysis: user.preferences?.analysisUpdates ?? true
+  email: computed(() => user.value?.preferences?.emailNotifications ?? true),
+  analysis: computed(() => user.value?.preferences?.analysisUpdates ?? true)
 })
 
 async function saveNotificationSettings() {
