@@ -36,6 +36,15 @@ async def get_current_user(
         raise credentials_exception
     return user
 
+def create_user_response(user, token) -> schemas.UserLogin:
+    return {
+        "token": token,
+        "user": {
+            "email": user.email,
+            "name": user.name
+        }
+    }
+
 @router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -63,17 +72,13 @@ async def register_user(
     user_service = UserService(db)
     created_user = await user_service.create_user(user)
     
-    # Generate token for the new user
-    access_token = security.create_access_token(data={"sub": created_user.email})
+    # Generate token for the new user with 7 days expiration
+    access_token = security.create_access_token(
+        data={"sub": created_user.email},
+        expires_delta=timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
     
-    # Return format matching UserLogin schema
-    return {
-        "token": access_token,
-        "user": {
-            "email": created_user.email,
-            "name": created_user.name
-        }
-    }
+    return create_user_response(created_user, access_token)
 
 @router.post("/login", response_model=schemas.UserLogin)
 async def login(
@@ -88,16 +93,14 @@ async def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = security.create_access_token(data={"sub": user.email})
     
-    # Return format matching UserLogin schema
-    return {
-        "token": access_token,
-        "user": {
-            "email": user.email,
-            "name": user.name
-        }
-    }
+    # Generate token with 7 days expiration
+    access_token = security.create_access_token(
+        data={"sub": user.email},
+        expires_delta=timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    
+    return create_user_response(user, access_token)
 
 @router.get("/me", response_model=schemas.UserResponse)
 async def get_user_info(current_user = Depends(get_current_user)):

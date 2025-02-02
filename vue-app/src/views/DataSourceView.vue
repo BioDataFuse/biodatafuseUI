@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+         <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="px-4 sm:px-0">
         <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
@@ -166,23 +166,26 @@ const steps = [
   { name: 'Visualize', status: 'upcoming' }
 ]
 
-const currentStep = ref(2) // We're on the third step
+const currentStep = ref(2)
 
 // Get identifier set ID from localStorage
 const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 
+// Form validation
 const isFormValid = computed(() => {
   if (selectedSources.value.length === 0) return false
   
   // Check if all selected sources that require API keys have them
   const hasAllRequiredKeys = selectedSources.value.every(sourceId => {
     const source = availableSources.value.find(s => s.id === sourceId)
+    if (!source) return false
     return !source.requiresApiKey || (source.requiresApiKey && sourceApiKeys.value[sourceId])
   })
   
   return hasAllRequiredKeys
 })
 
+// Load available data sources on mount
 onMounted(async () => {
   if (!identifierSetId) {
     router.push('/query')
@@ -193,38 +196,48 @@ onMounted(async () => {
     const response = await axios.get('/api/datasources')
     availableSources.value = response.data.map(source => ({
       ...source,
-      requiresApiKey: source.id === 'disgenet' // Add more sources here if they require API keys
+      requiresApiKey: source.requires_key // Use the requires_key property from backend
     }))
   } catch (err) {
-    error.value = 'Error loading data sources'
+    error.value = 'Error loading data sources: ' + (err.response?.data?.detail || err.message)
     console.error('Error:', err)
   }
 })
 
+// Submit form
 async function submitForm() {
+  if (!isFormValid.value) return
+
   try {
     error.value = null
     loading.value = true
 
-    // Prepare datasources array with their respective API keys
-    const datasources = selectedSources.value.map(sourceId => ({
-      source: sourceId,
-      api_key: sourceApiKeys.value[sourceId]
-    }))
-
-    const response = await axios.post(`/api/datasources/${identifierSetId}/process`, {
-      datasources
+    // Create array of selected sources with their API keys
+    const datasources = selectedSources.value.map(sourceId => {
+      const apiKey = sourceApiKeys.value[sourceId]
+      return {
+        source: sourceId,
+        ...(apiKey ? { api_key: apiKey } : {}) // Only include api_key if it exists
+      }
     })
 
-    results.value = response.data
+    // Send array directly as expected by the API
+    const response = await axios.post(`/api/datasources/${identifierSetId}/process`, datasources)
+
+    if (response.data.status === 'success') {
+      results.value = response.data
+    } else {
+      throw new Error(response.data.message || 'Processing failed')
+    }
   } catch (err) {
-    error.value = err.response?.data?.detail || 'Error processing data sources'
+    error.value = err.response?.data?.detail || err.message || 'Error processing data sources'
     console.error('Error:', err)
   } finally {
     loading.value = false
   }
 }
 
+// Navigation functions
 function goBack() {
   router.push('/query/mapping')
 }

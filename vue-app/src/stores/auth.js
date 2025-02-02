@@ -5,11 +5,8 @@ import axios from 'axios'
 axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 axios.defaults.withCredentials = true
 
-// Create axios instance with interceptors
-const api = axios.create()
-
 // Add request interceptor to include token
-api.interceptors.request.use(
+axios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
     if (token) {
@@ -23,7 +20,7 @@ api.interceptors.request.use(
 )
 
 // Add response interceptor to handle errors
-api.interceptors.response.use(
+axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && error.config.url !== '/api/auth/login') {
@@ -67,18 +64,18 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       this.user = null
       localStorage.removeItem('token')
-      delete api.defaults.headers.common['Authorization']
+      delete axios.defaults.headers.common['Authorization']
     },
 
     async login(email, password) {
       this.setLoading(true)
       this.clearError()
       try {
-        const res = await api.post('/api/auth/login', { email, password })
+        const res = await axios.post('/api/auth/login', { email, password })
         this.token = res.data.token
         this.user = res.data.user
         localStorage.setItem('token', this.token)
-        api.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
         return this.user
       } catch (error) {
         const errorMessage = error.response?.data?.detail || 'Login failed'
@@ -93,11 +90,11 @@ export const useAuthStore = defineStore('auth', {
       this.setLoading(true)
       this.clearError()
       try {
-        const res = await api.post('/api/auth/register', userData)
+        const res = await axios.post('/api/auth/register', userData)
         this.token = res.data.token
         this.user = res.data.user
         localStorage.setItem('token', this.token)
-        api.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
         return this.user
       } catch (error) {
         const errorMessage = error.response?.data?.detail || 'Registration failed'
@@ -111,7 +108,7 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       this.setLoading(true)
       try {
-        await api.post('/api/auth/logout')
+        await axios.post('/api/auth/logout')
       } catch (error) {
         console.error('Logout error:', error)
       } finally {
@@ -124,7 +121,7 @@ export const useAuthStore = defineStore('auth', {
       this.setLoading(true)
       this.clearError()
       try {
-        const res = await api.get('/api/auth/me')
+        const res = await axios.get('/api/auth/me')
         this.user = res.data
         return this.user
       } catch (error) {
@@ -140,7 +137,7 @@ export const useAuthStore = defineStore('auth', {
       this.setLoading(true)
       this.clearError()
       try {
-        const res = await api.put('/api/auth/profile', profileData)
+        const res = await axios.put('/api/auth/profile', profileData)
         this.user = res.data
         return this.user
       } catch (error) {
@@ -156,7 +153,7 @@ export const useAuthStore = defineStore('auth', {
       this.setLoading(true)
       this.clearError()
       try {
-        await api.put('/api/auth/password', passwordData)
+        await axios.put('/api/auth/password', passwordData)
         return true
       } catch (error) {
         const errorMessage = error.response?.data?.detail || 'Password update failed'
@@ -171,7 +168,7 @@ export const useAuthStore = defineStore('auth', {
       this.setLoading(true)
       this.clearError()
       try {
-        const res = await api.post('/api/auth/regenerate-api-key')
+        const res = await axios.post('/api/auth/regenerate-api-key')
         this.user = res.data
         return this.user
       } catch (error) {
