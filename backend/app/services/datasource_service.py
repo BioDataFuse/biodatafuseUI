@@ -3,9 +3,10 @@ import pandas as pd
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from .. import models
-from pyBiodatafuse.annotators import wikipathways, disgenet, opentargets, stringdb
-from pyBiodatafuse.utils import combine_sources
+import aiohttp
 import asyncio
+import json
+from datetime import datetime
 
 class DataSourceService:
     def __init__(self, db: AsyncSession):
@@ -14,49 +15,27 @@ class DataSourceService:
             "disgenet": {
                 "name": "DisGeNET",
                 "description": "Gene-disease associations database",
-                "requires_key": True
+                "requires_key": True,
+                "base_url": "https://www.disgenet.org/api"
             },
             "string": {
                 "name": "STRING",
                 "description": "Protein-protein interaction network",
-                "requires_key": False
+                "requires_key": False,
+                "base_url": "https://string-db.org/api"
             },
             "wikipathways": {
                 "name": "WikiPathways",
                 "description": "Biological pathway database",
-                "requires_key": False
+                "requires_key": False,
+                "base_url": "https://webservice.wikipathways.org"
             },
-            "opentarget.gene_ontology": {
-                "name": "OpenTargets Gene Ontology",
-                "description": "Gene ontology process annotations",
-                "requires_key": False
-            },
-            "opentarget.reactome": {
-                "name": "OpenTargets Reactome",
-                "description": "Reactome pathway associations",
-                "requires_key": False
-            },
-            "opentarget.drug_interactions": {
-                "name": "OpenTargets Drug Interactions",
-                "description": "Gene-drug interaction data",
-                "requires_key": False
-            },
-            "opentarget.disease_associations": {
-                "name": "OpenTargets Disease Associations",
-                "description": "Gene-disease association data",
-                "requires_key": False
+            "opentargets": {
+                "name": "OpenTargets",
+                "description": "Target validation platform",
+                "requires_key": False,
+                "base_url": "https://api.platform.opentargets.org/api/v4/graphql"
             }
-        }
-
-        # Map sources to their corresponding functions
-        self.data_source_functions = {
-            "disgenet": disgenet.get_gene_disease,
-            "opentarget.gene_ontology": opentargets.get_gene_go_process,
-            "opentarget.reactome": opentargets.get_gene_reactome_pathways,
-            # "opentarget.drug_interactions": opentargets.get_gene_drug_interactions,
-            "opentarget.disease_associations": opentargets.get_gene_disease_associations,
-            "string": stringdb.get_ppi,
-            "wikipathways": wikipathways.get_gene_wikipathways
         }
 
     async def get_available_sources(self) -> List[Dict]:
@@ -65,6 +44,129 @@ class DataSourceService:
             {"id": key, **value}
             for key, value in self.available_sources.items()
         ]
+
+    async def fetch_disgenet_data(self, gene_ids: List[str], api_key: str) -> Tuple[pd.DataFrame, Dict]:
+        """Fetch gene-disease associations from DisGeNET"""
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            results = []
+            for gene_id in gene_ids:
+                url = f"{self.available_sources['disgenet']['base_url']}/gda/gene/{gene_id}"
+                try:
+                    async with session.get(url, headers=headers) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            results.extend(data)
+                except Exception as e:
+                    print(f"Error fetching DisGeNET data for {gene_id}: {str(e)}")
+                    
+            df = pd.DataFrame(results)
+            metadata = {"count": len(results), "timestamp": datetime.now().isoformat()}
+            return df, metadata
+
+    async def fetch_string_data(self, gene_ids: List[str]) -> Tuple[pd.DataFrame, Dict]:
+        """Fetch protein-protein interactions from STRING"""
+        async with aiohttp.ClientSession() as session:
+            results = []
+            for gene_id in gene_ids:
+                params = {
+                    "identifiers": gene_id,
+                    "species": 9606,  # Human
+                    "required_score": 400,
+                    "network_type": "functional"
+                }
+                url = f"{self.available_sources['string']['base_url']}/network"
+                try:
+                    async with session.get(url, params=params) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            results.extend(data)
+                except Exception as e:
+                    print(f"Error fetching STRING data for {gene_id}: {str(e)}")
+                    
+            df = pd.DataFrame(results)
+            metadata = {"count": len(results), "timestamp": datetime.now().isoformat()}
+            return df, metadata
+
+    async def fetch_wikipathways_data(self, gene_ids: List[str]) -> Tuple[pd.DataFrame, Dict]:
+        """Fetch pathway data from WikiPathways"""
+        async with aiohttp.ClientSession() as session:
+            results = []
+            for gene_id in gene_ids:
+                url = f"{self.available_sources['wikipathways']['base_url']}/findPathwaysByXref"
+                params = {"xref": gene_id}
+                try:
+                    async with session.get(url, params=params) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            results.extend(data)
+                except Exception as e:
+                    print(f"Error fetching WikiPathways data for {gene_id}: {str(e)}")
+                    
+            df = pd.DataFrame(results)
+            metadata = {"count": len(results), "timestamp": datetime.now().isoformat()}
+            return df, metadata
+
+    async def fetch_opentargets_data(self, gene_ids: List[str]) -> Tuple[pd.DataFrame, Dict]:
+        """Fetch data from OpenTargets Platform"""
+        async with aiohttp.ClientSession() as session:
+            results = []
+            query = """
+            query targetInfo($ensemblId: String!) {
+              target(ensemblId: $ensemblId) {
+                id
+                approvedSymbol
+                goTerms {
+                  id
+                  name
+                  aspect
+                }
+                pathways {
+                  name
+                  id
+                }
+                knownDrugs {
+                  rows {
+                    phase
+                    drugId
+                    drugName
+                  }
+                }
+              }
+            }
+            """
+            
+            for gene_id in gene_ids:
+                try:
+                    async with session.post(
+                        self.available_sources['opentargets']['base_url'],
+                        json={"query": query, "variables": {"ensemblId": gene_id}}
+                    ) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            if "data" in data and "target" in data["data"]:
+                                results.append(data["data"]["target"])
+                except Exception as e:
+                    print(f"Error fetching OpenTargets data for {gene_id}: {str(e)}")
+                    
+            df = pd.DataFrame(results)
+            metadata = {"count": len(results), "timestamp": datetime.now().isoformat()}
+            return df, metadata
+
+    def combine_dataframes(self, dfs: List[pd.DataFrame], identifier_df: pd.DataFrame) -> pd.DataFrame:
+        """Combine multiple dataframes with the original identifier mapping"""
+        if not dfs:
+            return pd.DataFrame()
+            
+        result = identifier_df.copy()
+        for df in dfs:
+            if not df.empty:
+                result = result.merge(df, how='left', on='id')
+        return result
 
     async def process_selected_sources(
         self,
@@ -84,9 +186,12 @@ class DataSourceService:
         bridgedb_df = pd.DataFrame(identifier_set.mapped_identifiers)
 
         # Initialize variables for combined results
-        combined_data = pd.DataFrame()
-        combined_metadata = {}
-        warnings = []
+        dataframes = []
+        metadata = {
+            "sources_processed": [],
+            "source_counts": {},
+            "warnings": []
+        }
         
         try:
             # Process each selected data source
@@ -94,48 +199,48 @@ class DataSourceService:
                 source_name = source_info["source"]
                 api_key = source_info.get("api_key")
 
-                if source_name not in self.data_source_functions:
-                    warnings.append(f"Unsupported data source: {source_name}")
+                if source_name not in self.available_sources:
+                    metadata["warnings"].append(f"Unsupported data source: {source_name}")
                     continue
 
-                # Process the data source
                 try:
                     if source_name == "disgenet":
-                        tmp_data, tmp_metadata = await asyncio.to_thread(
-                            self.data_source_functions[source_name],
-                            api_key=api_key,
-                            bridgedb_df=bridgedb_df
+                        df, source_metadata = await self.fetch_disgenet_data(
+                            bridgedb_df["id"].tolist(),
+                            api_key
+                        )
+                    elif source_name == "string":
+                        df, source_metadata = await self.fetch_string_data(
+                            bridgedb_df["id"].tolist()
+                        )
+                    elif source_name == "wikipathways":
+                        df, source_metadata = await self.fetch_wikipathways_data(
+                            bridgedb_df["id"].tolist()
+                        )
+                    elif source_name == "opentargets":
+                        df, source_metadata = await self.fetch_opentargets_data(
+                            bridgedb_df["id"].tolist()
                         )
                     else:
-                        tmp_data, tmp_metadata = await asyncio.to_thread(
-                            self.data_source_functions[source_name],
-                            bridgedb_df
-                        )
+                        continue
 
-                    combined_metadata[source_name] = tmp_metadata
-
-                    if tmp_data.empty:
-                        warnings.append(f"No annotation available for {source_name}")
+                    metadata["sources_processed"].append(source_name)
+                    metadata["source_counts"][source_name] = source_metadata["count"]
+                    
+                    if not df.empty:
+                        dataframes.append(df)
                     else:
-                        if combined_data.empty:
-                            combined_data = tmp_data
-                        else:
-                            combined_data = combine_sources(bridgedb_df, [combined_data, tmp_data])
+                        metadata["warnings"].append(f"No data found for {source_name}")
 
                 except Exception as e:
-                    warnings.append(f"Error processing {source_name}: {str(e)}")
+                    metadata["warnings"].append(f"Error processing {source_name}: {str(e)}")
                     continue
 
-            # Prepare metadata for response
-            metadata = {
-                "total_associations": len(combined_data) if not combined_data.empty else 0,
-                "sources_processed": list(combined_metadata.keys()),
-                "source_counts": {
-                    source: metadata.get("count", 0) 
-                    for source, metadata in combined_metadata.items()
-                },
-                "warnings": warnings
-            }
+            # Combine all dataframes
+            combined_data = self.combine_dataframes(dataframes, bridgedb_df)
+            
+            # Update metadata
+            metadata["total_associations"] = len(combined_data) if not combined_data.empty else 0
 
             # Store results in database
             identifier_set.combined_data = combined_data.to_dict("records") if not combined_data.empty else []

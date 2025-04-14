@@ -25,7 +25,7 @@ def process_selected_sources(
         # "opentarget.gene_location": opentargets.get_gene_location,
         "opentarget.gene_ontology": opentargets.get_gene_go_process,
         "opentarget.reactome": opentargets.get_gene_reactome_pathways,
-        "opentarget.drug_interactions": opentargets.get_gene_drug_interactions,
+        # "opentarget.drug_interactions": opentargets.get_gene_drug_interactions,
         "opentarget.disease_associations": opentargets.get_gene_disease_associations,
         "string": stringdb.get_ppi,
         "wikipathways": wikipathways.get_gene_wikipathways
