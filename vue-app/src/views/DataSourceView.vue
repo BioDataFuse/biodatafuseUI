@@ -161,7 +161,7 @@ const results = ref(null)
 
 const steps = [
   { name: 'Input Identifiers', status: 'complete' },
-  { name: 'Map IDs', status: 'complete' },
+  { name: 'Identifier Mapping', status: 'complete' },
   { name: 'Select Sources', status: 'current' },
   { name: 'Visualize', status: 'upcoming' }
 ]

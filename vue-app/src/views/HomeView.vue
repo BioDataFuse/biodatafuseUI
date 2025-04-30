@@ -158,11 +158,11 @@ const features = [
     description: 'Explore and visualize biological networks and pathways.',
     icon: BeakerIcon
   },
-  {
-    name: 'Smart Insights',
-    description: 'AI-powered analysis to discover hidden patterns in your data.',
-    icon: LightBulbIcon
-  }
+  // {
+  //   name: 'Smart Insights',
+  //   description: 'AI-powered analysis to discover hidden patterns in your data.',
+  //   icon: LightBulbIcon
+  // }
 ]
 
 const databases = [
@@ -186,9 +186,9 @@ const databases = [
   }
 ]
 
-const stats = [
-  { name: 'Databases Integrated', value: '20+' },
-  { name: 'Research Papers', value: '1000+' },
-  { name: 'Active Users', value: '5000+' }
-]
+// const stats = [
+//   { name: 'Databases Integrated', value: '20+' },
+//   { name: 'Research Papers', value: '1000+' },
+//   { name: 'Active Users', value: '5000+' }
+// ]
 </script>

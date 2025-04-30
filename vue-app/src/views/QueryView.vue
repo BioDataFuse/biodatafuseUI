@@ -75,7 +75,7 @@
                       v-model="formData.textInput"
                       rows="10"
                       class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-lg"
-                      placeholder="e.g.&#10;BRCA1&#10;TP53&#10;EGFR"
+                      placeholder="e.g.&#10;DMD&#10;BRCA1&#10;TP53&#10;EGFR"
                     ></textarea>
                   </div>
                   <p class="mt-2 text-sm text-gray-500">
@@ -289,7 +289,7 @@ const tabs = [
 
 const steps = [
   { name: 'Input Identifiers', status: 'current' },
-  { name: 'Map IDs', status: 'upcoming' },
+  { name: 'Identifier Mapping', status: 'upcoming' },
   { name: 'Select Sources', status: 'upcoming' }
 ]
 
