@@ -6,7 +6,7 @@ import HomeView from './views/HomeView.vue'
 import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
 import ProfileView from './views/ProfileView.vue'
-import QueryView from './views/QueryView.vue'
+import InputView from './views/InputView.vue'
 import MappingResultsView from './views/MappingResultsView.vue'
 import DataSourceView from './views/DataSourceView.vue'
 import AnalysisView from './views/AnalysisView.vue'
@@ -39,8 +39,8 @@ const routes = [
   },
   {
     path: '/query',
-    name: 'Query',
-    component: QueryView,
+    name: 'Input',
+    component: InputView,
     meta: { requiresAuth: true }
   },
   {
