@@ -59,12 +59,22 @@ class IdentifierInput(BaseModel):
     file_content: Optional[str] = None
     input_species: str = "Human"
 
+class MappedIdentifier(BaseModel):
+    identifier: str
+    identifier_source: str
+    target: str
+    target_source: str
+
+
 class IdentifierMappingResponse(BaseModel):
     id: int
     identifier_type: str
     input_species: str
     input_identifiers: List[str]
-    mapped_identifiers: Optional[List] = None
+    mapped_identifiers: Optional[Dict[str, MappedIdentifier]] = None  # Changed to Dict
+    # mapped_identifiers_subset: Optional[Dict[str, MappedIdentifier]] = None
+    # bridgedb_metadata: Optional[Dict] = None
+    # mapped_identifiers_list: Optional[List[str]] = None
     status: str
     error_message: Optional[str] = None
     created_at: datetime
