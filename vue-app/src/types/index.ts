@@ -17,6 +17,9 @@ export interface IdentifierSet {
   input_species: string;
   input_identifiers: string[];
   mapped_identifiers?: Record<string, any>;
+  // mapped_identifiers_subset?: Record<string, any>;
+  // mapping_identifiers_list?: Array<string>;
+  // bridgedb_metadata?: Record<string, any>;
   status: string;
   error_message?: string;
   created_at: string;
