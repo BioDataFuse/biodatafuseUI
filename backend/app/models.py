@@ -30,6 +30,9 @@ class IdentifierSet(Base):
     input_species = Column(String, default="Human")
     input_identifiers = Column(JSON)  # Store the original identifiers
     mapped_identifiers = Column(JSON, nullable=True)  # Store the mapped identifiers
+    mapped_identifiers_subset = Column(JSON, nullable=True)  # Store the subset of mapped identifiers
+    bridgedb_metadata = Column(JSON, nullable=True)  # Store the BridgeDB metadata
+    mapped_identifiers_list = Column(JSON, nullable=True)  # Store the identifiers that were mapped
     status = Column(String)  # pending, processing, completed, error
     error_message = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
