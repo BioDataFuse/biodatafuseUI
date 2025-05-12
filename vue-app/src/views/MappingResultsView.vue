@@ -100,19 +100,17 @@
                       <thead>
                         <tr>
                           <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Input ID</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ensembl</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">HGNC</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">NCBI</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">UniProt</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID source</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Target</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Target Source</th>
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200">
                         <tr v-for="(mappings, inputId) in mappingResults.mapped_identifiers" :key="inputId">
-                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">{{ inputId }}</td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.ensembl || '-' }}</td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.hgnc || '-' }}</td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.ncbi || '-' }}</td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.uniprot || '-' }}</td>
+                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">{{ mappings.identifier }}</td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.identifier_source || '-' }}</td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.target || '-' }}</td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.target_source || '-' }}</td>
                         </tr>
                       </tbody>
                     </table>
