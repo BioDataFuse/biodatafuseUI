@@ -78,7 +78,7 @@
                   <div class="px-4 py-5 sm:p-6">
                     <dt class="text-sm font-medium text-gray-500">Mapped Successfully</dt>
                     <dd class="mt-1 text-3xl font-semibold text-green-600">
-                      {{ Object.keys(mappingResults.mapped_identifiers || {}).length }}
+                      {{ Object.keys(mappingResults.mapped_identifiers_list || {}).length }}
                     </dd>
                   </div>
                 </div>
@@ -106,7 +106,7 @@
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200">
-                        <tr v-for="(mappings, inputId) in mappingResults.mapped_identifiers" :key="inputId">
+                        <tr v-for="(mappings, inputId) in mappingResults.mapped_identifiers_subset" :key="inputId">
                           <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">{{ mappings.identifier }}</td>
                           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.identifier_source || '-' }}</td>
                           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.target || '-' }}</td>
