@@ -52,11 +52,9 @@ class IdentifierService:
                 bridgedb_df.rename(columns={"identifier.source": "identifier_source",
                                             "target.source": "target_source" }, inplace=True)
                 
-                bridgedb_subset_df = bridgedb_df[bridgedb_df['target_source'].isin([
+                bridgedb_subset_df = bridgedb_df[bridgedb_df["target_source"].isin([
                     "Ensembl", "NCBI Gene", "PubChem Compound", "ChEMBL compound"
-                ])]
-                
-                print(bridgedb_subset_df.head(2))
+                ])].sort_values(by=["identifier", "target_source"])
 
                 # Store the serialized mapped identifiers as a JSON string
                 identifier_set.mapped_identifiers = json.dumps({
@@ -66,7 +64,7 @@ class IdentifierService:
                     idx: row.to_dict() for idx, row in bridgedb_subset_df.head(12).iterrows()
                 }, indent=4)
                 identifier_set.bridgedb_metadata = bridgedb_metadata
-                identifier_set.mapped_identifiers_list =  bridgedb_df['identifier'].unique().tolist()
+                identifier_set.mapped_identifiers_list =  bridgedb_df["identifier"].unique().tolist()
 
                 identifier_set.status = "completed"
                 await self.db.commit()
@@ -95,8 +93,8 @@ class IdentifierService:
         if file_content:
             try:
                 df = pd.read_csv(StringIO(file_content))
-                if 'identifier' in df.columns:
-                    file_identifiers = df['identifier'].dropna().unique().tolist()
+                if "identifier" in df.columns:
+                    file_identifiers = df["identifier"].dropna().unique().tolist()
                     identifiers.extend(file_identifiers)
                 else:
                     warnings = "File must contain 'identifier' column"
@@ -124,10 +122,10 @@ class IdentifierService:
             if identifier_set.mapped_identifiers_subset:
                 identifier_set.mapped_identifiers_subset = json.loads(identifier_set.mapped_identifiers_subset)
             if identifier_set.bridgedb_metadata:
-                identifier_set.bridgedb_metadata = json.loads(identifier_set.bridgedb_metadata)
+                identifier_set.bridgedb_metadata = identifier_set.bridgedb_metadata
             if identifier_set.mapped_identifiers_list:
-                identifier_set.mapped_identifiers_list = json.loads(identifier_set.mapped_identifiers_list)
-
+                identifier_set.mapped_identifiers_list = identifier_set.mapped_identifiers_list
+        
         return identifier_set
 
     async def get_user_identifier_sets(self, user_id: int) -> List[models.IdentifierSet]:
