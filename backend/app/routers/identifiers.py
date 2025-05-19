@@ -8,7 +8,7 @@ from .auth import get_current_user
 
 router = APIRouter(prefix="/identifiers", tags=["Identifiers"])
 
-@router.post("", response_model=schemas.IdentifierProcessResponse)
+@router.post("", response_model=schemas.IdentifierProcessingResponse)
 async def process_identifiers(
     identifier_type: str = Form(...),
     text_input: Optional[str] = Form(None),
@@ -32,7 +32,7 @@ async def process_identifiers(
         input_species=input_species
     )
 
-    return schemas.IdentifierProcessResponse(
+    return schemas.IdentifierProcessingResponse(
         set_id=identifier_set.id,
         status=identifier_set.status,
         message="Identifiers received and processing started" if identifier_set.status == "pending" else "Error processing identifiers",

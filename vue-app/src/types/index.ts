@@ -26,7 +26,7 @@ export interface IdentifierSet {
   updated_at: string;
 }
 
-export interface IdentifierProcessResponse {
+export interface IdentifierProcessingResponse {
   set_id: number;
   status: string;
   message: string;

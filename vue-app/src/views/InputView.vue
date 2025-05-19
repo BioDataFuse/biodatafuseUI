@@ -12,7 +12,7 @@
           </p>
         </div>
 
-        <!-- Steps Progress -->
+        <!-- Progress Steps -->
         <div class="mt-8">
           <div class="relative">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
@@ -291,6 +291,7 @@ const steps = [
   { name: 'Input Identifiers', status: 'current' },
   { name: 'Identifier Mapping', status: 'upcoming' },
   { name: 'Select Sources', status: 'upcoming' },
+  { name: 'Annotations', status: 'upcoming' },
   { name: 'Visualize', status: 'upcoming' }
 ]
 

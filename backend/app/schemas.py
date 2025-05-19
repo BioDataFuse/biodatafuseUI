@@ -83,7 +83,7 @@ class IdentifierMappingResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class IdentifierProcessResponse(BaseModel):
+class IdentifierProcessingResponse(BaseModel):
     set_id: int
     status: str
     message: str

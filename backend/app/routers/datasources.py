@@ -45,23 +45,14 @@ async def process_datasources(
         identifier_set = await identifier_service.get_identifier_set(identifier_set_id)
         
         if not identifier_set:
-            raise HTTPException(
-                status_code=404, 
-                detail="Identifier set not found"
-            )
+            raise HTTPException(status_code=404, detail="Identifier set not found")
         
         if identifier_set.user_id != current_user.id:
-            raise HTTPException(
-                status_code=403, 
-                detail="Not authorized to access this identifier set"
-            )
+            raise HTTPException(status_code=403, detail="Not authorized to access this identifier set")
 
         # Validate data sources
         if not sources:
-            raise HTTPException(
-                status_code=400,
-                detail="No data sources provided"
-            )
+            raise HTTPException(status_code=400, detail="No data sources provided")
 
         # Convert sources to the format expected by the service
         datasources = [

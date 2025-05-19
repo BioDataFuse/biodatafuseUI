@@ -159,10 +159,11 @@ const steps = [
   { name: 'Input Identifiers', status: 'complete' },
   { name: 'Identifier Mapping', status: 'current' },
   { name: 'Select Sources', status: 'upcoming' },
+  { name: 'Annotations', status: 'upcoming' },
   { name: 'Visualize', status: 'upcoming' }
 ]
 
-const currentStep = ref(1) // We're on the second step
+const currentStep = ref(1)
 
 // Get identifier set ID from localStorage
 const identifierSetId = localStorage.getItem('currentIdentifierSetId')
