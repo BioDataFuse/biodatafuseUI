@@ -30,6 +30,7 @@
           </div>
         </div>
       </div>
+
       <!-- Main Content Area -->
       <div class="mt-12 bg-white rounded-2xl shadow-xl overflow-hidden">
         <!-- Top Bar -->
@@ -86,13 +87,13 @@
               </div>
 
               <!-- Navigation Buttons -->
-              <div class="mt-6 flex justify-between">
+              <div class="mt-8 flex justify-between">
                 <button
                   type="button"
                   class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                   @click="goBack"
                 >
-                  Back to Mapping
+                  Back to Input
                 </button>
                 <button
                   type="submit"
@@ -100,7 +101,7 @@
                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
                 >
                   <span v-if="loading">Processing...</span>
-                  <span v-else>Continue to Analysis</span>
+                  <span v-else>Continue to Annotation</span>
                   <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
@@ -203,6 +204,8 @@ onMounted(async () => {
     return
   }
 
+
+
   try {
     const response = await axios.get('/api/datasources')
     availableSources.value = response.data.map(source => ({
@@ -250,7 +253,7 @@ async function submitForm() {
 
 // Navigation functions
 function goBack() {
-  router.push('/query/mapping')
+  router.push('/query')
 }
 
 function continueToVisualization() {
