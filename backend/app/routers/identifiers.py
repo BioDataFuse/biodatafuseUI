@@ -46,8 +46,11 @@ async def get_identifier_mapping(
     db: AsyncSession = Depends(get_db)
 ):
     identifier_service = IdentifierService(db)
+    print(f"Processing set_id: {set_id}")
+
     identifier_set = await identifier_service.get_identifier_set(set_id)
-    
+    print("identifier_set: ", identifier_set)
+
     if not identifier_set:
         raise HTTPException(status_code=404, detail="Identifier set not found")
     

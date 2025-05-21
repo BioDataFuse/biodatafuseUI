@@ -17,12 +17,13 @@ async def get_available_datasources(
 ):
     """Get list of available data sources."""
     datasource_service = DataSourceService(db)
+    print("datasource_service.get_available_sources: ", await datasource_service.get_available_sources())
     return await datasource_service.get_available_sources()
 
 
-@router.post("/{identifier_set_id}/process", response_model=DataSourceProcessingResponse)
+@router.post("/{set_id}/process", response_model=DataSourceProcessingResponse)
 async def process_datasources(
-    identifier_set_id: int,
+    set_id: int,
     sources: List[DataSourceRequest],
     current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -31,7 +32,7 @@ async def process_datasources(
     Process selected data sources for a given identifier set.
     
     Args:
-        identifier_set_id: ID of the identifier set to process
+        set_id: ID of the identifier set to process
         sources: List of data sources to process with their API keys
         current_user: Current authenticated user
         db: Database session
@@ -40,9 +41,13 @@ async def process_datasources(
         DataSourceProcessingResponse: Processing results and metadata
     """
     try:
+        print(f"DB session in process_datasources: {db}")
+
         # Verify ownership of identifier set
         identifier_service = IdentifierService(db)
-        identifier_set = await identifier_service.get_identifier_set(identifier_set_id)
+        print(f"Processing set_id: {set_id}")
+        identifier_set = await identifier_service.get_identifier_set(set_id)
+        print(f"Fetched identifier_set: {identifier_set}")
         
         if not identifier_set:
             raise HTTPException(status_code=404, detail="Identifier set not found")
@@ -65,10 +70,15 @@ async def process_datasources(
 
         # Process selected sources
         datasource_service = DataSourceService(db)
+
+        print(f"Selected datasources: {datasources}")
         processing_result, metadata = await datasource_service.process_selected_sources(
-            identifier_set_id=identifier_set_id,
+            set_id=set_id,
             datasources=datasources  # Using the correct parameter name
         )
+
+        print(f"Processing result: {processing_result}")
+        print(f"Metadata: {metadata}")
 
         if not processing_result.empty:
             return DataSourceProcessingResponse(

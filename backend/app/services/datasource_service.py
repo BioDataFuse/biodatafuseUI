@@ -14,12 +14,12 @@ class DataSourceService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.available_sources = {
-            # "disgenet": {
-            #     "name": "DisGeNET",
-            #     "description": "Gene-disease associations database",
-            #     "requires_key": True,
-            #     "base_url": "https://www.disgenet.org/api"
-            # },
+            "disgenet": {
+                "name": "DisGeNET",
+                "description": "Gene-disease associations database",
+                "requires_key": True,
+                "base_url": "https://www.disgenet.org/api"
+            },
             # "string": {
             #     "name": "STRING",
             #     "description": "Protein-protein interaction network",
@@ -49,21 +49,32 @@ class DataSourceService:
 
     async def process_selected_sources(
         self,
-        identifier_set_id: int,
+        set_id: int,
         datasources: List[Dict],  # List of {source: str, api_key: Optional[str]}
     ) -> Tuple[pd.DataFrame, Dict]:
+        print(f"Starting processing for identifier set ID: {set_id}")
+        print(f"Datasources to process: {datasources}")
+
         """Process selected data sources with their API keys"""
         identifier_set = await self.db.execute(
-            select(models.IdentifierSet).where(models.IdentifierSet.id == identifier_set_id)
+            select(models.IdentifierSet).where(models.IdentifierSet.id == set_id)
         )
         identifier_set = identifier_set.scalar_one_or_none()
         
         if not identifier_set:
+            print(f"Identifier set {set_id} not found.")
+
             raise ValueError("Identifier set not found")
+        print(f"Fetched identifier set: {identifier_set}")
 
         # Convert mapped identifiers to DataFrame
-        bridgedb_df = pd.DataFrame(identifier_set.mapped_identifiers)
-
+        try:
+            bridgedb_json = json.loads(identifier_set.mapped_identifiers_subset)
+            bridgedb_df = pd.DataFrame(bridgedb_json)
+            print(f"Bridgedb DataFrame: {bridgedb_df.head()}")
+        except Exception as e:
+            print(f"Error loading mapped_identifiers_subset: {e}")
+            raise
         # Initialize variables for combined results
         dataframes = []
         metadata = {
@@ -114,16 +125,16 @@ class DataSourceService:
                     metadata["warnings"].append(f"Error processing {source_name}: {str(e)}")
                     continue
 
-            print(df.head())
             # Combine all dataframes
+            print(f"Combining {len(dataframes)} dataframes...")
             combined_data = combine_sources(dataframes, bridgedb_df)
-            print(combined_data.head())
+            print(f"Combined data shape: {combined_data.shape}")
             # Update metadata
             metadata["total_associations"] = len(combined_data) if not combined_data.empty else 0
 
             # Store results in database
-            identifier_set.combined_data = combined_data.to_dict("records") if not combined_data.empty else []
-            identifier_set.metadata.update(metadata)
+            identifier_set.combined_data = json.dumps(combined_data.to_dict("records")) if not combined_data.empty else json.dumps([])
+            identifier_set.metadata(metadata)
             await self.db.commit()
 
             return combined_data, metadata
