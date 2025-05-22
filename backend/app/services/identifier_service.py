@@ -8,6 +8,7 @@ from .. import models
 from pyBiodatafuse import id_mapper
 import pandas as pd
 from io import StringIO
+import traceback
 
 class IdentifierService:
     def __init__(self, db: AsyncSession):
@@ -71,6 +72,8 @@ class IdentifierService:
                 await self.db.refresh(identifier_set)
 
             except Exception as e:
+                print(f"Error during mapping: {e}")
+                traceback.print_exc()
                 identifier_set.status = "error"
                 identifier_set.error_message = str(e)
                 await self.db.commit()
@@ -118,9 +121,9 @@ class IdentifierService:
         # If we have the identifier_set, deserialize the mapped_identifiers field if it exists
         if identifier_set:
             if identifier_set.mapped_identifiers:
-                identifier_set.mapped_identifiers = json.loads(identifier_set.mapped_identifiers)
+                identifier_set.mapped_identifiers = identifier_set.mapped_identifiers
             if identifier_set.mapped_identifiers_subset:
-                identifier_set.mapped_identifiers_subset = json.loads(identifier_set.mapped_identifiers_subset)
+                identifier_set.mapped_identifiers_subset = identifier_set.mapped_identifiers_subset
             if identifier_set.bridgedb_metadata:
                 identifier_set.bridgedb_metadata = identifier_set.bridgedb_metadata
             if identifier_set.mapped_identifiers_list:
