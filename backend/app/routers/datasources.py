@@ -6,6 +6,7 @@ from ..services.datasource_service import DataSourceService
 from ..services.identifier_service import IdentifierService
 from .auth import get_current_user
 from ..schemas import DataSourceRequest, DataSourceProcessingResponse
+import traceback
 
 router = APIRouter(prefix="/datasources", tags=["Data Sources"])
 
@@ -94,8 +95,12 @@ async def process_datasources(
             )
 
     except ValueError as e:
+        print(f"ValueError in process_datasources: {e}")
+        traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        print(f"Exception in process_datasources: {e}")
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"An error occurred while processing data sources: {str(e)}"
