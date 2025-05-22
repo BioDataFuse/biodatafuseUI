@@ -69,7 +69,7 @@ class DataSourceService:
 
         # Convert mapped identifiers to DataFrame
         try:
-            bridgedb_json = json.loads(identifier_set.mapped_identifiers_subset)
+            bridgedb_json = identifier_set.mapped_identifiers_subset
             bridgedb_df = pd.DataFrame(bridgedb_json)
             print(f"Bridgedb DataFrame: {bridgedb_df.head()}")
         except Exception as e:
