@@ -121,9 +121,9 @@ class IdentifierService:
         # If we have the identifier_set, deserialize the mapped_identifiers field if it exists
         if identifier_set:
             if identifier_set.mapped_identifiers:
-                identifier_set.mapped_identifiers = identifier_set.mapped_identifiers
+                identifier_set.mapped_identifiers = json.loads(identifier_set.mapped_identifiers)
             if identifier_set.mapped_identifiers_subset:
-                identifier_set.mapped_identifiers_subset = identifier_set.mapped_identifiers_subset
+                identifier_set.mapped_identifiers_subset = json.loads(identifier_set.mapped_identifiers_subset)
             if identifier_set.bridgedb_metadata:
                 identifier_set.bridgedb_metadata = identifier_set.bridgedb_metadata
             if identifier_set.mapped_identifiers_list:
