@@ -1,14 +1,17 @@
-from typing import Dict, List, Tuple, Optional
-import pandas as pd
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from .. import models
-from pyBiodatafuse.annotators import wikipathways
-from pyBiodatafuse.utils import combine_sources
-import aiohttp
 import asyncio
 import json
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple
+
+import aiohttp
+import pandas as pd
+from pyBiodatafuse.annotators import wikipathways
+from pyBiodatafuse.utils import combine_sources
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from .. import models
+
 
 class DataSourceService:
     def __init__(self, db: AsyncSession):
@@ -18,7 +21,7 @@ class DataSourceService:
                 "name": "DisGeNET",
                 "description": "Gene-disease associations database",
                 "requires_key": True,
-                "base_url": "https://www.disgenet.org/api"
+                "base_url": "https://www.disgenet.org/api",
             },
             # "string": {
             #     "name": "STRING",
@@ -30,7 +33,7 @@ class DataSourceService:
                 "name": "WikiPathways",
                 "description": "Biological pathway database",
                 "requires_key": False,
-                "base_url": "https://webservice.wikipathways.org"
+                "base_url": "https://webservice.wikipathways.org",
             },
             # "opentargets": {
             #     "name": "OpenTargets",
@@ -42,10 +45,7 @@ class DataSourceService:
 
     async def get_available_sources(self) -> List[Dict]:
         """Get list of available data sources"""
-        return [
-            {"id": key, **value}
-            for key, value in self.available_sources.items()
-        ]
+        return [{"id": key, **value} for key, value in self.available_sources.items()]
 
     async def process_selected_sources(
         self,
@@ -60,7 +60,7 @@ class DataSourceService:
             select(models.IdentifierSet).where(models.IdentifierSet.id == set_id)
         )
         identifier_set = identifier_set.scalar_one_or_none()
-        
+
         if not identifier_set:
             print(f"Identifier set {set_id} not found.")
 
@@ -69,20 +69,17 @@ class DataSourceService:
 
         # Convert mapped identifiers to DataFrame
         try:
-            bridgedb_json = identifier_set.mapped_identifiers_subset
-            bridgedb_df = pd.DataFrame(bridgedb_json)
+            # bridgedb_json = json.loads(identifier_set.mapped_identifiers_subset)
+            # bridgedb_df = pd.DataFrame(bridgedb_json)
+            bridgedb_df = pd.DataFrame(identifier_set.mapped_identifiers_subset)
             print(f"Bridgedb DataFrame: {bridgedb_df.head()}")
         except Exception as e:
             print(f"Error loading mapped_identifiers_subset: {e}")
             raise
         # Initialize variables for combined results
         dataframes = []
-        metadata = {
-            "sources_processed": [],
-            "source_counts": {},
-            "warnings": []
-        }
-        
+        metadata = {"sources_processed": [], "source_counts": {}, "warnings": []}
+
         try:
             # Process each selected data source
             for source_info in datasources:
@@ -90,23 +87,30 @@ class DataSourceService:
                 api_key = source_info.get("api_key")
 
                 if source_name not in self.available_sources:
-                    metadata["warnings"].append(f"Unsupported data source: {source_name}")
+                    metadata["warnings"].append(
+                        f"Unsupported data source: {source_name}"
+                    )
                     continue
                 try:
                     if source_name == "disgenet":
                         df, source_metadata = await self.fetch_disgenet_data(
-                            bridgedb_df["id"].tolist(),
-                            api_key
+                            bridgedb_df["id"].tolist(), api_key
                         )
                     # elif source_name == "string":
                     #     df, source_metadata = await self.fetch_string_data(
                     #         bridgedb_df["id"].tolist()
                     #     )
                     elif source_name == "wikipathways":
+                        print("wikipathways source recognized!")
                         df, source_metadata = wikipathways.get_gene_wikipathways(
                             bridgedb_df=bridgedb_df
                         )
-                    # elif source_name == "opentargets":
+                        print("df:")
+                        print(df)
+                        print("metadata:")
+                        print(source_metadata)
+
+                        # elif source_name == "opentargets":
                     #     df, source_metadata = await self.fetch_opentargets_data(
                     #         bridgedb_df["id"].tolist()
                     #     )
@@ -115,25 +119,35 @@ class DataSourceService:
 
                     metadata["sources_processed"].append(source_name)
                     metadata["source_counts"][source_name] = source_metadata["count"]
-                    
+
                     if not df.empty:
                         dataframes.append(df)
                     else:
                         metadata["warnings"].append(f"No data found for {source_name}")
 
                 except Exception as e:
-                    metadata["warnings"].append(f"Error processing {source_name}: {str(e)}")
+                    metadata["warnings"].append(
+                        f"Error processing {source_name}: {str(e)}"
+                    )
                     continue
 
             # Combine all dataframes
             print(f"Combining {len(dataframes)} dataframes...")
+            print("Dataframes")
+            print(dataframes)
             combined_data = combine_sources(dataframes, bridgedb_df)
             print(f"Combined data shape: {combined_data.shape}")
             # Update metadata
-            metadata["total_associations"] = len(combined_data) if not combined_data.empty else 0
+            metadata["total_associations"] = (
+                len(combined_data) if not combined_data.empty else 0
+            )
 
             # Store results in database
-            identifier_set.combined_data = json.dumps(combined_data.to_dict("records")) if not combined_data.empty else json.dumps([])
+            identifier_set.combined_data = (
+                json.dumps(combined_data.to_dict("records"))
+                if not combined_data.empty
+                else json.dumps([])
+            )
             identifier_set.metadata(metadata)
             await self.db.commit()
 
