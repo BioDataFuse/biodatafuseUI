@@ -37,6 +37,7 @@
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
           <h2 class="text-xl font-semibold text-white">Step 2: Check Identifier Mapping Results</h2>
           <p class="mt-1 text-indigo-200">Review the mapped identifiers before proceeding to database selection.</p>
+          <p class="mt-1 text-indigo-200"> <strong>Note: </strong>Some input identifiers may not have been mapped successfully.</p>
         </div>
 
         <!-- Loading State -->
@@ -158,7 +159,7 @@ const mappingResults = ref(null)
 const steps = [
   { name: 'Input Identifiers', status: 'complete' },
   { name: 'Identifier Mapping', status: 'current' },
-  { name: 'Select Sources', status: 'upcoming' },
+  { name: 'Select Data Sources', status: 'upcoming' },
   { name: 'Annotations', status: 'upcoming' },
   { name: 'Visualize', status: 'upcoming' }
 ]
