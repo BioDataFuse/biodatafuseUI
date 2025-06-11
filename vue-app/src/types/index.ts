@@ -20,6 +20,10 @@ export interface IdentifierSet {
   mapped_identifiers_subset?: Record<string, any>;
   mapping_identifiers_list?: Array<string>;
   bridgedb_metadata?: Record<string, any>;
+  combined_df?: string;
+  combined_metadata?: Record<string, any>;
+  opentargets_df?: string;
+  pygraph?: string; 
   status: string;
   error_message?: string;
   created_at: string;
@@ -39,6 +43,7 @@ export interface DataSource {
   name: string;
   description: string;
   requires_key: boolean;
+  requires_map_name: boolean;
 }
 
 export interface DataSourceRequest {
