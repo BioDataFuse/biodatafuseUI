@@ -9,6 +9,7 @@ import ProfileView from './views/ProfileView.vue'
 import InputView from './views/InputView.vue'
 import MappingResultsView from './views/MappingResultsView.vue'
 import DataSourceView from './views/DataSourceView.vue'
+import AnnotationsResultsView from './views/AnnotationResultsView.vue'
 import AnalysisView from './views/AnalysisView.vue'
 import AboutView from './views/AboutView.vue'
 import NotFoundView from './views/NotFoundView.vue'
@@ -55,6 +56,18 @@ const routes = [
     component: DataSourceView,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/query/annotations',
+    name: 'Annotations',
+    component: AnnotationsResultsView,
+    meta: { requiresAuth: true }
+  },
+  // {
+  //   path: '/query/visualization',
+  //   name: 'Visualization',
+  //   component: VisualizationView,
+  //   meta: { requiresAuth: true }
+  // },
   {
     path: '/analysis',
     name: 'Analysis',
