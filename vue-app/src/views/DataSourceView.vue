@@ -37,6 +37,7 @@
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
           <h2 class="text-xl font-semibold text-white">Step 3: Select Data Sources</h2>
           <p class="mt-1 text-indigo-200">Choose the biological databases to query for your analysis.</p>
+          <p class="mt-1 text-indigo-200"> <strong>Note: </strong>Some sources may require an API key for access. </p>
         </div>
 
         <!-- Main Content -->
@@ -62,7 +63,16 @@
                     <!-- API Key Input Field (shown if source requires API key and is selected) -->
                     <div v-if="source.requiresApiKey && selectedSources.includes(source.id)" class="mt-2">
                       <label :for="source.id + '-api-key'" class="block text-sm font-medium text-gray-700">
-                        {{ source.name }} API Key
+                        {{ source.name }} API key
+                        <a
+                          v-if="source.id === 'disgenet'"
+                          href="https://disgenet.com/plans"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="ml-2 text-indigo-600 hover:underline text-xs"
+                        >
+                          (see plans)
+                        </a>
                       </label>
                       <input
                         :id="source.id + '-api-key'"
@@ -72,6 +82,28 @@
                         :placeholder="'Enter your ' + source.name + ' API key'"
                       />
                     </div>
+                    <!-- API Key Input Field (shown if source requires API key and is selected) -->
+                    <div v-if="source.requiresMapName && selectedSources.includes(source.id)" class="mt-2">
+                      <label :for="source.id + '-map-name'" class="block text-sm font-medium text-gray-700">
+                        {{ source.name }}'s map name
+                        <a
+                          href="https://minerva-net.lcsb.uni.lu/table.html"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="ml-2 text-indigo-600 hover:underline text-xs"
+                        >
+                        (see the extensive list)
+                        </a>
+                      </label>
+                      <input
+                        :id="source.id + '-map-name'"
+                        type="text"
+                        v-model="sourceMapName[source.id]"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        :placeholder="'Enter ' + source.name + ' map name, e.g. COVID19 Disease Map'"
+                      />
+                    </div>
+                    
                   </div>
                 </div>
               </div>
@@ -96,7 +128,8 @@
                   Back to Input
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  @click="submitForm"
                   :disabled="loading || !isFormValid"
                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
                 >
@@ -106,50 +139,6 @@
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-
-        <!-- Processing Results -->
-        <div v-if="results" class="mt-8 bg-white shadow sm:rounded-lg">
-          <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg font-medium leading-6 text-gray-900">Processing Results</h3>
-            <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              <!-- Summary Stats -->
-              <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                  <dt class="text-sm font-medium text-gray-500">Total Associations</dt>
-                  <dd class="mt-1 text-3xl font-semibold text-gray-900">
-                    {{ results.metadata.total_associations }}
-                  </dd>
-                </div>
-              </div>
-
-              <!-- Sources Processed -->
-              <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                  <dt class="text-sm font-medium text-gray-500">Sources Processed</dt>
-                  <dd class="mt-1 text-sm text-gray-900">
-                    <ul class="list-disc pl-5">
-                      <li v-for="source in results.metadata.sources_processed" :key="source">
-                        {{ source }}
-                      </li>
-                    </ul>
-                  </dd>
-                </div>
-              </div>
-
-              <!-- Continue Button -->
-              <div class="col-span-full mt-4">
-                <button
-                  type="button"
-                  @click="continueToVisualization"
-                  class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                >
-                  Continue to Visualization
-                  <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -167,6 +156,7 @@ const router = useRouter()
 const availableSources = ref([])
 const selectedSources = ref([])
 const sourceApiKeys = ref({})
+const sourceMapName = ref({})
 const loading = ref(false)
 const error = ref(null)
 const results = ref(null)
@@ -174,7 +164,8 @@ const results = ref(null)
 const steps = [
   { name: 'Input Identifiers', status: 'complete' },
   { name: 'Identifier Mapping', status: 'complete' },
-  { name: 'Select Sources', status: 'current' },
+  { name: 'Select Data Sources', status: 'current' },
+  { name: 'Annotations', status: 'upcoming' },
   { name: 'Visualize', status: 'upcoming' }
 ]
 
@@ -193,6 +184,7 @@ const isFormValid = computed(() => {
     if (!source) return false
     return !source.requiresApiKey || (source.requiresApiKey && sourceApiKeys.value[sourceId])
   })
+
   
   return hasAllRequiredKeys
 })
@@ -204,13 +196,12 @@ onMounted(async () => {
     return
   }
 
-
-
   try {
     const response = await axios.get('/api/datasources')
     availableSources.value = response.data.map(source => ({
       ...source,
-      requiresApiKey: source.requires_key // Use the requires_key property from backend
+      requiresApiKey: source.requires_key, // Use the requires_key property from backend
+      requiresMapName: source.requires_map_name // Use the requires_map_name property from backend, default to "COVID19 Disease Map"
     }))
   } catch (err) {
     error.value = 'Error loading data sources: ' + (err.response?.data?.detail || err.message)
@@ -229,17 +220,23 @@ async function submitForm() {
     // Create array of selected sources with their API keys
     const datasources = selectedSources.value.map(sourceId => {
       const apiKey = sourceApiKeys.value[sourceId]
+      const mapName = sourceMapName.value[sourceId]
       return {
         source: sourceId,
-        ...(apiKey ? { api_key: apiKey } : {}) // Only include api_key if it exists
+        ...(apiKey ? { api_key: apiKey } : {}), // Only include api_key if it exists
+        ...(mapName ? { map_name: mapName } : {}) // Only include map_name if it exists
       }
     })
 
+    console.log(datasources); 
+
     // Send array directly as expected by the API
+
     const response = await axios.post(`/api/datasources/${identifierSetId}/process`, datasources)
 
     if (response.data.status === 'success') {
       results.value = response.data
+      router.push('/query/annotations');
     } else {
       throw new Error(response.data.message || 'Processing failed')
     }
@@ -256,7 +253,7 @@ function goBack() {
   router.push('/query')
 }
 
-function continueToVisualization() {
-  router.push('/visualization')
+function continueToAnnotations() {
+  router.push('/query/annotations')
 }
 </script>
