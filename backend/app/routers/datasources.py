@@ -18,10 +18,6 @@ async def get_available_datasources(
 ):
     """Get list of available data sources."""
     datasource_service = DataSourceService(db)
-    print(
-        "datasource_service.get_available_sources: ",
-        await datasource_service.get_available_sources(),
-    )
     return await datasource_service.get_available_sources()
 
 
@@ -44,16 +40,10 @@ async def process_datasources(
     Returns:
         DataSourceProcessingResponse: Processing results and metadata
     """
-    print(f"Starting  /{set_id}/process function")
     try:
-        print(f"DB session in process_datasources: {db}")
-
         # Verify ownership of identifier set
         identifier_service = IdentifierService(db)
-        print(f"Processing set_id: {set_id}")
         identifier_set = await identifier_service.get_identifier_set(set_id)
-
-        print(f"Fetched identifier_set and now back: {identifier_set}")
 
         if not identifier_set:
             raise HTTPException(status_code=404, detail="Identifier set not found")
@@ -68,31 +58,28 @@ async def process_datasources(
             raise HTTPException(status_code=400, detail="No data sources provided")
         # Convert sources to the format expected by the service
         datasources = [
-            {"source": source.source, "api_key": source.api_key} for source in sources
+            {"source": source.source, "api_key": source.api_key, "map_name": source.map_name} for source in sources
         ]
-        print(f"db at this point: {db}")
         # Process selected sources
         datasource_service = DataSourceService(db)
 
         print(f"Selected datasources: {datasources}")
-        processing_result, metadata = await datasource_service.process_selected_sources(
+        combined_df, combined_metadata, pygraph, opentargets_df  = await datasource_service.process_selected_sources(
             set_id=set_id,
             datasources=datasources,  # Using the correct parameter name
         )
 
-        print(f"Processing result: {processing_result}")
-        print(f"Metadata: {metadata}")
+        print(f"Processing result: {combined_df}")
+        print(f"Metadata: {combined_metadata}")
 
-        if not processing_result.empty:
+        if not combined_df.empty:
             return DataSourceProcessingResponse(
                 status="success",
-                metadata=metadata,
                 message="Data sources processed successfully",
             )
         else:
             return DataSourceProcessingResponse(
                 status="warning",
-                metadata=metadata,
                 message="No data found from selected sources",
             )
 
