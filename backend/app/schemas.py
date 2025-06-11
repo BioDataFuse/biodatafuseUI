@@ -29,6 +29,7 @@ class UserInfo(BaseModel):
 class UserResponse(UserBase):
     id: int
     api_key: str
+    map_name: str
     is_active: bool
     preferences: Dict
     created_at: datetime
@@ -94,10 +95,13 @@ class DataSourceInfo(BaseModel):
     name: str
     description: str
     requires_key: bool
+    requires_map_name: bool
+    base_url: str
 
 class DataSourceRequest(BaseModel):
     source: str
     api_key: Optional[str] = None
+    map_name: Optional[str] = None
 
 class ProcessDataSourcesRequest(BaseModel):
     datasources: List[DataSourceRequest]
@@ -107,15 +111,16 @@ class DataSourceResponse(BaseModel):
     name: str
     description: str
     requires_key: bool
+    requires_map_name: bool
 
 class DataSourceProcessingResponse(BaseModel):
     status: str
-    metadata: Dict
     message: str
 
 class DataSourceRequest(BaseModel):
     source: str
     api_key: Optional[str] = None
+    map_name: Optional[str] = None
 
 # Combined Data Result Schemas
 class NodeData(BaseModel):
