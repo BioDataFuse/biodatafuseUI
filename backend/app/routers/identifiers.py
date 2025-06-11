@@ -58,7 +58,6 @@ async def get_identifier_mapping(
 ):
     print(f"Starting function: get_identifier_mapping")
     identifier_service = IdentifierService(db)
-    print(f"Processing set_id: {set_id}")
 
     identifier_set = await identifier_service.get_identifier_set(set_id)
     print(f"identifier_set: {identifier_set}")
