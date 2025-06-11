@@ -135,7 +135,6 @@ class IdentifierService:
         return identifiers, warnings
 
     async def get_identifier_set(self, set_id: int) -> Optional[models.IdentifierSet]:
-        print(f"Starting get_identifier_set function")
         result = await self.db.execute(
             select(models.IdentifierSet).where(models.IdentifierSet.id == set_id)
         )
@@ -144,21 +143,16 @@ class IdentifierService:
         if identifier_set:
             if identifier_set.mapped_identifiers:
                 identifier_set.mapped_identifiers = identifier_set.mapped_identifiers
-                print(f"identifier_set.mapped_identifiers set!")
             if identifier_set.mapped_identifiers_subset:
                 identifier_set.mapped_identifiers_subset = (
                     identifier_set.mapped_identifiers_subset
                 )
-                print(f"identifier_set.mapped_identifiers_subset set!")
             if identifier_set.bridgedb_metadata:
                 identifier_set.bridgedb_metadata = identifier_set.bridgedb_metadata
-                print(f"identifier_set.bridgedb_metadata set!")
             if identifier_set.mapped_identifiers_list:
                 identifier_set.mapped_identifiers_list = (
                     identifier_set.mapped_identifiers_list
                 )
-                print(f"identifier_set.mapped_identifiers_list set!")
-        print(f"ending get_identifier_set function, returning: {identifier_set}")
         return identifier_set
 
     async def get_user_identifier_sets(
