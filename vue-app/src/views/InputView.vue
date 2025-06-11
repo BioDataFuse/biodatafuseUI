@@ -290,7 +290,7 @@ const tabs = [
 const steps = [
   { name: 'Input Identifiers', status: 'current' },
   { name: 'Identifier Mapping', status: 'upcoming' },
-  { name: 'Select Sources', status: 'upcoming' },
+  { name: 'Select Data Sources', status: 'upcoming' },
   { name: 'Annotations', status: 'upcoming' },
   { name: 'Visualize', status: 'upcoming' }
 ]
@@ -363,6 +363,7 @@ function handleFileUpload(event) {
   }
 }
 
+// Submit form
 async function submitForm() {
   if (!isFormValid.value) return
 
