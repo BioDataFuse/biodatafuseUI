@@ -19,7 +19,7 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    identifier_sets = relationship("IdentifierSet", back_populates="user")
+    identifier_set = relationship("IdentifierSet", back_populates="user")
 
 class IdentifierSet(Base):
     __tablename__ = "identifier_sets"
@@ -28,15 +28,33 @@ class IdentifierSet(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     identifier_type = Column(String)
     input_species = Column(String, default="Human")
-    input_identifiers = Column(JSON)  # Store the original identifiers
-    mapped_identifiers = Column(JSON, nullable=True)  # Store the mapped identifiers
-    mapped_identifiers_subset = Column(JSON, nullable=True)  # Store the subset of mapped identifiers
-    bridgedb_metadata = Column(JSON, nullable=True)  # Store the BridgeDB metadata
-    mapped_identifiers_list = Column(JSON, nullable=True)  # Store the identifiers that were mapped
-    status = Column(String)  # pending, processing, completed, error
+    input_identifiers = Column(JSON)
+    mapped_identifiers = Column(JSON, nullable=True)
+    mapped_identifiers_subset = Column(JSON, nullable=True)
+    bridgedb_metadata = Column(JSON, nullable=True)
+    mapped_identifiers_list = Column(JSON, nullable=True)
+    status = Column(String)
     error_message = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
-    user = relationship("User", back_populates="identifier_sets")
+    user = relationship("User", back_populates="identifier_set")
+    annotation = relationship("Annotation", back_populates="identifier_set")
+
+
+class Annotation(Base):
+    __tablename__ = "annotations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    identifier_set_id = Column(Integer, ForeignKey("identifier_sets.id"))
+    combined_df = Column(JSON, nullable=True)
+    combined_metadata = Column(JSON, nullable=True)
+    opentargets_df = Column(JSON, nullable=True)
+    pygraph = Column(JSON, nullable=True)
+    captured_warnings = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    status = Column(String)
+    error_message = Column(String, nullable=True)
+
+    identifier_set = relationship("IdentifierSet", back_populates="annotation")
