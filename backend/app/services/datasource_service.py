@@ -131,20 +131,27 @@ class DataSourceService:
         """Get list of available data sources"""
         return [{"id": key, **value} for key, value in self.available_sources.items()]
 
-    async def process_selected_sources(
+
+    async def create_annotations_for_identifier_set(
         self,
         set_id: int,
         datasources: List[Dict],  # List of {source: str, api_key: Optional[str], map_name: Optional[str]}
-    ) -> Tuple[pd.DataFrame, Dict, str, pd.DataFrame]:
 
-        """Process selected data sources with their API keys"""
+    ) -> models.Annotation:
         identifier_set = await self.db.execute(
             select(models.IdentifierSet).where(models.IdentifierSet.id == set_id)
         )
         identifier_set = identifier_set.scalar_one_or_none()
-
         if not identifier_set:
             raise ValueError("Identifier set not found")
+        
+        # Create annotation for identifier set
+        annotation = models.Annotation(
+            identifier_set_id=set_id
+        )
+        self.db.add(annotation)
+        await self.db.commit()
+        await self.db.refresh(annotation)
 
         try:
             # bridgedb_json = json.loads(identifier_set.mapped_identifiers_subset)
@@ -155,7 +162,45 @@ class DataSourceService:
 
         except Exception as e:
             raise ValueError (f"Error loading mapped_identifiers_subset: {e}")
-        
+
+        try:
+            combined_df, combined_metadata, pygraph, opentargets_df, captured_warnings = self._process_selected_sources(
+                bridgedb_df=bridgedb_df,
+                bridgedb_metadata=bridgedb_metadata,            
+                datasources=datasources,
+            )
+
+            # Store results in database
+            annotation.combined_df = combined_df.to_dict(orient="index")
+            annotation.combined_metadata = combined_metadata
+            if opentargets_df is not None:
+                annotation.opentargets_df = opentargets_df.to_dict(orient="index")
+            
+            annotation.pygraph = pygraph
+            annotation.captured_warnings = captured_warnings
+            annotation.status = "completed"
+            await self.db.commit()
+            await self.db.refresh(annotation)
+
+        except Exception as e:
+            annotation.status = "error"
+            annotation.error_message = str(e)
+            await self.db.commit()
+
+
+        await self.db.commit()
+        print("I am here 312")
+
+        return annotation
+    
+    async def _process_selected_sources(
+        self,
+        bridgedb_df: pd.DataFrame,
+        bridgedb_metadata: List[dict],
+        datasources: List[Dict],  # List of {source: str, api_key: Optional[str], map_name: Optional[str]}
+    ) -> Tuple[pd.DataFrame, Dict, str, pd.DataFrame, Dict]:
+
+        """Process selected data sources"""
         dataframes = []
         metadata = []
         opentargets_df = None
@@ -254,7 +299,6 @@ class DataSourceService:
                             continue
 
 
-
                         # metadata["sources_processed"].append(source_name)
                         # metadata["source_counts"][source_name] = source_metadata["count"]
                         # if not df.empty:
@@ -291,7 +335,7 @@ class DataSourceService:
                     disease_compound=opentargets_df,
                     graph_name="examples",
                     graph_dir="./data",
-                )  #TODO: the save_graph function is not found in the pyBiodatafuse package, check and fix
+                )  #TODO: the save_graph function is not found in the pyBiodatafuse package, even after installing from main, check and fix
             else:
                 pygraph = generator.save_graph(
                     combined_df=combined_df,
@@ -301,20 +345,29 @@ class DataSourceService:
                 ) 
             print("I am here 302")
 
-            # Store results in database
-            identifier_set.combined_df = combined_df.to_dict(orient="index")
-            identifier_set.combined_metadata = combined_metadata
-            if opentargets_df is not None:
-                identifier_set.opentargets_df = opentargets_df.to_dict(orient="index")
-            
-            identifier_set.pygraph = pygraph
-            await self.db.commit()
-            print("I am here 312")
-            return combined_df, combined_metadata, pygraph, opentargets_df
+
+            return combined_df, combined_metadata, pygraph, opentargets_df, warning_messages            
             
         except Exception as e:
             raise ValueError(f"Error processing data sources: {str(e)}")
 
+    async def get_annotations_for_identifier_set(self, set_id: int) -> Optional[models.IdentifierSet]:
+        result = await self.db.execute(
+            select(models.IdentifierSet).where(models.IdentifierSet.id == set_id)
+        )
+        annotation = result.scalar_one_or_none()
+
+        if annotation:
+            if annotation.combined_df:
+                annotation.combined_df = annotation.combined_df
+            if annotation.combined_metadata:
+                annotation.combined_metadata = annotation.combined_metadata
+            if annotation.opentargets_df:
+                annotation.opentargets_df = annotation.opentargets_df
+            if annotation.pygraph:
+                annotation.pygraph = annotation.pygraph
+        return annotation
+    
     # async def get_source_metadata(self, source_name: str) -> Dict:
     #     """Get metadata for a specific data source"""
     #     if source_name not in self.available_sources:
