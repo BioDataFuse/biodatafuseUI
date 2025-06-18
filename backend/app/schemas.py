@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Extra
 from typing import Optional, Dict, List
 from datetime import datetime
 
@@ -113,9 +113,29 @@ class DataSourceResponse(BaseModel):
     requires_key: bool
     requires_map_name: bool
 
+
+class CombinedAnnotation(BaseModel):
+    identifier: str
+    identifier_source: str
+    target: str
+    target_source: str
+
+    class Config:
+        extra = Extra.allow
+
 class DataSourceProcessingResponse(BaseModel):
+    id: int
+    identifier_set_id: int
+    combined_df: Optional[Dict[str, CombinedAnnotation]] = None  # Changed to Dict
+    combined_metadata: Optional[Dict] = None
+    opentargets_df: Optional[Dict[str, CombinedAnnotation]] = None  # Changed to Dict
+    pygraph: Optional[Dict] = None
+    captured_warnings: Optional[List[str]] = None
+    created_at: datetime
+    updated_at: datetime
     status: str
-    message: str
+    error_message: Optional[str] = None
+
 
 class DataSourceRequest(BaseModel):
     source: str
