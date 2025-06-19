@@ -20,6 +20,26 @@ async def process_identifiers(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Process identifiers from text input or file upload.
+    Processes user-submitted identifiers via form data or file upload.
+    This asynchronous endpoint handles the submission of identifiers for processing.
+    Users can provide identifiers either as text input or by uploading a file. The
+    function creates an identifier set associated with the current user and initiates
+    processing based on the provided identifier type and species.
+    Args:
+        identifier_type (str): The type of identifiers being submitted (e.g., gene, protein).
+        text_input (Optional[str]): Identifiers provided as plain text input (optional).
+        file (Optional[UploadFile]): File containing identifiers to be processed (optional).
+        input_species (str): The species context for the identifiers (default is "Human").
+        current_user: The currently authenticated user (injected by FastAPI dependency).
+        db (AsyncSession): The database session (injected by FastAPI dependency).
+    Returns:
+        schemas.IdentifierProcessingResponse: Response object containing the identifier set ID,
+        processing status, a message, and any warnings or error messages.
+    Raises:
+        HTTPException: If there is an error during identifier set creation or processing.
+    """
     print("Starting function: process_identifiers")
     identifier_service = IdentifierService(db)
     print("Step 1")
@@ -74,7 +94,7 @@ async def get_identifier_mapping(
 
 
 @router.get("", response_model=List[schemas.IdentifierMappingResponse])
-async def list_identifier_sets(
+async def list_identifier_sets(#TODO: not sure if this is needed
     current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     identifier_service = IdentifierService(db)
