@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import PickleType
 
 Base = declarative_base()
 
@@ -44,17 +45,13 @@ class IdentifierSet(Base):
 
 class Annotation(Base):
     __tablename__ = "annotations"
-
     id = Column(Integer, primary_key=True, index=True)
     identifier_set_id = Column(Integer, ForeignKey("identifier_sets.id"))
     combined_df = Column(JSON, nullable=True)
     combined_metadata = Column(JSON, nullable=True)
     opentargets_df = Column(JSON, nullable=True)
-    pygraph = Column(JSON, nullable=True)
+    # pygraph = Column(PickleType, nullable=True)
     captured_warnings = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    status = Column(String)
     error_message = Column(String, nullable=True)
 
     identifier_set = relationship("IdentifierSet", back_populates="annotation")
