@@ -105,7 +105,9 @@ class IdentifierService:
         return identifier_set
 
     def _process_identifiers(
-        self, text_input: Optional[str] = None, file_content: Optional[str] = None
+        self,
+        text_input: Optional[str] = None,
+        file_content: Optional[str] = None
     ) -> Tuple[List[str], Optional[str]]:
         identifiers = []
         warnings = None
