@@ -129,7 +129,7 @@
                 </button>
                 <button
                   type="button"
-                  @click="submitForm"
+                  @click="continueToAnnotations"
                   :disabled="loading || !isFormValid"
                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
                 >
@@ -209,8 +209,8 @@ onMounted(async () => {
   }
 })
 
-// Submit form
-async function submitForm() {
+// Navigation functions
+async function continueToAnnotations() {
   if (!isFormValid.value) return
 
   try {
@@ -233,9 +233,11 @@ async function submitForm() {
     // Send array directly as expected by the API
 
     const response = await axios.post(`/api/datasources/${identifierSetId}/process`, datasources)
+    // throw new Error(response.data.status)
 
-    if (response.data.status === 'success') {
+    if (response.data.status === 'completed') {
       results.value = response.data
+      localStorage.setItem('annotationResults', JSON.stringify(response.data))
       router.push('/query/annotations');
     } else {
       throw new Error(response.data.message || 'Processing failed')
@@ -247,13 +249,7 @@ async function submitForm() {
     loading.value = false
   }
 }
-
-// Navigation functions
 function goBack() {
   router.push('/query')
-}
-
-function continueToAnnotations() {
-  router.push('/query/annotations')
 }
 </script>
