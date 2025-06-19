@@ -9,7 +9,6 @@
           </h1>
           <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
             Build your biological query and visualize the output in four simple steps
-            <!-- {{ annotationsResults.combined_df}} -->
           </p>
         </div>
 
@@ -38,6 +37,12 @@
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
           <h2 class="text-xl font-semibold text-white">Step 3: Annotation Results</h2>
           <p class="mt-1 text-indigo-200">Review the annotation results before continueing to visualization.</p>
+          <p class="mt-1 text-indigo-200">
+            <strong>Note: </strong> You can go back to the previous step to modify your query.
+          </p>
+          <p class="mt-1 text-indigo-200">
+           {{ annotationResults?.combined_metadata }}
+          </p>
         </div>
 
         <!-- Loading State -->
@@ -62,16 +67,16 @@
         </div>
 
         <!-- Results Table -->
-        <div v-else-if="mappingResults" class="mt-8">
+        <div v-else-if="annotationResults" class="mt-8">
           <div class="bg-white shadow sm:rounded-lg">
             <div class="px-4 py-5 sm:p-6">
               <!-- Summary Stats -->
               <dl class="grid grid-cols-1 gap-5 sm:grid-cols-3">
                 <div class="bg-white overflow-hidden shadow rounded-lg">
                   <div class="px-4 py-5 sm:p-6">
-                    <dt class="text-sm font-medium text-gray-500">Total Identifiers</dt>
+                    <dt class="text-sm font-medium text-gray-500">Selected databases</dt>
                     <dd class="mt-1 text-3xl font-semibold text-gray-900">
-                      {{ mappingResults.input_identifiers?.length || 0 }}
+                      {{ annotationResults.input_identifiers?.length || 0 }}
                     </dd>
                   </div>
                 </div>
@@ -79,7 +84,7 @@
                   <div class="px-4 py-5 sm:p-6">
                     <dt class="text-sm font-medium text-gray-500">Mapped Successfully</dt>
                     <dd class="mt-1 text-3xl font-semibold text-green-600">
-                      {{ Object.keys(mappingResults.mapped_identifiers_list || {}).length }}
+                      {{ Object.keys(annotationResults.mapped_identifiers_list || {}).length }}
                     </dd>
                   </div>
                 </div>
@@ -87,7 +92,7 @@
                   <div class="px-4 py-5 sm:p-6">
                     <dt class="text-sm font-medium text-gray-500">Mapping Type</dt>
                     <dd class="mt-1 text-3xl font-semibold text-gray-900">
-                      {{ mappingResults.identifier_type }}
+                      {{ annotationResults.identifier_type }}
                     </dd>
                   </div>
                 </div>
@@ -107,11 +112,35 @@
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200">
-                        <tr v-for="(mapping, inputId) in mappingResults.mapped_identifiers_subset" :key="inputId">
+                        <tr v-for="(mapping, inputId) in annotationResults.combined_df" :key="inputId">
+                          <!-- Fixed fields -->
                           <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">{{ mapping.identifier }}</td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mapping.identifier_source || '-' }}</td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mapping["identifier.source"] || '-' }}</td>
                           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mapping.target || '-' }}</td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mapping.target_source || '-' }}</td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mapping["target.source"] || '-' }}</td>
+                          <!--Dynamic extra fields -->
+                          <td
+                            v-for="[key, value] in Object.entries(mapping).filter(([k]) => !fixedFields.includes(k))"
+                            :key="key"
+                          >
+                            <!-- If value is array of objects -->
+                            <template v-if="Array.isArray(value)">
+                              <ul class="list-disc list-inside space-y-1">
+                                <li
+                                  v-for="(entry, index) in value"
+                                  :key="index"
+                                >
+                                  <span class="font-medium">{{ entry.pathway_label }}</span>
+                                  <span class="text-xs">({{ entry.pathway_id }}, {{ entry.pathway_gene_count }} genes)</span>
+                                </li>
+                              </ul>
+                            </template>
+
+                            <!-- If value is not an array -->
+                            <template v-else>
+                              {{ value }}
+                            </template>
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -154,7 +183,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const loading = ref(true)
 const error = ref(null)
-const mappingResults = ref(null)
+const annotationResults = ref(null)
 
 const steps = [
   { name: 'Input Identifiers', status: 'complete' },
@@ -165,25 +194,47 @@ const steps = [
 ]
 
 const currentStep = ref(3) // We're on the second step
+const fixedFields = ["identifier", "identifier.source", "target", "target.source"]
 
 // Get identifier set ID from localStorage
 const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 
-onMounted(async () => {
-  if (!identifierSetId) {
-    router.push('/query')
-    return
-  }
+// onMounted(async () => {
+//   if (!identifierSetId) {
+//     alert("No identifierSetId found.")
+//     router.push('/query')
+//     return
+//   }
 
-  try {
-    const response = await axios.get(`/api/identifiers/${identifierSetId}`)
-    mappingResults.value = response.data
-  } catch (err) {
-    error.value = err.response?.data?.detail || 'Error loading mapping results'
-    console.error('Error:', err)
-  } finally {
-    loading.value = false
+//   const selectedDatasources = JSON.parse(localStorage.getItem('selectedDatasources')) || []
+//   console.log("Selected Data Sources:", selectedDatasources)
+
+//   try {
+//     const response = await axios.post(`/api/datasources/${identifierSetId}/process`, selectedDatasources)
+//     console.log("API response:", response.data)
+//     annotationResults.value = response.data
+//   } catch (err) {
+//     console.error('Error calling /datasources/process:', err)
+//     error.value = err.response?.data?.detail || 'Error loading mapping results'
+//     console.error('Error:', err)
+//   } finally {
+//     loading.value = false
+//   }
+// })
+
+onMounted(() => {
+  const stored = localStorage.getItem('annotationResults')
+  if (stored) {
+    try {
+      annotationResults.value = JSON.parse(stored)
+    } catch (e) {
+      error.value = 'Failed to parse annotation results.'
+      console.error("JSON parse error:", e)
+    }
+  } else {
+    router.push('/query/datasources')
   }
+  loading.value = false
 })
 
 function goBack() {
