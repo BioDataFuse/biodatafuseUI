@@ -23,7 +23,7 @@ export interface IdentifierSet {
   combined_df?: string;
   combined_metadata?: Record<string, any>;
   opentargets_df?: string;
-  pygraph?: string; 
+  // pygraph?: string; 
   status: string;
   error_message?: string;
   created_at: string;
@@ -52,13 +52,17 @@ export interface DataSourceRequest {
 }
 
 export interface DataSourceProcessingResponse {
+  identifier_set_id: number;
+  combined_df?: Record<string, any>;
+  opentargets_df?: Record<string, any>;
+  mapping_identifiers_list?: Array<string>;
+  // pygraph?: Record<string, any>;
+  combined_metadata?: Record<string, any>;
+  captured_warnings?: Record<string, any>;
   status: string;
-  metadata: {
-    total_associations: number;
-    sources_processed: string[];
-    source_counts: Record<string, number>;
-  };
-  message: string;
+  error_message?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Network Visualization Types
