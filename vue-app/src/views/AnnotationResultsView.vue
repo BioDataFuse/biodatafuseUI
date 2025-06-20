@@ -67,107 +67,62 @@
         <div v-else-if="annotationResults" class="mt-8">
           <div class="bg-white shadow sm:rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-              <!-- Summary Stats -->
-              <dl class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                  <div class="px-4 py-5 sm:p-6">
-                    <dt class="text-sm font-medium text-gray-500">Selected databases</dt>
-                    <dd class="mt-1 text-3xl font-semibold text-gray-900">
-                      {{ annotationResults.input_identifiers?.length || 0 }}
-                    </dd>
-                  </div>
-                </div>
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                  <div class="px-4 py-5 sm:p-6">
-                    <dt class="text-sm font-medium text-gray-500">Mapped Successfully</dt>
-                    <dd class="mt-1 text-3xl font-semibold text-green-600">
-                      {{ Object.keys(annotationResults.mapped_identifiers_list || {}).length }}
-                    </dd>
-                  </div>
-                </div>
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                  <div class="px-4 py-5 sm:p-6">
-                    <dt class="text-sm font-medium text-gray-500">Mapping Type</dt>
-                    <dd class="mt-1 text-3xl font-semibold text-gray-900">
-                      {{ annotationResults.identifier_type }}
-                    </dd>
-                  </div>
-                </div>
-              </dl>
 
-              <!-- Mapping Results Table -->
-              <div class="mt-8 flow-root">
-                <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                  <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                    <table class="min-w-full divide-y divide-gray-300">
-                      <thead>
-                        <tr>
-                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Input ID</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID source</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Target</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Target Source</th>
-                          <!-- Dynamic headers -->
-                          <template v-if="extraHeaders.length">
-                            <th
-                              v-for="header in extraHeaders"
-                              :key="header"
-                              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                            >
-                              {{ header }}
-                            </th>
-                          </template>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-200">
-                        <tr v-for="(mapping, inputId) in annotationResults.combined_df" :key="inputId">
-                          <!-- Fixed fields -->
-                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">{{ mapping.identifier }}</td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mapping["identifier.source"] || '-' }}</td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mapping.target || '-' }}</td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mapping["target.source"] || '-' }}</td>
-                          <!--Dynamic extra fields -->
-                          <td
-                            v-for="[key, value] in Object.entries(mapping).filter(([k]) => !fixedFields.includes(k))"
-                            :key="key"
-                          >
-                            <!-- If value is array of objects -->
-<template v-if="Array.isArray(value)">
-  <table class="min-w-full divide-y divide-gray-200 text-xs text-gray-700 border rounded mt-2">
-    <thead>
-      <tr>
-        <th
-          v-for="(v, key, i) in value[0]"
-          :key="`header-${key}-${i}`"
-          class="px-2 py-1 font-semibold border-b"
-        >
-          {{ key }}
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(entry, idx) in value" :key="idx" class="border-t">
-        <td
-          v-for="(val, k) in entry"
-          :key="`cell-${idx}-${k}`"
-          class="px-2 py-1 border-b"
-        >
-          {{ val }}
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</template>
+              <!-- Annotation Results Table -->
+              <!-- Filter Controls -->
+              <div class="mt-1 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:space-x-6 sm:items-end">
+                  <!-- Select Input ID -->
+                  <div class="w-full sm:w-1/2">
+                    <label class="block text-xl font-medium text-gray-700">Select Input</label>
+                    <select v-model="selectedInputId" class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                      <option disabled value="">-- Choose Input ID --</option>
+                      <option v-for="id in availableInputIds" :key="id" :value="id">{{ id }}</option>
+                    </select>
+                  </div>
 
-                            <!-- If value is not an array -->
-                            <template v-else>
-                              {{ value }}
-                            </template>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                  <!-- Select Data Source -->
+                  <div class="w-full sm:w-1/2" v-if="selectedInputId">
+                    <label class="block text-xl font-medium text-gray-700">Select Data Source</label>
+                    <select v-model="selectedDataSource" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                      <option disabled value="">-- Choose Data Source --</option>
+                      <option v-for="datasource in availableDataSources" :key="datasource" :value="datasource">{{ datasource }}</option>
+                    </select>
                   </div>
                 </div>
+              </div>
+
+              <!-- Focused Table Display -->
+              <div v-if="selectedDataSourceData.length" class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 text-left">
+                  Annotation results for 
+                  <span class="underline font-bold">{{ selectedInputId }}</span> 
+                  : {{ selectedDataSource }}
+                </h3>
+                <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-700 border rounded">
+                  <thead>
+                    <tr>
+                      <th
+                        v-for="(v, key, i) in selectedDataSourceData[0]"
+                        :key="`header-${key}-${i}`"
+                        class="px-2 py-1 font-semibold border-b text-left !text-left"
+                      >
+                        {{ key }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(entry, idx) in selectedDataSourceData" :key="idx" class="border-t">
+                      <td
+                        v-for="(val, k) in entry"
+                        :key="`cell-${idx}-${k}`"
+                        class="px-2 py-1 border-b text-left !text-left"
+                      >
+                        {{ val }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
               <!-- Navigation Buttons -->
@@ -197,10 +152,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { ExclamationCircleIcon, ArrowRightIcon } from '@heroicons/vue/24/outline'
-import axios from 'axios'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ExclamationCircleIcon, ArrowRightIcon } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const loading = ref(true)
@@ -215,43 +169,31 @@ const steps = [
   { name: 'Visualize', status: 'upcoming' }
 ]
 
-const currentStep = ref(3) // We're on the second step
+const currentStep = ref(3)
 const fixedFields = ["identifier", "identifier.source", "target", "target.source"]
 
-// Get identifier set ID from localStorage
-// const identifierSetId = localStorage.getItem('currentIdentifierSetId')
+const selectedInputId = ref('')
+const selectedDataSource = ref('')
 
-// onMounted(async () => {
-//   if (!identifierSetId) {
-//     alert("No identifierSetId found.")
-//     router.push('/query')
-//     return
-//   }
-
-//   const selectedDatasources = JSON.parse(localStorage.getItem('selectedDatasources')) || []
-//   console.log("Selected Data Sources:", selectedDatasources)
-
-//   try {
-//     const response = await axios.post(`/api/datasources/${identifierSetId}/process`, selectedDatasources)
-//     console.log("API response:", response.data)
-//     annotationResults.value = response.data
-//   } catch (err) {
-//     console.error('Error calling /datasources/process:', err)
-//     error.value = err.response?.data?.detail || 'Error loading mapping results'
-//     console.error('Error:', err)
-//   } finally {
-//     loading.value = false
-//   }
-// })
-
-import { computed } from 'vue'
-
-const extraHeaders = computed(() => {
-  if (!annotationResults.value || !annotationResults.value.combined_df) return []
-
-  const firstRow = Object.values(annotationResults.value.combined_df)[0]
-  return Object.keys(firstRow).filter(key => !fixedFields.includes(key))
+const availableInputIds = computed(() => {
+  return Object.values(annotationResults.value?.combined_df || {}).map(item => item.identifier)
 })
+
+
+const availableDataSources = computed(() => {
+  const inputId = selectedInputId.value
+  if (!inputId) return []
+
+  const row = Object.values(annotationResults.value?.combined_df || {}).find(item => item.identifier === inputId)
+  return Object.keys(row).filter(k => !fixedFields.includes(k) && Array.isArray(row[k]))
+})
+
+const selectedDataSourceData = computed(() => {
+  if (!selectedInputId.value || !selectedDataSource.value) return []
+  const selectedRow = Object.values(annotationResults.value?.combined_df || {}).find(item => item.identifier === selectedInputId.value)
+  return selectedRow ? selectedRow[selectedDataSource.value] : []
+})
+
 
 onMounted(() => {
   const stored = localStorage.getItem('annotationResults')
@@ -269,7 +211,7 @@ onMounted(() => {
 })
 
 function goBack() {
-  router.push('/query/datasources')	
+  router.push('/query/datasources')
 }
 
 function continueToVisualize() {
