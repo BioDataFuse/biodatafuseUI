@@ -134,7 +134,30 @@
                   </tbody>
                 </table>
               </div>
-
+              <!-- Download Buttons for combined_df and combined_metadata as TSV -->
+              <div>
+                <div class="mt-8 text-left">
+                  <h3 class="text-xl font-semibold text-gray-900">Download annotation output and metadata</h3>
+                </div>
+                <div class="mt-4 flex justify-left space-x-2"> <!-- Reduced margin-top and space between buttons -->
+                  <!-- Download combined_df TSV -->
+                  <button @click="downloadTSV('combined_df')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                    <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                    </svg>
+                    Download combined dataframe with all annotations (TSV)
+                  </button>
+                </div>
+                <div class="mt-4 flex justify-left space-x-2"> <!-- Reduced margin-top and space between buttons -->
+                  <!-- Download combined_metadata JSON -->
+                  <button @click="downloadJSON('combined_metadata')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                    <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                    </svg>
+                    Download combined metadata (JSON)
+                  </button>
+                </div>
+              </div>
               <!-- Navigation Buttons -->
               <div class="mt-8 flex justify-between">
                 <button
@@ -204,6 +227,48 @@ const selectedDataSourceData = computed(() => {
   return selectedRow ? selectedRow[selectedDataSource.value] : []
 })
 
+// Function to download TSV (for combined_df)
+function downloadTSV(type) {
+  const data = type === 'combined_df' ? annotationResults.value.combined_df : annotationResults.value.combined_metadata;
+  const tsv = convertToTSV(data);
+  const blob = new Blob([tsv], { type: 'text/tsv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${type}.tsv`;
+  link.click();
+}
+
+// Function to convert an object into TSV format
+function convertToTSV(obj) {
+const array = Object.keys(obj).map(key => {
+    const { key: _, ...rest } = obj[key];  
+    return rest;
+  });
+  const headers = Object.keys(array[0] || {}).join('\t'); // Use tab for delimiter
+
+  const rows = array.map(item => {
+    return Object.values(item).map(value => {
+      // If the value is an object or array, stringify it
+      if (typeof value === 'object' && value !== null) {
+        return JSON.stringify(value);  // Convert object or array to JSON string
+      }
+      return value; // Otherwise, return the value as is
+    }).join('\t'); // Join with tab separator
+  });
+
+  return [headers, ...rows].join('\n'); // Join rows with new lines
+}
+
+// Function to download JSON (for combined_metadata)
+function downloadJSON(type) {
+  const data = type === 'combined_metadata' ? annotationResults.value.combined_metadata : {};
+  const json = JSON.stringify(data, null, 2); // Convert to pretty JSON
+  const blob = new Blob([json], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${type}.json`;
+  link.click();
+}
 
 onMounted(() => {
   const stored = localStorage.getItem('annotationResults')
