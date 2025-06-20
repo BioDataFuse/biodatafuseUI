@@ -92,7 +92,7 @@
                           rel="noopener noreferrer"
                           class="ml-2 text-indigo-600 hover:underline text-xs"
                         >
-                        (see the extensive list)
+                        (see the "map name" column in the extensive list)
                         </a>
                       </label>
                       <input
