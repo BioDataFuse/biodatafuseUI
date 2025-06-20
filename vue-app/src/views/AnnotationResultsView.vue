@@ -26,6 +26,7 @@
                    ]">
                 <span class="font-medium">{{ step.name }}</span>
               </div>
+              
             </div>
           </div>
         </div>
@@ -67,7 +68,16 @@
         <div v-else-if="annotationResults" class="mt-8">
           <div class="bg-white shadow sm:rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-
+              <div v-if="annotationResults?.captured_warnings?.length" class="bg-gray-200 p-4 mb-4 rounded-md">
+                <p class="text-sm text-gray-700">
+                  <strong class="font-semibold text-gray-900">Warnings:</strong>
+                  <ul class="list-disc pl-5 space-y-2 mt-2">
+                    <li v-for="(warning, index) in annotationResults?.captured_warnings" :key="index">
+                      {{ warning }}
+                    </li>
+                  </ul>
+                </p>
+              </div>
               <!-- Annotation Results Table -->
               <!-- Filter Controls -->
               <div class="mt-1 space-y-4">
