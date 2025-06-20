@@ -333,6 +333,8 @@ class DataSourceService:
             if warning_messages:
                 print(f"Warnings captured: {warning_messages}")
 
+            filtered_warnings = [warning for warning in warning_messages if warning.startswith("There is no annotation for your input list")]
+
             # Combine all dataframes
             # List of potenitial dataframes
             print(f"Available dataframes: {dataframes}")
@@ -364,7 +366,7 @@ class DataSourceService:
             print("I am here 302")
 
             # return combined_df, combined_metadata, pygraph, opentargets_df, warning_messages            
-            return combined_df, combined_metadata, opentargets_df, warning_messages            
+            return combined_df, combined_metadata, opentargets_df, filtered_warnings            
             
         except Exception as e:
             raise ValueError(f"Error processing data sources: {str(e)}")
