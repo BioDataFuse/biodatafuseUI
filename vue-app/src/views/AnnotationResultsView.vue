@@ -40,9 +40,6 @@
           <p class="mt-1 text-indigo-200">
             <strong>Note: </strong> You can go back to the previous step to modify your query.
           </p>
-          <p class="mt-1 text-indigo-200">
-           {{ annotationResults?.combined_metadata }}
-          </p>
         </div>
 
         <!-- Loading State -->
@@ -109,6 +106,16 @@
                           <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID source</th>
                           <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Target</th>
                           <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Target Source</th>
+                          <!-- Dynamic headers -->
+                          <template v-if="extraHeaders.length">
+                            <th
+                              v-for="header in extraHeaders"
+                              :key="header"
+                              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                            >
+                              {{ header }}
+                            </th>
+                          </template>
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200">
@@ -124,17 +131,32 @@
                             :key="key"
                           >
                             <!-- If value is array of objects -->
-                            <template v-if="Array.isArray(value)">
-                              <ul class="list-disc list-inside space-y-1">
-                                <li
-                                  v-for="(entry, index) in value"
-                                  :key="index"
-                                >
-                                  <span class="font-medium">{{ entry.pathway_label }}</span>
-                                  <span class="text-xs">({{ entry.pathway_id }}, {{ entry.pathway_gene_count }} genes)</span>
-                                </li>
-                              </ul>
-                            </template>
+<template v-if="Array.isArray(value)">
+  <table class="min-w-full divide-y divide-gray-200 text-xs text-gray-700 border rounded mt-2">
+    <thead>
+      <tr>
+        <th
+          v-for="(v, key, i) in value[0]"
+          :key="`header-${key}-${i}`"
+          class="px-2 py-1 font-semibold border-b"
+        >
+          {{ key }}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(entry, idx) in value" :key="idx" class="border-t">
+        <td
+          v-for="(val, k) in entry"
+          :key="`cell-${idx}-${k}`"
+          class="px-2 py-1 border-b"
+        >
+          {{ val }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</template>
 
                             <!-- If value is not an array -->
                             <template v-else>
@@ -197,7 +219,7 @@ const currentStep = ref(3) // We're on the second step
 const fixedFields = ["identifier", "identifier.source", "target", "target.source"]
 
 // Get identifier set ID from localStorage
-const identifierSetId = localStorage.getItem('currentIdentifierSetId')
+// const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 
 // onMounted(async () => {
 //   if (!identifierSetId) {
@@ -221,6 +243,15 @@ const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 //     loading.value = false
 //   }
 // })
+
+import { computed } from 'vue'
+
+const extraHeaders = computed(() => {
+  if (!annotationResults.value || !annotationResults.value.combined_df) return []
+
+  const firstRow = Object.values(annotationResults.value.combined_df)[0]
+  return Object.keys(firstRow).filter(key => !fixedFields.includes(key))
+})
 
 onMounted(() => {
   const stored = localStorage.getItem('annotationResults')
