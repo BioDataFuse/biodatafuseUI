@@ -8,7 +8,7 @@
             Query Builder
           </h1>
           <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-            Build your biological query and visualize the output in four simple steps
+            Build your biological query and explore the output in four simple steps
           </p>
         </div>
 
@@ -169,10 +169,10 @@
                 </button>
                 <button
                   type="button"
-                  @click="continueToVisualize"
+                  @click="continueToAnalysis"
                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  Continue to Visualization
+                  Continue to Analysis
                   <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
@@ -199,7 +199,7 @@ const steps = [
   { name: 'Identifier Mapping', status: 'complete' },
   { name: 'Select Data Sources', status: 'complete' },
   { name: 'Annotations', status: 'current' },
-  { name: 'Visualize', status: 'upcoming' }
+  // { name: 'Visualize', status: 'upcoming' }
 ]
 
 const currentStep = ref(3)
@@ -289,7 +289,7 @@ function goBack() {
   router.push('/query/datasources')
 }
 
-function continueToVisualize() {
-  router.push('/query/visualize')
+function continueToAnalysis() {
+  router.push('/analysis')
 }
 </script>

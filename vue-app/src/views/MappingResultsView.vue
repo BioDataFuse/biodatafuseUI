@@ -8,7 +8,7 @@
             Query Builder
           </h1>
           <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-            Build your biological query and visualize the output in four simple steps
+            Build your biological query and explore the output in four simple steps
           </p>
         </div>
 
@@ -161,7 +161,7 @@ const steps = [
   { name: 'Identifier Mapping', status: 'current' },
   { name: 'Select Data Sources', status: 'upcoming' },
   { name: 'Annotations', status: 'upcoming' },
-  { name: 'Visualize', status: 'upcoming' }
+  // { name: 'Visualize', status: 'upcoming' }
 ]
 
 const currentStep = ref(1)
