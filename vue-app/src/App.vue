@@ -92,7 +92,7 @@ const isAuthenticated = computed(() => auth.isAuthenticated)
 const navigation = [
   { name: 'Home', to: '/' },
   { name: 'Query', to: '/query' },
-  { name: 'Analysis', to: '/analysis' },
+  { name: 'Visualize and Analysis', to: '/visualize&analysis' },
   { name: 'About', to: '/about' }
 ]
 

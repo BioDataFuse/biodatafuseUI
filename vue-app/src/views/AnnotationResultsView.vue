@@ -182,10 +182,10 @@
                 </button>
                 <button
                   type="button"
-                  @click="continueToAnalysis"
+                  @click="continueToVisualizeAndAnalysis"
                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
-                  Continue to Analysis
+                  Continue to Visualize and Analysis
                   <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
@@ -302,7 +302,9 @@ function goBack() {
   router.push('/query/datasources')
 }
 
-function continueToAnalysis() {
-  router.push('/analysis')
+function continueToVisualizeAndAnalysis() {
+  // Set the flag in localStorage to indicate the user is moving to visualization/analysis.
+  localStorage.setItem('isFromQueryStep', 'true');
+  router.push('/visualize&analysis')
 }
 </script>

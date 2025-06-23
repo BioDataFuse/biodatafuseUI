@@ -10,7 +10,7 @@ import InputView from './views/InputView.vue'
 import MappingResultsView from './views/MappingResultsView.vue'
 import DataSourceView from './views/DataSourceView.vue'
 import AnnotationsResultsView from './views/AnnotationResultsView.vue'
-import AnalysisView from './views/AnalysisView.vue'
+import VisualizeAndAnalysisView from './views/VisualizeAndAnalysis.vue'
 import AboutView from './views/AboutView.vue'
 import NotFoundView from './views/NotFoundView.vue'
 
@@ -68,10 +68,10 @@ const routes = [
   //   component: VisualizationView,
   //   meta: { requiresAuth: true }
   // },
-  {
-    path: '/analysis',
-    name: 'Analysis',
-    component: AnalysisView,
+    {
+      path: '/visualize&analysis',
+    name: 'Visualize and Analysis',
+    component: VisualizeAndAnalysisView,
     meta: { requiresAuth: true }
   },
   {
