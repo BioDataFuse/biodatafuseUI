@@ -41,10 +41,13 @@
           <p class="mt-1 text-indigo-200">
             <strong>Note: </strong> You can go back to the previous step to modify your query.
           </p>
+          <p class="mt-1 text-indigo-200">
+            <strong>Note: </strong> {{ annotationResults?.opentargets_df }}
+          </p>
         </div>
 
         <!-- Loading State -->
-        <div v-if="loading" class="mt-8 text-center">
+        <div v-if="loading" class="mt-4 text-center">
           <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-indigo-500">
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -71,7 +74,7 @@
               <div v-if="annotationResults?.captured_warnings?.length" class="bg-gray-200 p-4 mb-4 rounded-md">
                 <p class="text-sm text-gray-700">
                   <strong class="font-semibold text-gray-900">Warnings:</strong>
-                  <ul class="list-disc pl-5 space-y-2 mt-2">
+                  <ul class="list-disc pl-5 space-y-2 mt-1">
                     <li v-for="(warning, index) in annotationResults?.captured_warnings" :key="index">
                       {{ warning }}
                     </li>
@@ -84,7 +87,7 @@
                 <div class="flex flex-col sm:flex-row sm:space-x-6 sm:items-end">
                   <!-- Select Input ID -->
                   <div class="w-full sm:w-1/2">
-                    <label class="block text-xl font-medium text-gray-700">Select Input</label>
+                    <label class="text-xl font-bold text-blue-900">Select Input</label>
                     <select v-model="selectedInputId" class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                       <option disabled value="">-- Choose Input ID --</option>
                       <option v-for="id in availableInputIds" :key="id" :value="id">{{ id }}</option>
@@ -139,8 +142,8 @@
                 <div class="mt-8 text-left">
                   <h3 class="text-xl font-semibold text-gray-900">Download annotation output and metadata</h3>
                 </div>
+                <!-- Download combined_df TSV -->
                 <div class="mt-4 flex justify-left space-x-2"> <!-- Reduced margin-top and space between buttons -->
-                  <!-- Download combined_df TSV -->
                   <button @click="downloadTSV('combined_df')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
                     <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
@@ -148,8 +151,8 @@
                     Download combined dataframe with all annotations (TSV)
                   </button>
                 </div>
-                <div class="mt-4 flex justify-left space-x-2"> <!-- Reduced margin-top and space between buttons -->
-                  <!-- Download combined_metadata JSON -->
+                <!-- Download combined_metadata JSON -->
+                <div class="mt-1 flex justify-left space-x-2"> <!-- Reduced margin-top and space between buttons -->
                   <button @click="downloadJSON('combined_metadata')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
                     <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
@@ -157,6 +160,16 @@
                     Download combined metadata (JSON)
                   </button>
                 </div>
+                <!-- Download Button for opentargets_df TSV if it is not empty or None -->
+                <div v-if="annotationResults?.opentargets_df && Object.keys(annotationResults.opentargets_df).length > 0" class="mt-1 flex justify-left space-x-2">
+                  <button @click="downloadTSV('opentargets_df')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                    <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                    </svg>
+                    Download disease annotations for compounds dataframe from the OpenTargets (TSV)
+                  </button>
+                </div>
+
               </div>
               <!-- Navigation Buttons -->
               <div class="mt-8 flex justify-between">
@@ -229,7 +242,7 @@ const selectedDataSourceData = computed(() => {
 
 // Function to download TSV (for combined_df)
 function downloadTSV(type) {
-  const data = type === 'combined_df' ? annotationResults.value.combined_df : annotationResults.value.combined_metadata;
+  const data = type === 'combined_df' ? annotationResults.value.combined_df : annotationResults.value.opentargets_df;
   const tsv = convertToTSV(data);
   const blob = new Blob([tsv], { type: 'text/tsv' });
   const link = document.createElement('a');
