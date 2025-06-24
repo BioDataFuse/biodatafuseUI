@@ -55,7 +55,7 @@
 
       <!-- File Upload Section for Different Files -->
       <div v-if="!isFromQueryStep" class="mt-6 px-6 py-4 bg-white rounded-b-xl shadow-lg">
-        <h3 class="text-xl font-semibold text-gray-900">Upload Data Files (Optional)</h3>
+        <h3 class="text-xl font-semibold text-gray-900">Upload Query Outputs (Optional)</h3>
 
         <!-- Upload Combined Data -->
         <div class="mt-4">
@@ -140,18 +140,6 @@
               <p>A graph database optimized for storing and querying large-scale graph data.</p>
             </div>
           </div>
-          <!-- Conditional Button for Neo4j -->
-          <div v-if="selectedVisualizationTool === 'neo4j'">
-            <button
-              type="button"
-              @click="continueToVisualize"
-              class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Continue to visualize in Neo4j
-              <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-
         </div>
 
         <!-- Graph Analysis Tab Content -->
@@ -182,10 +170,10 @@
         </button>
         <button
           type="button"
-          @click="continueToAnalysis"
+          @click="handleContinue"
           class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          Continue to Visualize and Analysis
+          {{ continueButtonText }}
           <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
         </button>
       </div>
@@ -194,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { ArrowRightIcon } from '@heroicons/vue/24/outline'
 import { useRouter } from 'vue-router'
 
@@ -241,4 +229,35 @@ function continueToAnalysis() {
   console.log("Continuing to visualize and analysis.")
   // Proceed to visualization and analysis steps
 }
+
+// Dynamically generate button label based on selected tab and tool
+const continueButtonText = computed(() => {
+  if (selectedTab.value === 'visualization') {
+    switch (selectedVisualizationTool.value) {
+      case 'neo4j':
+        return 'Continue to visualize in Neo4j'
+      case 'cytoscape':
+        return 'Continue to visualize in Cytoscape'
+      case 'graphdb':
+        return 'Continue to visualize in GraphDb'
+      default:
+        return 'Continue to Visualize'
+    }
+  } else {
+    return 'Continue to Analysis'
+  }
+})
+
+// Unified handler for continue button
+function handleContinue() {
+  isFromQueryStep.value = true;
+  if (selectedTab.value === 'visualization') {
+    console.log(`Continuing to visualize using ${selectedVisualizationTool.value}`)
+    // TODO: Add router.push, redirect or trigger logic for each visualization tool
+  } else {
+    console.log("Continuing to graph analysis")
+    // TODO: Handle analysis step logic
+  }
+}
+
 </script>
