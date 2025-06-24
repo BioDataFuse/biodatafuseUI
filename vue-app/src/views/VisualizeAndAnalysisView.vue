@@ -254,6 +254,13 @@ function handleContinue() {
   if (selectedTab.value === 'visualization') {
     console.log(`Continuing to visualize using ${selectedVisualizationTool.value}`)
     // TODO: Add router.push, redirect or trigger logic for each visualization tool
+    if (selectedVisualizationTool.value === 'neo4j') {
+      router.push('/visualize&analysis/neo4j')
+    } else if (selectedVisualizationTool.value === 'cytoscape') {
+      router.push('/visualize&analysis/cytoscape')
+    } else if (selectedVisualizationTool.value === 'graphdb') {
+      router.push('/visualize&analysis/graphdb')
+    }
   } else {
     console.log("Continuing to graph analysis")
     // TODO: Handle analysis step logic
