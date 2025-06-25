@@ -10,8 +10,12 @@ import InputView from './views/InputView.vue'
 import MappingResultsView from './views/MappingResultsView.vue'
 import DataSourceView from './views/DataSourceView.vue'
 import AnnotationsResultsView from './views/AnnotationResultsView.vue'
-import VisualizeAndAnalysisView from './views/VisualizeAndAnalysis.vue'
+import VisualizeAndAnalysisView from './views/VisualizeAndAnalysisView.vue'
+import CytoscapeView from './views/CytoscapeView.vue'
+import GraphDbView from './views/GraphDbView.vue'
+import Neo4jView from './views/Neo4jView.vue'
 import AboutView from './views/AboutView.vue'
+
 import NotFoundView from './views/NotFoundView.vue'
 
 const routes = [
@@ -68,10 +72,28 @@ const routes = [
   //   component: VisualizationView,
   //   meta: { requiresAuth: true }
   // },
-    {
-      path: '/visualize&analysis',
+  {
+    path: '/visualize&analysis',
     name: 'Visualize and Analysis',
     component: VisualizeAndAnalysisView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/visualize&analysis/cytoscape',
+    name: 'Cytoscape',
+    component: CytoscapeView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/visualize&analysis/graphdb',
+    name: 'GraphDb',
+    component: GraphDbView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/visualize&analysis/neo4j',
+    name: 'Neo4j',
+    component: Neo4jView,
     meta: { requiresAuth: true }
   },
   {
