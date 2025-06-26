@@ -51,15 +51,23 @@ import axios from 'axios'
 
 const statusMessage = ref('')
 const errorMessage = ref('')
+const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 
 const loadCytoscapeGraph = async () => {
   statusMessage.value = ''
   errorMessage.value = ''
+  if (!identifierSetId) {
+    errorMessage.value = 'No identifier set selected.'
+    return
+  }
   try {
-    const response = await axios.post('/api/visualize&analysis/cytoscape')
+    const response = await axios.post(`/api/visualize&analysis/cytoscape/${identifierSetId}`)
     statusMessage.value = response.data.message
   } catch (error) {
     errorMessage.value = error.response?.data?.detail || 'Failed to connect to Cytoscape.'
   }
 }
+
 </script>
+
+
