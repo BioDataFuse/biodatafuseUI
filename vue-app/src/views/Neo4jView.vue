@@ -26,8 +26,8 @@
       </div>
 
       <!-- Instructions + Form -->
-      <div class="min-h-screen bg-white p-8">
-        <div class="max-w-4xl mx-auto text-left">
+      <div class="from-indigo-600 to-indigo-800 px-6 py-4">
+        <div class="mt-1 text-black text-xl">
           <p class="text-xl text-gray-600 mb-6">
             <strong>Instructions:</strong><br><br>
             • Ensure your <strong>Neo4j database</strong> is running and accessible.<br>
@@ -54,20 +54,28 @@
               <input v-model="password" type="password"
                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200" />
             </div>
-
-            <button
-              @click="loadNeo4jGraph"
-              :disabled="loading"
-              class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            >
-              <span v-if="loading" class="animate-spin mr-2">🔄</span>
-              <span>{{ loading ? 'Loading...' : 'Load your graph into Neo4j' }}</span>
-            </button>
-
-            <p v-if="statusMessage" class="mt-6 text-lg text-green-600">{{ statusMessage }}</p>
-            <p v-if="errorMessage" class="mt-6 text-lg text-red-600">{{ errorMessage }}</p>
           </div>
         </div>
+        
+        <!-- Footer Actions -->
+        <div class="mt-8 flex justify-between px-6 py-4 bg-white rounded-b-xl shadow-lg">
+          <button
+            @click="goBack"
+            class="px-4 py-2 border border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-100"
+          >
+            ← Select another visualization tool
+          </button>
+          <button
+            @click="loadNeo4jGraph"
+            :disabled="loading"
+            class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          >
+            <span v-if="loading" class="animate-spin mr-2">🔄</span>
+            <span>{{ loading ? 'Loading...' : 'Load your graph into Neo4j' }}</span>
+          </button>
+        </div>
+        <p v-if="statusMessage" class="mt-6 text-lg text-green-600">{{ statusMessage }}</p>
+        <p v-if="errorMessage" class="mt-6 text-lg text-red-600">{{ errorMessage }}</p>
       </div>
     </div>
   </div>
@@ -76,7 +84,9 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const uri = ref('bolt://localhost:7687')
 const username = ref('neo4j')
 const password = ref('password')
@@ -113,5 +123,8 @@ const loadNeo4jGraph = async () => {
   } finally {
     loading.value = false
   }
+}
+function goBack() {
+  router.push('/visualize&analysis')
 }
 </script>
