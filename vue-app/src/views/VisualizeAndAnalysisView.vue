@@ -48,12 +48,18 @@
           Choose a tool for visualizing graph data. You can select Neo4j, Cytoscape, or GraphDb to view interactions, pathways, or networks in different formats.
         </p>
 
-        <!-- Suggest Custom Analysis / GitHub Link -->
-        <div class="mb-6 bg-gray-100 border border-gray-300 rounded-lg p-4 text-gray-700">
-          <strong>Need help with advanced analysis?</strong><br>
-          Is there a specific analysis or algorithm you'd like to apply on the generated knowledge graph?<br>
-          Do you need help implementing it?<br>
-          👉 
+        <p v-if="selectedTab === 'analysis'" class="mt-1 text-black text-xl">
+          Perform various analyses on your graph data. You can generate bar plots, pie charts, or interactive Plotly charts to explore your data visually.
+        </p>
+        <!-- Suggest Custom Analysis / GitHub Link (Only in Analysis Tab) -->
+        <div
+          v-if="selectedTab === 'analysis'"
+          class="mt-4 mb-6 bg-gray-100 border border-gray-300 rounded-lg p-4 text-gray-700"
+        >
+          <strong>Need help with advanced analysis?</strong><br />
+          Is there a specific analysis or algorithm you'd like to apply on the generated knowledge graph?<br />
+          Do you need help implementing it?<br />
+          👉
           <a
             href="https://github.com/BioDataFuse/pyBiodatafuse/issues/new?template=analysis-support-request.md"
             target="_blank"
@@ -61,12 +67,9 @@
             class="text-indigo-600 hover:underline"
           >
             Create an issue on GitHub
-          </a> and let us know!
-        </div>
-
-        <p v-if="selectedTab === 'analysis'" class="mt-1 text-black text-xl">
-          Perform various analyses on your graph data. You can generate bar plots, pie charts, or interactive Plotly charts to explore your data visually.
-        </p>
+          </a>
+          and let us know!
+        </div>      
       </div>
 
       <!-- File Upload Section for Different Files -->
