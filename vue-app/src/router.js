@@ -12,7 +12,7 @@ import DataSourceView from './views/DataSourceView.vue'
 import AnnotationsResultsView from './views/AnnotationResultsView.vue'
 import VisualizeAndAnalysisView from './views/VisualizeAndAnalysisView.vue'
 import CytoscapeView from './views/CytoscapeView.vue'
-import GraphDbView from './views/GraphDbView.vue'
+import GraphDBView from './views/GraphDBView.vue'
 import Neo4jView from './views/Neo4jView.vue'
 import AboutView from './views/AboutView.vue'
 
@@ -86,8 +86,8 @@ const routes = [
   },
   {
     path: '/visualize&analysis/graphdb',
-    name: 'GraphDb',
-    component: GraphDbView,
+    name: 'GraphDB',
+    component: () => import('./views/GraphDBView.vue'),
     meta: { requiresAuth: true }
   },
   {
