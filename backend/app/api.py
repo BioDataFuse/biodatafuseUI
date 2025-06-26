@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .routers import auth, identifiers, datasources, cytoscape
+from .routers import auth, identifiers, datasources, cytoscape, neo4j
 
 api_router = APIRouter()
 
@@ -8,6 +8,8 @@ api_router.include_router(auth.router, prefix="/api")
 api_router.include_router(identifiers.router, prefix="/api")
 api_router.include_router(datasources.router, prefix="/api")
 api_router.include_router(cytoscape.router, prefix="/api")
+api_router.include_router(neo4j.router, prefix="/api")
+
 
 # Health check endpoint
 @api_router.get("/health")
