@@ -143,20 +143,38 @@
         </div>
 
         <!-- Graph Analysis Tab Content -->
-        <div v-if="selectedTab === 'analysis'" class="px-6 py-4 bg-white rounded-b-xl shadow-lg">
-          <h3 class="text-xl font-semibold text-gray-900">Graph Analysis</h3>
-          <div class="mt-4">
-            <button @click="runGraphAnalysis('barplot')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
-              Plot Bar Plot
-            </button>
-            <button @click="runGraphAnalysis('piechart')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
-              Plot Pie Chart
-            </button>
-            <button @click="runGraphAnalysis('plotly')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
-              Plot Plotly Chart
-            </button>
+      <div v-if="selectedTab === 'analysis'" class="px-6 py-4 bg-white rounded-b-xl shadow-lg">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">Patent Analysis</h3>
+
+        <textarea
+          v-model="chemicalInput"
+          placeholder="Enter compound names, one per line (e.g., Glucose, Aspirin)"
+          rows="4"
+          class="w-full p-3 border rounded-lg mb-4"
+        ></textarea>
+
+        <button
+          @click="submitPatentAnalysis"
+          class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-500"
+        >
+          Analyze Patents
+        </button>
+
+        <div class="mt-6" v-if="analysisResults">
+          <h4 class="text-lg font-bold mb-2">Results</h4>
+          <div v-for="(records, cid) in analysisResults" :key="cid" class="mb-4 border p-4 rounded">
+            <p><strong>CID:</strong> {{ cid }}</p>
+            <ul>
+              <li v-for="entry in records" :key="entry.label">
+                {{ entry.label }}: {{ entry.value }}
+              </li>
+            </ul>
           </div>
         </div>
+
+        <p v-if="analysisError" class="mt-4 text-red-600">{{ analysisError }}</p>
+      </div>
+
       </div>
 
       <!-- Footer Actions -->
