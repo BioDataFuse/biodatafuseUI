@@ -37,22 +37,33 @@
           </p>
 
           <div class="space-y-4">
-            <div>
-              <label class="block font-medium text-gray-700">Neo4j URI</label>
-              <input v-model="uri" type="text" placeholder="bolt://localhost:7687"
-                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200" />
+            <div class="mb-6">
+              <label class="block text-gray-700 font-medium mb-2">Neo4j URI</label>
+              <input
+                v-model="uri"
+                type="text"
+                placeholder="bolt://localhost:7687"
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
+              />
             </div>
 
-            <div>
-              <label class="block font-medium text-gray-700">Username</label>
-              <input v-model="username" type="text" placeholder="neo4j"
-                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200" />
+            <div class="mb-6">
+              <label class="block text-gray-700 font-medium mb-2">Username</label>
+              <input 
+                v-model="username"
+                type="text"
+                placeholder="neo4j"
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
+              />
             </div>
 
-            <div>
-              <label class="block font-medium text-gray-700">Password</label>
-              <input v-model="password" type="password"
-                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200" />
+            <div class="mb-6">
+              <label class="block text-gray-700 font-medium mb-2">Password</label>
+              <input 
+                v-model="password"
+                type="password"
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200"
+              />
             </div>
           </div>
         </div>
