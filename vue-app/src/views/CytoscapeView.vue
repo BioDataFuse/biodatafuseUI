@@ -24,17 +24,26 @@
           </div>
         </div>
       </div>
+
       <div class="min-h-screen bg-white p-8">
         <div class="max-w-4xl mx-auto text-center">
-          <p class="text-lg font-bold text-gray-600 mb-6">
-            <strong>Note:</strong> Ensure Cytoscape is open. Click the button below to load your graph.
+          <p class="text-xl text-gray-600 mb-6 text-left">
+            <strong>Instructions:</strong><br>
+            <br>
+            • Ensure <strong>Cytoscape Desktop</strong> is installed and currently running.<br>
+            • Confirm that the <strong>Cytoscape REST API</strong> is enabled (default setting).<br>
+            • Complete the data processing and annotations steps before attempting visualization.<br>
+            • If your graph contains no edges, you will receive an error and may need to revisit your dataset.
+            <br>
           </p>
 
           <button
             @click="loadCytoscapeGraph"
+            :disabled="loading"
             class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           >
-            Load your graph in Cytoscape
+            <span v-if="loading" class="animate-spin mr-2">🔄</span>
+            <span>{{ loading ? 'Loading...' : 'Load your graph in Cytoscape' }}</span>
           </button>
 
           <p v-if="statusMessage" class="mt-6 text-lg text-green-600">{{ statusMessage }}</p>
@@ -51,23 +60,26 @@ import axios from 'axios'
 
 const statusMessage = ref('')
 const errorMessage = ref('')
+const loading = ref(false)
 const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 
 const loadCytoscapeGraph = async () => {
   statusMessage.value = ''
   errorMessage.value = ''
   if (!identifierSetId) {
-    errorMessage.value = 'No identifier set selected.'
+    errorMessage.value = 'No identifier set selected. Please process your data first.'
     return
   }
+
+  loading.value = true
   try {
     const response = await axios.post(`/api/visualize&analysis/cytoscape/${identifierSetId}`)
     statusMessage.value = response.data.message
   } catch (error) {
     errorMessage.value = error.response?.data?.detail || 'Failed to connect to Cytoscape.'
+  } finally {
+    loading.value = false
   }
 }
-
 </script>
-
 
