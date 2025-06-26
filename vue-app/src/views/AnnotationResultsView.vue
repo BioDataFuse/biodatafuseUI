@@ -41,9 +41,6 @@
           <p class="mt-1 text-indigo-200">
             <strong>Note: </strong> You can go back to the previous step to modify your query.
           </p>
-          <p class="mt-1 text-indigo-200">
-            <strong>Note: </strong> {{ annotationResults?.opentargets_df }}
-          </p>
         </div>
 
         <!-- Loading State -->
