@@ -1,17 +1,17 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
     <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <!-- Header Section with Title -->
+      <!-- Header -->
       <div class="text-center">
         <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl">
           Graph Visualization and Analysis
         </h1>
         <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-          View and manage data visualization and analysis.
+          Load your graph into Cytoscape.
         </p>
       </div>
 
-      <!-- Tab Buttons with Sticky Blue Header -->
+      <!-- Tab Bar -->
       <div class="mt-12 bg-white rounded-2xl shadow-xl overflow-hidden">
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
           <div class="flex space-x-8">
@@ -25,9 +25,10 @@
         </div>
       </div>
 
-      <div class="min-h-screen bg-white p-8">
-        <div class="max-w-4xl mx-auto text-center">
-          <p class="text-xl text-gray-600 mb-6 text-left">
+      <!-- Instructions-->
+      <div class="from-indigo-600 to-indigo-800 px-6 py-4">
+        <div class="mt-1 text-black text-xl">
+          <p class="text-xl text-gray-600 mb-6">
             <strong>Instructions:</strong><br>
             <br>
             • Ensure <strong>Cytoscape Desktop</strong> is installed and currently running.<br>
@@ -36,19 +37,26 @@
             • If your graph contains no edges, you will receive an error and may need to revisit your dataset.
             <br>
           </p>
-
+        </div>
+        <!-- Footer Actions -->
+        <div class="mt-8 flex justify-between px-6 py-4 bg-white rounded-b-xl shadow-lg">
+          <button
+            @click="goBack"
+            class="px-4 py-2 border border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-100"
+          >
+            ← Select another visualization tool
+          </button>
           <button
             @click="loadCytoscapeGraph"
             :disabled="loading"
             class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           >
             <span v-if="loading" class="animate-spin mr-2">🔄</span>
-            <span>{{ loading ? 'Loading...' : 'Load your graph in Cytoscape' }}</span>
+            <span>{{ loading ? 'Loading...' : 'Load your graph into Cytoscape' }}</span>
           </button>
-
-          <p v-if="statusMessage" class="mt-6 text-lg text-green-600">{{ statusMessage }}</p>
-          <p v-if="errorMessage" class="mt-6 text-lg text-red-600">{{ errorMessage }}</p>
         </div>
+        <p v-if="statusMessage" class="mt-6 text-lg text-green-600">{{ statusMessage }}</p>
+        <p v-if="errorMessage" class="mt-6 text-lg text-red-600">{{ errorMessage }}</p>
       </div>
     </div>
   </div>
@@ -57,7 +65,9 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const statusMessage = ref('')
 const errorMessage = ref('')
 const loading = ref(false)
@@ -80,6 +90,9 @@ const loadCytoscapeGraph = async () => {
   } finally {
     loading.value = false
   }
+}
+function goBack() {
+  router.push('/visualize&analysis')
 }
 </script>
 
