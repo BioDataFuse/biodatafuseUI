@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .routers import auth, identifiers, datasources
+from .routers import auth, identifiers, datasources, cytoscape
 
 api_router = APIRouter()
 
@@ -7,6 +7,7 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/api")
 api_router.include_router(identifiers.router, prefix="/api")
 api_router.include_router(datasources.router, prefix="/api")
+api_router.include_router(cytoscape.router, prefix="/api")
 
 # Health check endpoint
 @api_router.get("/health")
