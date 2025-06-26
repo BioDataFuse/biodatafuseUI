@@ -11,7 +11,7 @@ class CytoscapeService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def load_graph_into_cytoscape(self, annotations: models.Annotation, graph_dir: Path):
+    async def load_graph_into_cytoscape(self, annotations: models.Annotation, graph_dir: Path, graph_name: str):
         try:
             if cytoscape_ping() != "You are connected to Cytoscape!":
                 return {
@@ -23,7 +23,7 @@ class CytoscapeService:
             if error:
                 return {"success": False, "message": error}
 
-            cytoscape.load_graph(pygraph, network_name=f"userInput_{annotations.identifier_set_id}")
-            return {"success": True, "message": f"Graph loaded into Cytoscape as 'userInput_{annotations.identifier_set_id}'."}
+            cytoscape.load_graph(pygraph, network_name=graph_name)
+            return {"success": True, "message": f"Graph loaded into Cytoscape as '{graph_name}'."}
         except Exception as e:
             return {"success": False, "message": f"Error loading graph into Cytoscape: {str(e)}"}
