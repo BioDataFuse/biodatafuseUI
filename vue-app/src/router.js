@@ -66,12 +66,6 @@ const routes = [
     component: AnnotationsResultsView,
     meta: { requiresAuth: true }
   },
-  // {
-  //   path: '/query/visualization',
-  //   name: 'Visualization',
-  //   component: VisualizationView,
-  //   meta: { requiresAuth: true }
-  // },
   {
     path: '/visualize&analysis',
     name: 'Visualize and Analysis',
