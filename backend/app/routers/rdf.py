@@ -6,6 +6,7 @@ from pathlib import Path
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
@@ -26,39 +27,11 @@ async def generate_rdf(
 ):
     """Generate RDF graph from annotation data."""
     try:
-        # Debug: log the incoming request data
-        logger.info(f"Received RDF generation request: {request}")
-        logger.info(f"Request dict: {request.dict()}")
-        logger.info(f"Current user: {getattr(current_user, 'id', None)}")
+        logger.info(f"🔧 Starting RDF generation for user {current_user.id}")
         
         rdf_service = RDFService(db)
-        
-        identifier_set_id = request.identifier_set_id
-        logger.info(f"identifier_set_id raw: {identifier_set_id} (type: {type(identifier_set_id)})")
-        if identifier_set_id is None or (isinstance(identifier_set_id, str) and not identifier_set_id.isdigit()):
-            logger.error(f"Invalid identifier_set_id: {identifier_set_id}")
-            raise HTTPException(status_code=400, detail="identifier_set_id must be a valid integer")
-        if isinstance(identifier_set_id, str):
-            identifier_set_id = int(identifier_set_id)
-        if not isinstance(identifier_set_id, int):
-            logger.error(f"identifier_set_id is not int after conversion: {identifier_set_id}")
-            raise HTTPException(status_code=400, detail="identifier_set_id must be an integer")
-        
-        logger.info("Calling generate_rdf_graph with params:")
-        logger.info(f"  identifier_set_id={identifier_set_id}")
-        logger.info(f"  base_uri={request.base_uri}")
-        logger.info(f"  version_iri={request.version_iri}")
-        logger.info(f"  author_name={request.author_name}")
-        logger.info(f"  author_email={request.author_email}")
-        logger.info(f"  orcid={request.orcid}")
-        logger.info(f"  graph_name={request.graph_name}")
-        logger.info(f"  generate_shacl={request.generate_shacl}")
-        logger.info(f"  shacl_threshold={request.shacl_threshold}")
-        logger.info(f"  generate_uml_diagram={request.generate_uml_diagram}")
-        logger.info(f"  user_id={current_user.id}")
-
         result = await rdf_service.generate_rdf_graph(
-            identifier_set_id=identifier_set_id,
+            identifier_set_id=request.identifier_set_id,
             base_uri=request.base_uri,
             version_iri=request.version_iri,
             author_name=request.author_name,
@@ -68,21 +41,17 @@ async def generate_rdf(
             generate_shacl=request.generate_shacl,
             shacl_threshold=request.shacl_threshold,
             generate_uml_diagram=request.generate_uml_diagram,
+            generate_shex=request.generate_shex,
+            shex_threshold=request.shex_threshold,
             user_id=current_user.id,
         )
         
-        logger.info("RDF generation successful.")
+        logger.info(f"✅ RDF generation completed successfully")
         return result
         
-    except HTTPException as e:
-        logger.error(f"HTTPException: {e.detail}")
-        raise e
     except Exception as e:
-        logger.exception("Unhandled exception during RDF generation")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Error generating RDF: {str(e)}",
-        )
+        logger.error(f"❌ Error in RDF generation endpoint: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/download/{file_id}")
@@ -94,46 +63,71 @@ async def download_rdf_file(
     """Download generated RDF file."""
     try:
         rdf_service = RDFService(db)
-        
         file_info = await rdf_service.get_file_info(file_id, current_user.id)
+        
         if not file_info:
-            import logging
-            logging.error(f"File info not found for file_id={file_id}, user_id={current_user.id}")
             raise HTTPException(status_code=404, detail="File not found")
         
         file_path = Path(file_info["path"])
         if not file_path.exists():
-            import logging
-            logging.error(f"File path does not exist: {file_path}")
-            raise HTTPException(status_code=404, detail=f"File not found on disk: {file_path}")
+            raise HTTPException(status_code=404, detail="File not found on disk")
         
-        with open(file_path, "rb") as f:
-            file_content = f.read()
-        
-        media_type = "application/octet-stream"
-        if file_info["type"] == "RDF":
-            if file_path.suffix.lower() == ".ttl":
-                media_type = "text/turtle"
-            elif file_path.suffix.lower() == ".rdf":
-                media_type = "application/rdf+xml"
-        elif file_info["type"] == "SHACL":
+        # Determine media type based on file extension
+        if file_path.suffix.lower() == '.png':
+            media_type = "image/png"
+        elif file_path.suffix.lower() in ['.ttl', '.turtle']:
             media_type = "text/turtle"
-        elif file_info["type"] == "UML":
+        else:
+            media_type = "application/octet-stream"
+        
+        return FileResponse(
+            path=str(file_path),
+            filename=file_info["name"],
+            media_type=media_type
+        )
+        
+    except Exception as e:
+        logger.error(f"Error downloading file {file_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/preview/{file_id}")
+async def preview_rdf_file(
+    file_id: str,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Preview generated RDF file (for images)."""
+    try:
+        rdf_service = RDFService(db)
+        file_info = await rdf_service.get_file_info(file_id, current_user.id)
+        
+        if not file_info:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        file_path = Path(file_info["path"])
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="File not found on disk")
+        
+        # Only serve image files for preview
+        if file_path.suffix.lower() not in ['.png', '.jpg', '.jpeg', '.svg']:
+            raise HTTPException(status_code=400, detail="File type not supported for preview")
+        
+        # Determine media type based on file extension
+        if file_path.suffix.lower() == '.png':
+            media_type = "image/png"
+        elif file_path.suffix.lower() in ['.jpg', '.jpeg']:
+            media_type = "image/jpeg"
+        elif file_path.suffix.lower() == '.svg':
+            media_type = "image/svg+xml"
+        else:
             media_type = "image/png"
         
-        return Response(
-            content=file_content,
-            media_type=media_type,
-            headers={"Content-Disposition": f"attachment; filename={file_info['name']}"}
+        return FileResponse(
+            path=str(file_path),
+            media_type=media_type
         )
         
-    except HTTPException as e:
-        # Let HTTPException propagate as-is (404, etc)
-        raise e
     except Exception as e:
-        import logging
-        logging.exception(f"Error serving file_id={file_id}: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"An error occurred while downloading file: {str(e)}",
-        )
+        logger.error(f"Error previewing file {file_id}: {str(e)}")
+        raise HTTPException(status_code=404, detail="File not found or cannot be previewed")

@@ -182,6 +182,8 @@ class RDFGenerationRequest(BaseModel):
     generate_shacl: bool = True
     shacl_threshold: float = 0.001
     generate_uml_diagram: bool = True
+    generate_shex: bool = True
+    shex_threshold: float = 0.001
 
 class GeneratedFile(BaseModel):
     id: str
@@ -212,6 +214,7 @@ class GraphDBUploadRequest(BaseModel):
     username: Optional[str] = None
     password: Optional[str] = None
     graphData: Dict
+    namespaces: Optional[Dict[str, str]] = None
 
 class GraphDBQueryRequest(BaseModel):
     baseUrl: str
@@ -237,6 +240,8 @@ class GraphDBRepositoryListResponse(BaseModel):
 
 class GraphDBTripleCountResponse(BaseModel):
     count: int
+    explicit_count: Optional[int] = None
+    inferred_count: Optional[int] = None
     message: str
 
 class GraphDBQueryResponse(BaseModel):

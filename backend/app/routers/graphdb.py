@@ -147,43 +147,36 @@ async def upload_rdf_graph(
     """Upload RDF graph to GraphDB repository."""
     logger.info(f"⬆️ Uploading RDF graph to repository: {request.repositoryId}")
     try:
+        import rdflib
         rdf_service = RDFService(db)
         
-        # Extract generation ID from graph data
-        if not request.graphData or not request.graphData.get("graph_name"):
-            raise ValueError("Invalid graph data provided")
-        
-        # Find the RDF file in the graph data
-        rdf_file = None
-        for file_info in request.graphData.get("files", []):
-            if file_info.get("type") == "RDF":
-                rdf_file = file_info
-                break
+        # Get RDF file directly from generated files
+        generated_files = request.graphData.get("generated_files", [])
+        rdf_file = next((f for f in generated_files if f.get("type") == "RDF"), None)
         
         if not rdf_file:
-            raise ValueError("No RDF file found in graph data")
+            raise ValueError("No RDF file found in generated data")
         
-        # Get the BDF graph object (this would need to be stored/retrieved appropriately)
-        # For now, we'll try to get file info and load the RDF
+        # Get file info from database
         file_info = await rdf_service.get_file_info(rdf_file["id"], current_user.id)
-        if not file_info:
-            raise ValueError("RDF file not found or access denied")
+        if not file_info or not os.path.exists(file_info['path']):
+            raise ValueError("RDF file not found")
         
-        # Upload the RDF file content
-        with open(file_info["path"], "r") as f:
-            rdf_content = f.read()
+        # Read TTL into rdflib Graph
+        g = rdflib.Graph()
+        g.parse(file_info['path'], format='turtle')
         
-        # Upload to GraphDB (this assumes GraphDBManager can handle string content)
-        GraphDBManager.upload_rdf_content(
+        # Upload using your GraphDBManager
+        GraphDBManager.upload_to_graphdb(
             request.baseUrl,
             request.repositoryId,
             request.username,
             request.password,
-            rdf_content,
+            g,
             file_format="turtle"
         )
         
-        logger.info(f"✅ RDF graph uploaded to repository '{request.repositoryId}' successfully")
+        logger.info(f"✅ RDF graph uploaded successfully")
         return GraphDBResponse(
             success=True,
             message=f"RDF graph uploaded to repository '{request.repositoryId}' successfully"
@@ -191,38 +184,56 @@ async def upload_rdf_graph(
         
     except Exception as e:
         logger.error(f"❌ Failed to upload RDF graph: {str(e)}")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to upload RDF graph: {str(e)}"
-        )
+        raise HTTPException(status_code=400, detail=f"Failed to upload RDF graph: {str(e)}")
 
 
 @router.post("/upload-prefixes", response_model=GraphDBResponse)
 async def upload_shacl_prefixes(
-    request: GraphDBRepositoryRequest,
+    request: GraphDBUploadRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Upload SHACL prefixes to GraphDB repository."""
-    logger.info(f"⬆️ Uploading SHACL prefixes to repository: {request.repositoryName}")
+    logger.info(f"📋 Uploading SHACL prefixes to repository: {request.repositoryId}")
     try:
+        import rdflib
         rdf_service = RDFService(db)
         
-        # This would need access to the BDF graph object to generate prefixes
-        # For now, we'll return a placeholder response
-        # TODO: Implement proper SHACL prefix upload
+        # Get SHACL file directly from generated files
+        generated_files = request.graphData.get("generated_files", [])
+        shacl_file = next((f for f in generated_files if f.get("type") == "SHACL"), None)
         
-        logger.info(f"✅ SHACL prefixes uploaded to repository '{request.repositoryName}' successfully")
+        if not shacl_file:
+            raise ValueError("No SHACL file found in generated data")
+        
+        # Get file info from database
+        file_info = await rdf_service.get_file_info(shacl_file["id"], current_user.id)
+        if not file_info or not os.path.exists(file_info['path']):
+            raise ValueError("SHACL file not found")
+        
+        # Read TTL into rdflib Graph
+        g = rdflib.Graph()
+        g.parse(file_info['path'], format='turtle')
+        
+        # Upload using your GraphDBManager
+        GraphDBManager.upload_to_graphdb(
+            request.baseUrl,
+            request.repositoryId,
+            request.username,
+            request.password,
+            g,
+            file_format="turtle"
+        )
+        
+        logger.info(f"✅ SHACL prefixes uploaded successfully")
         return GraphDBResponse(
             success=True,
-            message=f"SHACL prefixes uploaded to repository '{request.repositoryName}' successfully"
+            message=f"SHACL prefixes uploaded to repository '{request.repositoryId}' successfully"
         )
         
     except Exception as e:
         logger.error(f"❌ Failed to upload SHACL prefixes: {str(e)}")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to upload SHACL prefixes: {str(e)}"
+        raise HTTPException(status_code=400, detail=f"Failed to upload SHACL prefixes: {str(e)}"
         )
 
 
@@ -234,17 +245,29 @@ async def count_triples(
     """Count triples in GraphDB repository."""
     logger.info(f"🔢 Counting triples in repository: {request.repositoryName}")
     try:
-        count = GraphDBManager.count_triples(
+        triple_count = GraphDBManager.count_triples(
             request.baseUrl,
             request.repositoryName,
             request.username,
             request.password
         )
         
-        logger.info(f"✅ Repository '{request.repositoryName}' contains {count} triples")
+        # Handle different response formats from GraphDBManager
+        if isinstance(triple_count, dict):
+            total_count = triple_count.get('total', 0)
+            explicit_count = triple_count.get('explicit', 0)
+            inferred_count = triple_count.get('inferred', 0)
+            message = f"Repository '{request.repositoryName}' contains {total_count} total triples (explicit: {explicit_count}, inferred: {inferred_count})"
+        else:
+            total_count = int(triple_count) if triple_count else 0
+            message = f"Repository '{request.repositoryName}' contains {total_count} triples"
+        
+        logger.info(f"✅ {message}")
         return GraphDBTripleCountResponse(
-            count=count,
-            message=f"Repository '{request.repositoryName}' contains {count} triples"
+            count=total_count if isinstance(triple_count, dict) else triple_count,
+            explicit_count=triple_count.get('explicit', 0) if isinstance(triple_count, dict) else None,
+            inferred_count=triple_count.get('inferred', 0) if isinstance(triple_count, dict) else None,
+            message=message
         )
         
     except Exception as e:
@@ -357,3 +380,98 @@ async def delete_repository(
         return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/upload-shex", response_model=GraphDBResponse)
+async def upload_shex_shapes(
+    request: GraphDBUploadRequest,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload ShEx shapes to GraphDB repository."""
+    logger.info(f"📐 Uploading ShEx shapes to repository: {request.repositoryId}")
+    try:
+        import rdflib
+        rdf_service = RDFService(db)
+        
+        # Get ShEx file directly from generated files
+        generated_files = request.graphData.get("generated_files", [])
+        shex_file = next((f for f in generated_files if f.get("type") == "ShEx"), None)
+        
+        if not shex_file:
+            raise ValueError("No ShEx file found in generated data")
+        
+        # Get file info from database
+        file_info = await rdf_service.get_file_info(shex_file["id"], current_user.id)
+        if not file_info or not os.path.exists(file_info['path']):
+            raise ValueError("ShEx file not found")
+        
+        # Read TTL into rdflib Graph
+        g = rdflib.Graph()
+        g.parse(file_info['path'], format='turtle')
+        
+        # Upload using your GraphDBManager
+        GraphDBManager.upload_to_graphdb(
+            request.baseUrl,
+            request.repositoryId,
+            request.username,
+            request.password,
+            g,
+            file_format="turtle"
+        )
+        
+        logger.info(f"✅ ShEx shapes uploaded successfully")
+        return GraphDBResponse(
+            success=True,
+            message=f"ShEx shapes uploaded to repository '{request.repositoryId}' successfully"
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to upload ShEx shapes: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to upload ShEx shapes: {str(e)}"
+        )
+
+
+@router.post("/upload-namespaces", response_model=GraphDBResponse)
+async def upload_custom_namespaces(
+    request: GraphDBUploadRequest,
+    current_user=Depends(get_current_user),
+):
+    """Upload custom namespace prefixes to GraphDB repository."""
+    logger.info(f"🏷️ Uploading custom namespaces to repository: {request.repositoryId}")
+    try:
+        namespaces = request.graphData.get("namespaces", {})
+        if not namespaces:
+            raise ValueError("No namespaces provided")
+        
+        # Create a simple RDF graph with PREFIX declarations
+        prefix_triples = []
+        for prefix, uri in namespaces.items():
+            # Add the namespace as RDF data that can be queried
+            prefix_triples.append(f"@prefix {prefix}: <{uri}> .")
+        
+        namespace_data = "\n".join(prefix_triples)
+        
+        logger.info(f"📤 Uploading custom namespaces to GraphDB...")
+        # Upload namespace data as turtle
+        GraphDBManager.upload_rdf_content(
+            request.baseUrl,
+            request.repositoryId,
+            request.username,
+            request.password,
+            namespace_data,
+            file_format="turtle"
+        )
+        
+        logger.info(f"✅ Custom namespaces uploaded to repository '{request.repositoryId}' successfully")
+        return GraphDBResponse(
+            success=True,
+            message=f"Custom namespaces uploaded to repository '{request.repositoryId}' successfully"
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to upload custom namespaces: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to upload custom namespaces: {str(e)}"
+        )
