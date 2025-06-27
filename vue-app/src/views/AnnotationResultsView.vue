@@ -37,7 +37,7 @@
         <!-- Top Bar -->
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
           <h2 class="text-xl font-semibold text-white">Step 3: Annotation Results</h2>
-          <p class="mt-1 text-indigo-200">Review the annotation results before continueing to visualization.</p>
+          <p class="mt-1 text-indigo-200">Review the annotation results before continuing to visualization.</p>
           <p class="mt-1 text-indigo-200">
             <strong>Note: </strong> You can go back to the previous step to modify your query.
           </p>
@@ -168,23 +168,23 @@
                 </div>
 
               </div>
-              <!-- Navigation Buttons -->
+              <!-- Navigation Actions -->
               <div class="mt-8 flex justify-between">
                 <button
-                  type="button"
                   @click="goBack"
-                  class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                  class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                 >
-                  Back to data source selection 
+                  Back to Data Sources
                 </button>
-                <button
-                  type="button"
-                  @click="continueToVisualizeAndAnalysis"
-                  class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                >
-                  Continue to Visualize and Analysis
-                  <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
-                </button>
+                <div class="flex space-x-3">
+                  <button
+                    @click="continueToVisualizeAndAnalysis"
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Continue to Visualize and Analysis
+                    <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
