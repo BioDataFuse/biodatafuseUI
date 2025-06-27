@@ -55,3 +55,13 @@ class Annotation(Base):
     error_message = Column(String, nullable=True)
 
     identifier_set = relationship("IdentifierSet", back_populates="annotation")
+
+
+class RDFFile(Base):
+    __tablename__ = "rdf_files"
+    id = Column(String, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    name = Column(String, nullable=False)
+    path = Column(String, nullable=False)
+    type = Column(String, nullable=False)  # RDF, SHACL, UML
+    created_at = Column(DateTime, default=datetime.utcnow)

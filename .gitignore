@@ -155,3 +155,9 @@ cython_debug/
 frontend.sh
 backend.sh
 biodatafuse.db
+data/processed/*
+*.log
+logs/
+debug.log
+error.log
+access.log
