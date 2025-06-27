@@ -222,7 +222,13 @@
           </div>
 
           <!-- Action Button -->
-          <div class="flex justify-end">
+          <div class="mt-8 flex justify-between px-6 py-4 bg-white rounded-b-xl shadow-lg">
+            <button
+              @click="goBack"
+              class="px-4 py-2 border border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-100"
+            >
+              ← Select another visualization tool
+            </button>
             <button
               @click="generateRDF"
               :disabled="loading || !isFormValid"
@@ -1568,6 +1574,9 @@ export default {
     }
 
   }
+}
+function goBack() {
+  router.push('/visualize&analysis')
 }
 </script>
 
