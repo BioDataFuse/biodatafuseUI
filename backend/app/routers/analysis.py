@@ -36,8 +36,9 @@ async def get_graph_summary(
 
         if not annotation:
             raise HTTPException(status_code=404, detail="Processed annotation not found.")
-
-        summary, error = AnalysisService.get_graph_summary(annotation, Path(f"./data/processed/{set_id}"))
+        
+        analysis_service = AnalysisService(db)
+        summary, error = await analysis_service.get_graph_summary(annotation, Path(f"./data/processed/{set_id}"))
         if error:
             raise HTTPException(status_code=500, detail=error)
         else:
@@ -59,12 +60,14 @@ async def get_node_counts(
         result = await db.execute(
             select(Annotation).where(Annotation.identifier_set_id == set_id)
         )
+        
         annotation = result.scalar_one_or_none()
 
         if not annotation:
             raise HTTPException(status_code=404, detail="Processed annotation not found.")
-
-        fig, error = AnalysisService.plot_node_counts(annotation, Path(f"./data/processed/{set_id}"))
+        
+        analysis_service = AnalysisService(db)
+        fig, error = await analysis_service.plot_node_counts(annotation, Path(f"./data/processed/{set_id}"))
         if error:
             raise HTTPException(status_code=500, detail=error)
         else:
@@ -89,8 +92,9 @@ async def get_edge_counts(
 
         if not annotation:
             raise HTTPException(status_code=404, detail="Processed annotation not found.")
-
-        fig, error = AnalysisService.plot_edge_counts(annotation, Path(f"./data/processed/{set_id}"))
+      
+        analysis_service = AnalysisService(db)
+        fig, error = await analysis_service.plot_edge_counts(annotation, Path(f"./data/processed/{set_id}"))
         if error:
             raise HTTPException(status_code=500, detail=error)
         else:
