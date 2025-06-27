@@ -1305,7 +1305,7 @@ export default {
     },
 
     openGraphDBWorkbench() {
-      const workbenchUrl = `${this.graphdbConfig.baseUrl}/workbench`
+      const workbenchUrl = `${this.graphdbConfig.baseUrl}/`
       window.open(workbenchUrl, '_blank')
     },
 
@@ -1330,9 +1330,10 @@ export default {
       if (storedData) {
         try {
           this.generatedData = JSON.parse(storedData)
-          if (this.hasGeneratedData) {
-            this.currentStepIndex = 1
-          }
+          // Remove auto-advance - always start at step 1
+          // if (this.hasGeneratedData) {
+          //   this.currentStepIndex = 1
+          // }
         } catch (e) {
           localStorage.removeItem('rdfGraphData')
         }
