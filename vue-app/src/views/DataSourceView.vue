@@ -36,8 +36,23 @@
         <!-- Top Bar -->
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
           <h2 class="text-xl font-semibold text-white">Step 3: Select Data Sources</h2>
-          <p class="mt-1 text-indigo-200">Choose the biological databases to query for your analysis.</p>
+          <p class="mt-1 text-indigo-200">Choose the biological data sources to query for your analysis.</p>
           <p class="mt-1 text-indigo-200"> <strong>Note: </strong>Some sources may require an API key for access. </p>
+          <!-- Missing Database Note -->
+          <div class="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
+            <p class="text-sm text-gray-700">
+              <strong>Missing a data source?</strong> If there's a biological data source you'd like us to support, please
+              <a
+                href="https://github.com/BioDataFuse/pyBiodatafuse/issues/new?labels=enhancement&template=new_datasource_request.yaml"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-indigo-600 underline hover:text-indigo-800"
+              >
+                create a feature request on GitHub
+              </a>.
+            </p>
+          </div>
+
         </div>
 
         <!-- Main Content -->
