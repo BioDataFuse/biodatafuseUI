@@ -61,7 +61,7 @@
           Do you need help implementing it?<br />
           👉
           <a
-            href="https://github.com/BioDataFuse/pyBiodatafuse/issues/new?template=analysis-support-request.md"
+            href="https://github.com/BioDataFuse/pyBiodatafuse/issues/new?template=analysis-support-request.yml"
             target="_blank"
             rel="noopener noreferrer"
             class="text-indigo-600 hover:underline"
@@ -162,35 +162,55 @@
         </div>
 
         <!-- Graph Analysis Tab Content -->
-      <div v-if="selectedTab === 'analysis'" class="px-6 py-4 bg-white rounded-b-xl shadow-lg">
-        <h3 class="text-xl font-semibold text-gray-900 mb-4">Patent Analysis</h3>
-        <textarea
-          v-model="chemicalInput"
-          placeholder="Enter compound names, one per line (e.g., Glucose, Aspirin)"
-          rows="4"
-          class="w-full p-3 border rounded-lg mb-4"
-        ></textarea>
+        <div v-if="selectedTab === 'analysis'" class="px-6 py-4 bg-white rounded-b-xl shadow-lg">
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Graph Analysis Tools</h3>
+          <p class="text-gray-700 mb-6">Click below to run different analysis functions on the knowledge graph.</p>
 
-        <button
-          @click="submitPatentAnalysis"
-          class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-500"
-        >
-          Analyze Patents
-        </button>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <!-- Summary Button -->
+          <button
+            @click="fetchGraphSummary"
+            class="flex items-center justify-center px-4 py-3 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition"
+          >
+            📈 Summary
+          </button>
 
-        <div class="mt-6" v-if="analysisResults">
-          <h4 class="text-lg font-bold mb-2">Results</h4>
-          <div v-for="(records, cid) in analysisResults" :key="cid" class="mb-4 border p-4 rounded">
-            <p><strong>CID:</strong> {{ cid }}</p>
-            <ul>
-              <li v-for="entry in records" :key="entry.label">
-                {{ entry.label }}: {{ entry.value }}
-              </li>
-            </ul>
-          </div>
+          <!-- Node Plot -->
+          <button
+            @click="fetchPlot('nodes')"
+            class="flex items-center justify-center px-4 py-3 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition"
+          >
+            Node Distribution
+          </button>
+
+          <!-- Edge Plot -->
+          <button
+            @click="fetchPlot('edges')"
+            class="flex items-center justify-center px-4 py-3 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition"
+          >
+            Edge Distribution
+          </button>
+
+        </div>
+        <!-- Summary Output -->
+        <div v-if="graphSummary" class="bg-gray-50 p-4 rounded-md border border-gray-200 mb-4">
+          <h4 class="text-lg font-semibold mb-2 text-gray-800">Graph Summary</h4>
+          <ul class="list-disc ml-6 text-gray-700">
+            <li>Nodes: {{ graphSummary.Nodes }}</li>
+            <li>Edges: {{ graphSummary.Edges }}</li>
+            <li>Components: {{ graphSummary.Components }}</li>
+            <li>Network Density: {{ graphSummary['Network Density'] }}</li>
+          </ul>
         </div>
 
-        <p v-if="analysisError" class="mt-4 text-red-600">{{ analysisError }}</p>
+        <!-- Plot Image -->
+        <div v-if="plotImage" class="mt-4">
+          <h4 class="text-lg font-semibold text-gray-800 mb-2">Chart Preview</h4>
+          <img :src="`data:image/png;base64,${plotImage}`" alt="Chart" class="rounded border shadow" />
+        </div>
+
+      <!-- Error Message -->
+      <p v-if="analysisError" class="mt-4 text-red-600">{{ analysisError }}</p>
       </div>
 
       </div>
@@ -300,6 +320,45 @@ function handleContinue() {
   } else {
     console.log("Continuing to graph analysis")
     // TODO: Handle analysis step logic
+  }
+}
+
+const identifierSetId = localStorage.getItem('currentIdentifierSetId')
+console.log("Using set ID:", identifierSetId)
+
+const graphSummary = ref(null)
+const plotImage = ref(null)
+const analysisError = ref("")
+
+async function fetchGraphSummary() {
+  if (!identifierSetId) {
+    errorMessage.value = 'No identifier set selected. Please process your data first.'
+    return
+  }
+  try {
+    plotImage.value = null
+    analysisError.value = ""
+    const res = await fetch(`/api/visualize&analysis/summary/${identifierSetId}`)
+
+
+    if (!res.ok) throw new Error(await res.text())
+    graphSummary.value = await res.json()
+  } catch (err) {
+    analysisError.value = `Error fetching summary: ${err.message}`
+  }
+}
+
+async function fetchPlot(type) {
+  try {
+    graphSummary.value = null
+    plotImage.value = null
+    analysisError.value = ""
+    const res = await fetch(`/api/visualize&analysis/${type}/${identifierSetId}`)
+    if (!res.ok) throw new Error(await res.text())
+    const data = await res.json()
+    plotImage.value = data.image
+  } catch (err) {
+    analysisError.value = `Error fetching ${type} plot: ${err.message}`
   }
 }
 
