@@ -15,6 +15,8 @@ import CytoscapeView from './views/CytoscapeView.vue'
 import GraphDbView from './views/GraphDbView.vue'
 import Neo4jView from './views/Neo4jView.vue'
 import AboutView from './views/AboutView.vue'
+import DocumentationView from './views/DocumentationView.vue'
+import ContactView from './views/ContactView.vue'
 
 import NotFoundView from './views/NotFoundView.vue'
 
@@ -89,6 +91,16 @@ const routes = [
     name: 'Neo4j',
     component: Neo4jView,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/documentation',
+    name: 'Documentation',
+    component: DocumentationView
+  },
+  {
+    path: '/contact',
+    name: 'Contact',
+    component: ContactView
   },
   {
     path: '/about',

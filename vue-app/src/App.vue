@@ -93,6 +93,8 @@ const navigation = [
   { name: 'Home', to: '/' },
   { name: 'Query', to: '/query' },
   { name: 'Visualize and Analysis', to: '/visualize&analysis' },
+  { name: 'Documentation', to: '/documentation' },
+  { name: 'Contact', to: '/contact' },
   { name: 'About', to: '/about' }
 ]
 
