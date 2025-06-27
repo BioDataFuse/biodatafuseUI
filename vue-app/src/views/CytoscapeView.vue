@@ -21,7 +21,7 @@
             <strong>Instructions:</strong><br><br>
             • Ensure <strong>Cytoscape Desktop</strong> is installed and running.<br>
             • The <strong>REST API</strong> must be enabled (default setting).<br>
-            • Complete data processing before visualization.<br>
+            • Complete the query building step before visualization.<br>
             • A graph with no edges will result in an error.
           </p>
 

@@ -31,6 +31,53 @@
           <p class="text-xl text-gray-600 mb-6">
             <strong>Instructions:</strong><br><br>
             • Ensure your <strong>Neo4j database</strong> is running and accessible.<br>
+            <button @click="showNeo4jHelp = !showNeo4jHelp" class="ml-2 text-indigo-600 underline text-sm focus:outline-none">
+              {{ showNeo4jHelp ? 'Hide details' : 'More info' }}
+            </button>
+            <transition name="fade">
+              <div v-if="showNeo4jHelp" class="mt-2 text-gray-500 text-base border-l-4 border-indigo-200 pl-4 space-y-2">
+                <p class="font-semibold">To connect to Neo4j, make sure the following are in place:</p>
+                <ul class="list-disc list-inside">
+                  <li>Install Neo4j Desktop or Server if not already installed.</li>
+                  <li>Add or open a local <strong>DBMS</strong> instance.</li>
+                  <li>Start the DBMS and open <strong>Neo4j Browser</strong> for that DBMS.</li>
+                  <li>In the left panel, go to <strong>Database</strong> to verify it is running.</li>
+                </ul>
+                
+                <p class="font-semibold">User setup:</p>
+                <ul class="list-disc list-inside">
+                  <li>Click the <code>:server user add</code> command or go to settings to create a new user.</li>
+                  <li>Assign the user a password and set their role to <code>admin</code>.</li>
+                  <li>Use the same username and password in this interface.</li>
+                </ul>
+
+                <p class="font-semibold">Common error fix:</p>
+                <p>
+                  If you receive this error:
+                  <br>
+                  <code class="text-sm text-red-600 block mt-1">
+                    500: Error loading graph into Neo4j: {code: Neo.ClientError.Security.Unauthorized} {message: The client is unauthorized due to authentication failure.}
+                  </code>
+                  Then:
+                </p>
+                <ul class="list-disc list-inside">
+                  <li>Go to the DBMS settings (click the <code>⋮</code> menu for the DBMS and choose <strong>Settings</strong>).</li>
+                  <li>Edit the config file and set:
+                    <br>
+                    <code class="text-sm block bg-gray-100 p-2 mt-1 rounded">
+                      dbms.security.auth_enabled=false
+                    </code>
+                    <span class="text-sm italic text-gray-500">Note: this disables authentication, which should only be used in a local/trusted setup.</span>
+                  </li>
+                </ul>
+                <p>
+                  After making changes, restart the DBMS to apply the new settings.
+                </p>
+              </div>
+            </transition>
+
+          </p>
+          <p class="text-xl text-gray-600 mb-6">
             • Provide a valid connection URI, username, and password.<br>
             • Process your data before visualizing it.<br>
             • If the graph has no edges, it will not be loaded.
@@ -106,6 +153,7 @@ const statusMessage = ref('')
 const errorMessage = ref('')
 const loading = ref(false)
 const identifierSetId = localStorage.getItem('currentIdentifierSetId')
+const showNeo4jHelp = ref(false)
 
 const loadNeo4jGraph = async () => {
   statusMessage.value = ''

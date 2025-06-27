@@ -1,31 +1,103 @@
-# backend/app/api/routes/analysis.py
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from backend.app.database import get_db
+from backend.app.services.analysis_service import AnalysisService
+from backend.app.models import Annotation
+from backend.app.routes.auth import get_current_user
+from pathlib import Path
+import matplotlib.pyplot as plt
+import io
+import base64
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from ..services.graph_analysis_service import GraphAnalysisService
+router = APIRouter(prefix="/visualize&analysis", tags=["Analysis"])
 
-router = APIRouter(prefix="/analysis", tags=["Analysis"])
+def fig_to_base64(fig):
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight")
+    plt.close(fig)
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode('utf-8')
 
-class ChemicalInput(BaseModel):
-    chemicals: str
+@router.get("/summary/{set_id}")
+async def get_graph_summary(
+    set_id: int,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    print(f"[summary] Received request for set_id: {set_id}")
 
-@router.post("/patent-data/")
-async def analyze_patents(input_data: ChemicalInput):
     try:
-        chemical_list = [c.strip() for c in input_data.chemicals.strip().split('\n') if c.strip()]
-        if not chemical_list:
-            raise HTTPException(status_code=400, detail="No valid chemicals provided.")
+        from backend.app.models import Annotation
+        result = await db.execute(
+            select(Annotation).where(Annotation.identifier_set_id == set_id)
+        )
+        annotation = result.scalar_one_or_none()
+
+        if not annotation:
+            raise HTTPException(status_code=404, detail="Processed annotation not found.")
         
-        analysis_service = GraphAnalysisService()
-        result_df = await analysis_service.run_patent_analysis(chemical_list)
+        analysis_service = AnalysisService(db)
+        summary, error = await analysis_service.get_graph_summary(annotation, Path(f"./data/processed/{set_id}"))
+        if error:
+            raise HTTPException(status_code=500, detail=error)
+        else:
+            return summary
 
-        # Group entries by CID and return summaries
-        summary = {}
-        for cid in result_df.index.unique():
-            subset = result_df.loc[[cid]] if isinstance(result_df.loc[cid], pd.Series) else result_df.loc[cid]
-            summary[cid] = subset.to_dict(orient="records")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-        return {"success": True, "summary": summary}
+@router.get("/nodes/{set_id}")
+async def get_node_counts(
+    set_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user)
+    ):
+    print(f"[nodes] Received request for set_id: {set_id}")
 
+    try:
+        from backend.app.models import Annotation
+        result = await db.execute(
+            select(Annotation).where(Annotation.identifier_set_id == set_id)
+        )
+        
+        annotation = result.scalar_one_or_none()
+
+        if not annotation:
+            raise HTTPException(status_code=404, detail="Processed annotation not found.")
+        
+        analysis_service = AnalysisService(db)
+        fig, error = await analysis_service.plot_node_counts(annotation, Path(f"./data/processed/{set_id}"))
+        if error:
+            raise HTTPException(status_code=500, detail=error)
+        else:
+            return {"image": fig_to_base64(fig)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/edges/{set_id}")
+async def get_edge_counts(
+    set_id: int, 
+    db: AsyncSession = Depends(get_db), 
+    current_user=Depends(get_current_user)
+    ):
+    print(f"[edges] Received request for set_id: {set_id}")
+
+    try:
+        from backend.app.models import Annotation
+        result = await db.execute(
+            select(Annotation).where(Annotation.identifier_set_id == set_id)
+        )
+        annotation = result.scalar_one_or_none()
+
+        if not annotation:
+            raise HTTPException(status_code=404, detail="Processed annotation not found.")
+      
+        analysis_service = AnalysisService(db)
+        fig, error = await analysis_service.plot_edge_counts(annotation, Path(f"./data/processed/{set_id}"))
+        if error:
+            raise HTTPException(status_code=500, detail=error)
+        else:
+            return {"image": fig_to_base64(fig)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
