@@ -110,7 +110,7 @@
                       type="file"
                       class="hidden"
                       @change="handleFileUpload"
-                      accept=".txt,.csv"
+                      accept=".txt,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     />
                   </label>
                 </div>
@@ -370,9 +370,14 @@ function handleFileUpload(event) {
   const file = event.target.files[0]
   if (file) {
     // Validate file type
-    const validTypes = ['text/plain', 'text/csv']
+    const validTypes = [
+      'text/plain',
+      'text/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ]
     if (!validTypes.includes(file.type)) {
-      error.value = 'Please upload a TXT or CSV file'
+      error.value = 'Please upload a TXT, CSV or Excel file'
       event.target.value = ''
       selectedFile.value = null
       return
