@@ -195,12 +195,7 @@
         <!-- Summary Output -->
         <div v-if="graphSummary" class="bg-gray-50 p-4 rounded-md border border-gray-200 mb-4">
           <h4 class="text-lg font-semibold mb-2 text-gray-800">Graph Summary</h4>
-          <ul class="list-disc ml-6 text-gray-700">
-            <li>Nodes: {{ graphSummary.Nodes }}</li>
-            <li>Edges: {{ graphSummary.Edges }}</li>
-            <li>Components: {{ graphSummary.Components }}</li>
-            <li>Network Density: {{ graphSummary['Network Density'] }}</li>
-          </ul>
+          <div v-html="graphSummary.summary_html" class="prose"></div>  
         </div>
 
         <!-- Plot Image -->

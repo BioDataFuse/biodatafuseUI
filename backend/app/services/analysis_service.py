@@ -16,7 +16,9 @@ class AnalysisService:
                 return None, f"Graph error: {error}"
 
             graph_obj = BioGraph(graph=pygraph)
-            return graph_obj.graph_summary, None
+            summary_html = graph_obj.graph_summary
+            return {"summary_html": summary_html}, None
+
         except Exception as e:
             return None, {"message": f"Error generating graph summary: {str(e)}"}
 

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.database import get_db
 from backend.app.services.analysis_service import AnalysisService
 from backend.app.models import Annotation
-from backend.app.routes.auth import get_current_user
+from .auth import get_current_user
 from pathlib import Path
 import matplotlib.pyplot as plt
 import io
@@ -22,7 +22,7 @@ def fig_to_base64(fig):
 @router.get("/summary/{set_id}")
 async def get_graph_summary(
     set_id: int,
-    current_user=Depends(get_current_user),
+    # current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     print(f"[summary] Received request for set_id: {set_id}")
@@ -39,10 +39,12 @@ async def get_graph_summary(
         
         analysis_service = AnalysisService(db)
         summary, error = await analysis_service.get_graph_summary(annotation, Path(f"./data/processed/{set_id}"))
+        print(f"[summary] Summary: {summary}")
         if error:
             raise HTTPException(status_code=500, detail=error)
         else:
-            return summary
+            return {"summary_html": summary["summary_html"]}
+
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -51,7 +53,7 @@ async def get_graph_summary(
 async def get_node_counts(
     set_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user=Depends(get_current_user)
+    # current_user=Depends(get_current_user)
     ):
     print(f"[nodes] Received request for set_id: {set_id}")
 
@@ -79,7 +81,7 @@ async def get_node_counts(
 async def get_edge_counts(
     set_id: int, 
     db: AsyncSession = Depends(get_db), 
-    current_user=Depends(get_current_user)
+    # current_user=Depends(get_current_user)
     ):
     print(f"[edges] Received request for set_id: {set_id}")
 
