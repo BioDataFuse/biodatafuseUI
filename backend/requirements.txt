@@ -45,6 +45,7 @@ nbformat==5.9.2
 neo4j==5.28.1
 networkx==3.4.2
 numpy==1.24.4
+openpyxl==3.1.2
 packaging==25.0
 pandas==2.0.3
 parmap==1.6.0
