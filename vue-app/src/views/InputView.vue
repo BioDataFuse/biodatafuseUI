@@ -167,7 +167,7 @@
                           <option value="NCBI Gene" class="py-1.5">NCBI Gene ID (e.g., 7157)</option>
                         </optgroup>
                         <optgroup label="Protein Identifiers" class="font-semibold">
-                          <option value="UniProt" class="py-1.5">UniProt ID (e.g., P12345)</option>
+                          <option value="UniProt" class="py-1.5">UniProtKB ID (e.g., P12345)</option>
                           <option value="RefSeq Protein" class="py-1.5">RefSeq Protein ID (e.g., NP_001301717)</option>
                           <option value="Ensembl Protein" class="py-1.5">Ensembl Protein ID (e.g., ENSP00000012048)</option>
                         </optgroup>
