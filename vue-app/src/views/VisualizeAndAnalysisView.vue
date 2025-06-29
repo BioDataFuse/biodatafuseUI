@@ -336,6 +336,10 @@ const edgePlotImage = ref(null)
 const analysisError = ref("")
 
 async function fetchGraphSummary() {
+  graphSummary.value = null
+  nodePlotImage.value = null
+  edgePlotImage.value = null
+  analysisError.value = ""
   if (!identifierSetId) {
     analysisError.value = 'No identifier set selected. Please process your data first.'
     return
@@ -351,6 +355,10 @@ async function fetchGraphSummary() {
 }
 
 async function fetchNodePlot() {
+  graphSummary.value = null
+  nodePlotImage.value = null
+  edgePlotImage.value = null
+  analysisError.value = ""
   try {
     nodePlotImage.value = null
     analysisError.value = ""
@@ -364,6 +372,10 @@ async function fetchNodePlot() {
 }
 
 async function fetchEdgePlot() {
+  graphSummary.value = null
+  nodePlotImage.value = null
+  edgePlotImage.value = null
+  analysisError.value = ""
   try {
     edgePlotImage.value = null
     analysisError.value = ""
@@ -375,5 +387,4 @@ async function fetchEdgePlot() {
     analysisError.value = `Error fetching edge plot: ${err.message}`
   }
 }
-
 </script>
