@@ -83,11 +83,14 @@
                   </p>
                 </div>
               </div>
-
               <!-- File Upload -->
               <div v-show="activeTab === 'file'" class="space-y-4">
                 <div class="flex justify-center items-center w-full">
-                  <label class="flex flex-col w-full h-64 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-gray-50 hover:border-indigo-400 transition-all cursor-pointer">
+                  <label
+                    class="flex flex-col w-full h-64 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-gray-50 hover:border-indigo-400 transition-all cursor-pointer"
+                    @dragover.prevent
+                    @drop.prevent="handleDrop"
+                  >
                     <div class="flex flex-col items-center justify-center pt-7">
                       <DocumentArrowUpIcon v-if="!selectedFile" class="w-12 h-12 text-indigo-400" />
                       <DocumentCheckIcon v-else class="w-12 h-12 text-green-500" />
@@ -109,6 +112,26 @@
                       @change="handleFileUpload"
                       accept=".txt,.csv"
                     />
+                  </label>
+                </div>
+                <!-- Optional: User-defined Column Name -->
+                <div class="flex justify-center items-center w-full">
+                  <label class="flex flex-col w-full h-30 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-gray-50 hover:border-indigo-400 transition-all">
+                    <div class="flex flex-col items-center justify-center px-4 pt-7 text-center">
+                      <label for="column-name" class="block text-sm font-medium text-gray-700">
+                        Column name in file if not <code class="bg-gray-200 text-gray-800 px-1 rounded">identifier</code>
+                      </label>
+                      <input
+                        id="column-name"
+                        v-model="formData.columnName"
+                        type="text"
+                        placeholder="e.g., Gene or ID"
+                        class="mt-4 block w-full max-w-sm rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
+                      <p class="mt-2 text-xs text-gray-500">
+                        If blank, defaults to <code class="bg-gray-100 px-1 rounded">identifier</code>
+                      </p>
+                    </div>
                   </label>
                 </div>
               </div>
@@ -305,7 +328,8 @@ const currentStep = ref(0)
 const formData = ref({
   textInput: '',
   identifierType: '',
-  file: null
+  file: null,
+  columnName: ''
 })
 
 const hasInput = computed(() => {
@@ -368,6 +392,14 @@ function handleFileUpload(event) {
   }
 }
 
+function handleDrop(event) {
+  const file = event.dataTransfer.files[0]
+  if (file) {
+    const fakeEvent = { target: { files: [file] } }
+    handleFileUpload(fakeEvent)
+  }
+}
+
 // Submit form
 async function submitForm() {
   if (!isFormValid.value) return
@@ -387,6 +419,10 @@ async function submitForm() {
       form.append('file', formData.value.file)
     }
 
+    if (formData.value.columnName.trim()) {
+      form.append('column_name', formData.value.columnName.trim())
+    }
+
     const response = await axios.post('/api/identifiers', form, {
       headers: {
         'Content-Type': 'multipart/form-data'
@@ -396,6 +432,7 @@ async function submitForm() {
     // Store the identifier set ID for the next step
     localStorage.setItem('currentIdentifierSetId', response.data.set_id)
     
+
     // Navigate to mapping results
     router.push('/query/mapping')
 
