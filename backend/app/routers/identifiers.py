@@ -46,8 +46,12 @@ async def process_identifiers(
     print("Step 1")
     file_content = None
     if file:
-        file_content = await file.read()
-        file_content = file_content.decode()
+        file_content = await file.read()  # <- this is bytes
+        file_type = file.content_type
+    else:
+        file_content = None
+        file_type = None
+    print(f"File type: {file_type}, Column name: {column_name}")
 
     identifier_set = await identifier_service.create_identifier_set(
         user_id=current_user.id,
@@ -55,8 +59,8 @@ async def process_identifiers(
         text_input=text_input,
         file_content=file_content,
         input_species=input_species,
-        column_name=column_name
-
+        column_name=column_name,
+        file_type=file_type
     )
     print("Ending function process_identifiers")
     return schemas.IdentifierProcessingResponse(
