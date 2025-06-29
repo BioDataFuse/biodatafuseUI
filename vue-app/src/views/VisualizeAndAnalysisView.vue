@@ -169,6 +169,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <!-- Summary Button -->
           <button
+            type="button"
             @click="fetchGraphSummary"
             class="flex items-center justify-center px-4 py-3 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition"
           >
@@ -177,7 +178,8 @@
 
           <!-- Node Plot -->
           <button
-            @click="fetchPlot('nodes')"
+            type="button"
+            @click.prevent="fetchNodePlot('nodes')"
             class="flex items-center justify-center px-4 py-3 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition"
           >
             Node Distribution
@@ -185,7 +187,8 @@
 
           <!-- Edge Plot -->
           <button
-            @click="fetchPlot('edges')"
+            type="button"
+            @click.prevent="fetchEdgePlot('edges')"
             class="flex items-center justify-center px-4 py-3 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition"
           >
             Edge Distribution
@@ -198,10 +201,16 @@
           <div v-html="graphSummary.summary_html" class="prose"></div>  
         </div>
 
-        <!-- Plot Image -->
-        <div v-if="plotImage" class="mt-4">
-          <h4 class="text-lg font-semibold text-gray-800 mb-2">Chart Preview</h4>
-          <img :src="`data:image/png;base64,${plotImage}`" alt="Chart" class="rounded border shadow" />
+        <!-- Node Plot -->
+        <div v-if="nodePlotImage" class="mt-4">
+          <h4 class="text-lg font-semibold text-gray-800 mb-2">Node Distribution</h4>
+          <img :src="`data:image/png;base64,${nodePlotImage}`" alt="Node Plot" class="rounded border shadow" />
+        </div>
+
+        <!-- Edge Plot -->
+        <div v-if="edgePlotImage" class="mt-4">
+          <h4 class="text-lg font-semibold text-gray-800 mb-2">Edge Distribution</h4>
+          <img :src="`data:image/png;base64,${edgePlotImage}`" alt="Edge Plot" class="rounded border shadow" />
         </div>
 
       <!-- Error Message -->
@@ -322,20 +331,18 @@ const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 console.log("Using set ID:", identifierSetId)
 
 const graphSummary = ref(null)
-const plotImage = ref(null)
+const nodePlotImage = ref(null)
+const edgePlotImage = ref(null)
 const analysisError = ref("")
 
 async function fetchGraphSummary() {
   if (!identifierSetId) {
-    errorMessage.value = 'No identifier set selected. Please process your data first.'
+    analysisError.value = 'No identifier set selected. Please process your data first.'
     return
   }
   try {
-    plotImage.value = null
     analysisError.value = ""
     const res = await fetch(`/api/visualize&analysis/summary/${identifierSetId}`)
-
-
     if (!res.ok) throw new Error(await res.text())
     graphSummary.value = await res.json()
   } catch (err) {
@@ -343,17 +350,29 @@ async function fetchGraphSummary() {
   }
 }
 
-async function fetchPlot(type) {
+async function fetchNodePlot() {
   try {
-    graphSummary.value = null
-    plotImage.value = null
+    nodePlotImage.value = null
     analysisError.value = ""
-    const res = await fetch(`/api/visualize&analysis/${type}/${identifierSetId}`)
+    const res = await fetch(`/api/visualize&analysis/nodes/${identifierSetId}`)
     if (!res.ok) throw new Error(await res.text())
     const data = await res.json()
-    plotImage.value = data.image
+    nodePlotImage.value = data.image
   } catch (err) {
-    analysisError.value = `Error fetching ${type} plot: ${err.message}`
+    analysisError.value = `Error fetching node plot: ${err.message}`
+  }
+}
+
+async function fetchEdgePlot() {
+  try {
+    edgePlotImage.value = null
+    analysisError.value = ""
+    const res = await fetch(`/api/visualize&analysis/edges/${identifierSetId}`)
+    if (!res.ok) throw new Error(await res.text())
+    const data = await res.json()
+    edgePlotImage.value = data.image
+  } catch (err) {
+    analysisError.value = `Error fetching edge plot: ${err.message}`
   }
 }
 
