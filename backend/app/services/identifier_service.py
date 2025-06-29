@@ -1,8 +1,9 @@
 import json
 import logging
 from collections import defaultdict
-from io import StringIO
+from io import BytesIO, StringIO
 from typing import Dict, List, Optional, Tuple
+import mimetypes
 
 import pandas as pd
 from pyBiodatafuse import id_mapper
@@ -21,16 +22,18 @@ class IdentifierService:
         user_id: int,
         identifier_type: str,
         text_input: Optional[str] = None,
-        file_content: Optional[str] = None,
+        file_content: Optional[bytes] = None,
         input_species: str = "Human",
         column_name: Optional[str] = None,
+        file_type: Optional[str] = None,  # <- ADD THIS
     ) -> models.IdentifierSet:
         # Process identifiers
         identifiers, warnings = self._process_identifiers(
             text_input,
             file_content,
-            column_name=column_name
-            )
+            column_name=column_name,
+            file_type=file_type  # <- pass here too
+        )
         # Create new identifier set
         identifier_set = models.IdentifierSet(
             user_id=user_id,
@@ -57,9 +60,6 @@ class IdentifierService:
                     input_datasource=identifier_type,
                     output_datasource="All",  # You can adjust the output datasource if needed
                 )
-                print("Reply from pyBiodatafuse")
-                print("bridfedb_df:")
-                print(bridgedb_df)
                 bridgedb_df.rename(
                     columns={
                         "identifier.source": "identifier_source",
@@ -71,23 +71,9 @@ class IdentifierService:
                 bridgedb_subset_df = bridgedb_df[
                     bridgedb_df["target_source"].isin(
                         ["Ensembl", "NCBI Gene", "PubChem Compound", "ChEMBL compound"]
-                    )
+                    ) & (bridgedb_df["target"] != bridgedb_df["identifier"])
                 ].sort_values(by=["identifier", "target_source"])
-                print("bridfedb_subset_df:")
-                print(bridgedb_subset_df)
 
-                # Store the serialized mapped identifiers as a JSON string
-                # identifier_set.mapped_identifiers = json.dumps(
-                #     {idx: row.to_dict() for idx, row in bridgedb_df.iterrows()},
-                #     indent=4,
-                # )
-                # identifier_set.mapped_identifiers_subset = json.dumps(
-                #     {
-                #         idx: row.to_dict()
-                #         for idx, row in bridgedb_subset_df.head(12).iterrows()
-                #     },
-                #     indent=4,
-                # )
                 identifier_set.mapped_identifiers = bridgedb_df.to_dict(orient="index")
                 identifier_set.mapped_identifiers_subset = bridgedb_subset_df.to_dict(
                     orient="index"
@@ -112,32 +98,34 @@ class IdentifierService:
     def _process_identifiers(
         self,
         text_input: Optional[str] = None,
-        file_content: Optional[str] = None,
-        column_name: Optional[str] = None
+        file_content: Optional[bytes] = None,
+        column_name: Optional[str] = None,
+        file_type: Optional[str] = None
     ) -> Tuple[List[str], Optional[str]]:
         identifiers = []
         warnings = None
-        # Process text input
+
         if text_input:
             text_identifiers = [id.strip() for id in text_input.split() if id.strip()]
             identifiers.extend(text_identifiers)
 
-        # Process file content
         if file_content:
             try:
-                df = pd.read_csv(StringIO(file_content))
+                if file_type and ("spreadsheetml" in file_type or "excel" in file_type):
+                    df = pd.read_excel(BytesIO(file_content))
+                else:
+                    df = pd.read_csv(StringIO(file_content.decode("utf-8")))
+
                 target_col = column_name or "identifier"
                 if target_col in df.columns:
-                    file_identifiers = df[target_col].dropna().unique().tolist()
-                    identifiers.extend(file_identifiers)
+                    identifiers = df[target_col].dropna().astype(str).unique().tolist()
                 else:
-                    warnings = f"File must contain '{target_col}' column"
+                    warnings = f"File must contain column '{target_col}'"
+
             except Exception as e:
                 warnings = f"Error processing file: {str(e)}"
 
-        # Remove duplicates and empty strings
         identifiers = list(set(filter(None, identifiers)))
-
         if not identifiers and not warnings:
             warnings = "No valid identifiers provided"
 
@@ -148,20 +136,6 @@ class IdentifierService:
             select(models.IdentifierSet).where(models.IdentifierSet.id == set_id)
         )
         identifier_set = result.scalar_one_or_none()
-
-        if identifier_set:
-            if identifier_set.mapped_identifiers:
-                identifier_set.mapped_identifiers = identifier_set.mapped_identifiers
-            if identifier_set.mapped_identifiers_subset:
-                identifier_set.mapped_identifiers_subset = (
-                    identifier_set.mapped_identifiers_subset
-                )
-            if identifier_set.bridgedb_metadata:
-                identifier_set.bridgedb_metadata = identifier_set.bridgedb_metadata
-            if identifier_set.mapped_identifiers_list:
-                identifier_set.mapped_identifiers_list = (
-                    identifier_set.mapped_identifiers_list
-                )
         return identifier_set
 
     async def get_user_identifier_sets(
@@ -173,3 +147,4 @@ class IdentifierService:
             .order_by(models.IdentifierSet.created_at.desc())
         )
         return result.scalars().all()
+    
