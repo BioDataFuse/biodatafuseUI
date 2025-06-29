@@ -23,9 +23,14 @@ class IdentifierService:
         text_input: Optional[str] = None,
         file_content: Optional[str] = None,
         input_species: str = "Human",
+        column_name: Optional[str] = None,
     ) -> models.IdentifierSet:
         # Process identifiers
-        identifiers, warnings = self._process_identifiers(text_input, file_content)
+        identifiers, warnings = self._process_identifiers(
+            text_input,
+            file_content,
+            column_name=column_name
+            )
         # Create new identifier set
         identifier_set = models.IdentifierSet(
             user_id=user_id,
@@ -107,7 +112,8 @@ class IdentifierService:
     def _process_identifiers(
         self,
         text_input: Optional[str] = None,
-        file_content: Optional[str] = None
+        file_content: Optional[str] = None,
+        column_name: Optional[str] = None
     ) -> Tuple[List[str], Optional[str]]:
         identifiers = []
         warnings = None
@@ -120,11 +126,12 @@ class IdentifierService:
         if file_content:
             try:
                 df = pd.read_csv(StringIO(file_content))
-                if "identifier" in df.columns:
-                    file_identifiers = df["identifier"].dropna().unique().tolist()
+                target_col = column_name or "identifier"
+                if target_col in df.columns:
+                    file_identifiers = df[target_col].dropna().unique().tolist()
                     identifiers.extend(file_identifiers)
                 else:
-                    warnings = "File must contain 'identifier' column"
+                    warnings = f"File must contain '{target_col}' column"
             except Exception as e:
                 warnings = f"Error processing file: {str(e)}"
 

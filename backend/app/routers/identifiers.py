@@ -17,6 +17,7 @@ async def process_identifiers(
     text_input: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
     input_species: str = Form("Human"),
+    column_name: Optional[str] = Form(None),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -54,6 +55,8 @@ async def process_identifiers(
         text_input=text_input,
         file_content=file_content,
         input_species=input_species,
+        column_name=column_name
+
     )
     print("Ending function process_identifiers")
     return schemas.IdentifierProcessingResponse(

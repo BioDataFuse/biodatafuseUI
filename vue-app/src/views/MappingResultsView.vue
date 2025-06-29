@@ -107,7 +107,7 @@
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200">
-                        <tr v-for="(mappings, inputId) in mappingResults.mapped_identifiers_subset" :key="inputId">
+                        <tr v-for="[inputId, mappings] in paginatedRows" :key="inputId">
                           <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">{{ mappings.identifier }}</td>
                           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.identifier_source || '-' }}</td>
                           <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ mappings.target || '-' }}</td>
@@ -115,6 +115,25 @@
                         </tr>
                       </tbody>
                     </table>
+                    <div class="mt-4 flex items-center space-x-4">
+                      <button
+                        @click="prevPage"
+                        :disabled="currentPage === 1"
+                        class="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        Previous
+                      </button>
+                      <span class="text-sm text-gray-500">
+                        Page {{ currentPage }} of {{ totalPages }}
+                      </span>
+                      <button
+                        @click="nextPage"
+                        :disabled="currentPage === totalPages"
+                        class="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -146,7 +165,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ExclamationCircleIcon, ArrowRightIcon } from '@heroicons/vue/24/outline'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
@@ -192,5 +211,28 @@ function goBack() {
 
 function continueToDataSources() {
   router.push('/query/datasources')
+}
+
+const currentPage = ref(1)
+const rowsPerPage = 10
+
+const paginatedRows = computed(() => {
+  const entries = Object.entries(mappingResults.value?.mapped_identifiers_subset || {})
+  const start = (currentPage.value - 1) * rowsPerPage
+  const end = start + rowsPerPage
+  return entries.slice(start, end)
+})
+
+const totalPages = computed(() => {
+  const total = Object.keys(mappingResults.value?.mapped_identifiers_subset || {}).length
+  return Math.ceil(total / rowsPerPage)
+})
+
+function nextPage() {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+
+function prevPage() {
+  if (currentPage.value > 1) currentPage.value--
 }
 </script>
