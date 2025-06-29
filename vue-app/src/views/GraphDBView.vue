@@ -804,6 +804,12 @@
 <script>
 import axios from 'axios'
 
+import { useRouter } from 'vue-router'
+const router = useRouter()
+function goBack() { //TODO: Implement goBack functionality
+  router.push('/visualize&analysis')
+}
+
 // Upload Card Component
 const UploadCard = {
   props: ['title', 'description', 'disabled', 'loading'],
@@ -1575,9 +1581,7 @@ export default {
 
   }
 }
-function goBack() {
-  router.push('/visualize&analysis')
-}
+
 </script>
 
 <style scoped>
