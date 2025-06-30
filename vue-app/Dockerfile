@@ -1,25 +1,19 @@
-FROM ubuntu:latest
+FROM node:18-alpine
 
-# Set the working directory in the container
-WORKDIR /home
+# Set working directory
+WORKDIR /app
 
-COPY . /home
+# Copy package files first for better caching
+COPY package*.json ./
 
-# Update package list & install necessary dependencies
-RUN apt-get update -y
-RUN apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release \
-    git \
-    python3-pip \
-    npm \
-    nodejs 
-
+# Install dependencies
 RUN npm install
 
+# Copy application code
+COPY . .
+
+# Expose port
 EXPOSE 3000
 
-CMD ["/bin/bash", "-c", "cd src; npm run dev"]
+# Run the development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]

@@ -6,8 +6,8 @@ import axios from 'axios'
 
 import './assets/main.css'
 
-// Configure axios
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+// Configure axios - remove direct baseURL to use Vite proxy
+// axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://backend:8000'
 axios.defaults.withCredentials = true
 
 // Add token to request headers if it exists

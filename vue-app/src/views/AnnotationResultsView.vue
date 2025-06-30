@@ -69,14 +69,14 @@
           <div class="bg-white shadow sm:rounded-lg">
             <div class="px-4 py-5 sm:p-6">
               <div v-if="annotationResults?.captured_warnings?.length" class="bg-gray-200 p-4 mb-4 rounded-md">
-                <p class="text-sm text-gray-700">
+                <div class="text-sm text-gray-700">
                   <strong class="font-semibold text-gray-900">Warnings:</strong>
                   <ul class="list-disc pl-5 space-y-2 mt-1">
                     <li v-for="(warning, index) in annotationResults?.captured_warnings" :key="index">
                       {{ warning }}
                     </li>
                   </ul>
-                </p>
+                </div>
               </div>
               <!-- Annotation Results Table -->
               <!-- Filter Controls -->

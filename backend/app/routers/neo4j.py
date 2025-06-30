@@ -1,9 +1,8 @@
-from sqlalchemy import select
 from pathlib import Path
-
 from fastapi import APIRouter, Depends, HTTPException
-from backend.app.services.neo4j_service import Neo4jService
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from ..services.neo4j_service import Neo4jService
 
 from ..database import get_db
 from .auth import get_current_user
@@ -19,7 +18,7 @@ async def neo4j_visualization(
     print(f"[Neo4j] Received request for set_id: {set_id}")
 
     try:
-        from backend.app.models import Annotation
+        from ..models import Annotation
         result = await db.execute(
             select(Annotation).where(Annotation.identifier_set_id == set_id)
         )

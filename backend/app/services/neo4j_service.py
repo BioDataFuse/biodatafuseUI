@@ -1,9 +1,10 @@
 from pathlib import Path
 from pyBiodatafuse.graph import neo4j
-
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.app.services.graph_service import GraphService
-from backend.app import models
+
+from .graph_service import GraphService
+
+from .. import models
 
 
 class Neo4jService:
