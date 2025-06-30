@@ -1,10 +1,11 @@
+
 <h2>2. Select Datasource(s)</h2>
 <!--Select datasources -->
 <form id="datasource" action="/graph_creation/gc_datasource/" method="post">
     <div class="form-group">
         <ul class="checkbox-list">
             <input type="checkbox" name="datasource_selected" value="bgee"> <span><strong>Bgee</strong> <em>(Gene expression levels in different tissues)</em></span><br>
-            <input type="checkbox" name="datasource_selected" value="disgenet"> <span><strong>DisGeNET</strong> <em>(Gene-disease associations)</em></span><br>
+            <input id="disgenet-checkbox" type="checkbox" name="datasource_selected" value="disgenet"> <span><strong>DisGeNET</strong> <em>(Gene-disease associations)</em></span><br>
             <input type="checkbox" name="datasource_selected" value="minerva"> <span><strong>MINERVA</strong> <em>(Pathways)</em></span><br>
             <input type="checkbox" name="datasource_selected" value="molmedb"> <span><strong>MolMeDB</strong><em>(Interactions of molecules with membrane proteins)</em></span><br>
             <input type="checkbox" name="datasource_selected" value="string"> <span><strong>STRING</strong> <em>(Protein-protein interactions)</em></span><br>
@@ -16,7 +17,22 @@
             <input type="checkbox" name="datasource_selected" value="opentarget.disease_associations"> <span><strong>OpenTarget</strong> <em>(Gene-disease associations)</em></span><br>
         </ul>
     </div>
+    <div>
+        <label for="api_key">DisGeNET API Key:</label>
+        <input type="text" id="api_key" name="api_key" placeholder="Enter your API key">
+    </div>
     <div class="form-group">
         <input type="button" value="Annotate Input" onclick="submitDatasource()">
     </div>
 </form>
+
+<script>
+    document.getElementById('disgenet-checkbox').addEventListener('change', function() {
+                       const apiKeyField = document.getElementById('api_key');
+                       if (this.value === 'disgenet') {
+                           apiKeyField.required = true;
+                       } else {
+                           apiKeyField.required = false;
+                       }
+                   });
+</script>

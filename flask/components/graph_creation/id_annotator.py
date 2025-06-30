@@ -5,7 +5,7 @@ from pyBiodatafuse.utils import combine_sources
 
 
 def process_selected_sources(
-    bridgedb_df: pd.DataFrame, selected_sources_list: list
+    bridgedb_df: pd.DataFrame, selected_sources_list: list, api_key: str = ""
 ) -> pd.DataFrame:
     """query the selected databases and convert the output to a dataframe.
 
@@ -18,17 +18,17 @@ def process_selected_sources(
     # Dictionary to map the datasource names to their corresponding functions
     data_source_functions = {
         ## TODO: "bgee": bgee.get_gene_expression,
-        "disGeNet": disgenet.get_gene_disease,
+        "disgenet": disgenet.get_gene_disease,
         ## TODO: "minerva": minera.get,
         ## TODO: "molmedb": molmedb.get_mol_gene_inhibitor,
         ## TODO: "pubchem"
-        "opentarget.gene_location": opentargets.get_gene_location,
+        # "opentarget.gene_location": opentargets.get_gene_location,
         "opentarget.gene_ontology": opentargets.get_gene_go_process,
         "opentarget.reactome": opentargets.get_gene_reactome_pathways,
-        "opentarget.drug_interactions": opentargets.get_gene_drug_interactions,
+        # "opentarget.drug_interactions": opentargets.get_gene_drug_interactions,
         "opentarget.disease_associations": opentargets.get_gene_disease_associations,
         "string": stringdb.get_ppi,
-        "wikipathways": wikipathways.get_gene_wikipathway
+        "wikipathways": wikipathways.get_gene_wikipathways
         ## TODO: "wikidata"
     }
     warnings = []  # Initialize empty list for warnings
@@ -36,11 +36,14 @@ def process_selected_sources(
     for source in selected_sources_list:
         if source in data_source_functions:
             print(source)
-            tmp_data, tmp_metadata = data_source_functions[source](bridgedb_df)
+            if source == "disgenet":
+                tmp_data, tmp_metadata = data_source_functions[source](api_key=api_key, bridgedb_df=bridgedb_df)
+            else:
+                tmp_data, tmp_metadata = data_source_functions[source](bridgedb_df)
             combined_metadata[source] = tmp_metadata
             if tmp_data.empty:
                 warnings.append(f"No annotation available for {source}")
             if not tmp_data.empty:
-                combined_data = combine_sources([combined_data, tmp_data])
+                combined_data = combine_sources(bridgedb_df, [combined_data, tmp_data])
 
     return combined_data, combined_metadata
