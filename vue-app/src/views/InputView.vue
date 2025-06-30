@@ -190,14 +190,14 @@
                           <option value="NCBI Gene" class="py-1.5">NCBI Gene ID (e.g., 7157)</option>
                         </optgroup>
                         <optgroup label="Protein Identifiers" class="font-semibold">
-                          <option value="UniProt" class="py-1.5">UniProtKB ID (e.g., P12345)</option>
-                          <option value="RefSeq Protein" class="py-1.5">RefSeq Protein ID (e.g., NP_001301717)</option>
-                          <option value="Ensembl Protein" class="py-1.5">Ensembl Protein ID (e.g., ENSP00000012048)</option>
+                          <option value="Uniprot-TrEMBL" class="py-1.5">UniProtKB ID (e.g., P12345)</option>
+                          <option value="Ensembl" class="py-1.5">Ensembl Protein ID (e.g., ENSP00000012048)</option>
                         </optgroup>
                         <optgroup label="Compound Identifiers" class="font-semibold">
                           <option value="HMDB" class="py-1.5">HMDB ID (e.g., HMDB0000001)</option>
                           <option value="ChEBI" class="py-1.5">ChEBI ID (e.g., CHEBI:15377)</option>
                           <option value="SMILES" class="py-1.5">SMILES Notation (e.g., C1=CC=CC=C1)</option>
+                          <option value="PubChem Compound" class="py-1.5">PubChem Compound (e.g., 100208)</option>
                         </optgroup>
                       </select>
                       <ChevronDownIcon class="absolute right-3 top-3.5 h-5 w-5 text-gray-400 
