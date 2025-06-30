@@ -17,7 +17,8 @@ from pyBiodatafuse.annotators import (
     wikipathways,
     kegg,
     aopwiki,
-    intact
+    intact,
+    mitocarta
 )
 from pyBiodatafuse.utils import (
     combine_sources,
@@ -128,7 +129,13 @@ class DataSourceService:
                 "requires_map_name": False,
                 "base_url": constants.OPENTARGETS_ENDPOINT,
             },
-            
+            "mitocarta" : {
+                "name": f"{constants.MITOCARTA}",
+                "description": "Inventory of mammalian mitochondrial proteins and pathways",
+                "requires_key": False,
+                "requires_map_name": False,
+                "base_url": constants.MITOCARTA_DOWNLOAD_URL,
+            },
             "pubchem_assays": {
                 "name": f"{constants.PUBCHEM} - Assays",
                 "description": "Chemical information",
@@ -149,6 +156,13 @@ class DataSourceService:
                 "requires_key": False,
                 "requires_map_name": False,
                 "base_url": constants.MOLMEDB_ENDPOINT,
+            },
+            "aop_wiki_rdf": {
+                "name": f"{constants.AOPWIKIRDF} - Adverse Outcome Pathways",
+                "description": "Gene and compound annotations for AOP Wiki-approved Adverse Outcome Pathways and their components",
+                "requires_key": False,
+                "requires_map_name": False,
+                "base_url": constants.AOPWIKI_ENDPOINT,
             },
             "aop_wiki_rdf": {
                 "name": f"{constants.AOPWIKIRDF} - Adverse Outcome Pathways",
@@ -342,8 +356,16 @@ class DataSourceService:
                             )
                             dataframes.append(intact_compound_df)
                             metadata.append(intact_compound_metadata)
-
-
+                        elif source_name == "mitocarta":
+                            mitocarta_df, mitocarta_metadata = mitocarta.get_gene_mito_pathways(
+                                bridgedb_df=bridgedb_df,
+                                mitocarta_file="Human.MitoCarta3.0.xls",
+                                filename="human_mitocarta3.0.xls",
+                                species="hsapiens",
+                                sheet_name="A Human MitoCarta3.0"
+                            )
+                            dataframes.append(mitocarta_df)
+                            metadata.append(mitocarta_metadata)
                         else:
                             continue
 
