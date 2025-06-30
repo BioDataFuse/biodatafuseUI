@@ -15,7 +15,9 @@ from pyBiodatafuse.annotators import (
     pubchem,
     stringdb,
     wikipathways,
-    kegg
+    kegg,
+    aopwiki,
+    intact
 )
 from pyBiodatafuse.utils import (
     combine_sources,
@@ -84,6 +86,20 @@ class DataSourceService:
                 "requires_map_name": False,
                 "base_url": constants.STRING_ENDPOINT,
             },
+            "intact_gene_interactions": {
+                "name": f"{constants.INTACT} - Molecular interaction for genes",
+                "description": "Molecular interaction network",
+                "requires_key": False,
+                "requires_map_name": False,
+                "base_url": constants.INTACT_ENDPOINT,
+            },
+            "intact_compound_interactions": {
+                "name": f"{constants.INTACT} - Molecular interaction for compounds",
+                "description": "Molecular interaction network",
+                "requires_key": False,
+                "requires_map_name": False,
+                "base_url": constants.INTACT_ENDPOINT,
+            },
             "opentargets_go": {
                 "name": f"{constants.OPENTARGETS} - Gene Ontology (GO)",
                 "description": "Target discovery and prioritization",
@@ -112,6 +128,7 @@ class DataSourceService:
                 "requires_map_name": False,
                 "base_url": constants.OPENTARGETS_ENDPOINT,
             },
+            
             "pubchem_assays": {
                 "name": f"{constants.PUBCHEM} - Assays",
                 "description": "Chemical information",
@@ -302,20 +319,33 @@ class DataSourceService:
                             molmedb_transporter_inhibited_df, molmedb_transporter_inhibited_metadata = molmedb.get_compound_gene_inhibitor(bridgedb_df=bridgedb_df)
                             dataframes.append(molmedb_transporter_inhibited_df)
                             metadata.append(molmedb_transporter_inhibited_metadata)
+                        elif source_name == "aop_wiki_rdf": #TODO: needs to be updated
+                            aopwiki_df, aopwiki_metadata = aopwiki.get_aops(
+                                bridgedb_df=bridgedb_df, 
+                                db="aopwiki",
+                                )
+                            dataframes.append(aopwiki_df)
+                            metadata.append(aopwiki_metadata)
                         elif source_name == "stringdb":
                             ppi_df, ppi_metadata = stringdb.get_ppi(bridgedb_df=bridgedb_df)
                             dataframes.append(ppi_df)
                             metadata.append(ppi_metadata)
+                        elif source_name == "intact_gene_interactions":
+                            intact_gene_df, intact_gene_metadata = intact.get_gene_interactions(
+                                bridgedb_df=bridgedb_df
+                            )
+                            dataframes.append(intact_gene_df)
+                            metadata.append(intact_gene_metadata)
+                        elif source_name == "intact_compound_interactions":
+                            intact_compound_df, intact_compound_metadata = intact.get_compound_interactions(
+                                bridgedb_df=bridgedb_df
+                            )
+                            dataframes.append(intact_compound_df)
+                            metadata.append(intact_compound_metadata)
+
 
                         else:
                             continue
-
-                        # metadata["sources_processed"].append(source_name)
-                        # metadata["source_counts"][source_name] = source_metadata["count"]
-                        # if not df.empty:
-                        #     dataframes.append(df)
-                        # else:
-                        #     metadata["warnings"].append(f"No data found for {source_name}")
 
                     except Exception as e:
                         f"Error processing {source_name}: {str(e)}"
