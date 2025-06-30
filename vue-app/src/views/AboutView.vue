@@ -1,125 +1,73 @@
 <template>
-  <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 py-6 sm:px-0">
-      <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-900">About BioDataFuse</h1>
-        
-        <div class="mt-6 prose prose-indigo">
-          <p class="text-lg text-gray-500">
-            BioDataFuse is a comprehensive platform for integrating and analyzing biological data from multiple sources. 
-            Our platform helps researchers discover new insights by connecting different types of biological data.
-          </p>
+  <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- Title -->
+      <h1 class="text-4xl font-extrabold text-gray-900">About BioDataFuse</h1>
+      <p class="mt-4 text-lg text-gray-500">
+        Your platform for harmonizing and analyzing biomedical data through modular queries and dynamic graph construction.
+      </p>
 
-          <h2 class="mt-8 text-2xl font-bold text-gray-900">Key Features</h2>
-          
-          <div class="mt-6 grid gap-6 lg:grid-cols-2">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-              <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg font-medium text-gray-900">Data Integration</h3>
-                <p class="mt-2 text-gray-500">
-                  Connect and analyze data from multiple biological databases seamlessly.
-                </p>
-              </div>
-            </div>
+      <!-- Intro -->
+      <div class="mt-10 space-y-6 text-base text-gray-500 leading-relaxed">
+        <p>
+          <strong class="text-gray-900">BioDataFuse</strong> is a modern, open-source platform designed to streamline the integration and contextual analysis of diverse biomedical data sources. It provides a modular query-based system that allows users to build tailored <strong class="text-gray-900">knowledge graphs</strong> from heterogeneous data inputs.
+        </p>
+        <p>
+          At its core, BioDataFuse leverages the power of its Python package, <a href="https://github.com/BioDataFuse/pyBiodatafuse" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">pyBiodatafuse</a>, which aggregates and harmonizes biological data from supported databases. It integrates seamlessly with tools like Neo4j and Cytoscape, supporting local graph hosting and advanced network analysis.
+        </p>
+        <p>
+          These knowledge graphs can be dynamically generated based on user-defined queries, facilitating applications such as target discovery, disease mechanism exploration, and drug repurposing.
+        </p>
+      </div>
 
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-              <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg font-medium text-gray-900">Advanced Analysis</h3>
-                <p class="mt-2 text-gray-500">
-                  Perform sophisticated analyses with our comprehensive suite of tools.
-                </p>
-              </div>
-            </div>
+      <!-- Key Capabilities -->
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900">Key Capabilities</h2>
+        <ul class="mt-4 space-y-2 text-base text-gray-500 list-disc list-inside">
+          <li>Modular integration of heterogeneous biological datasets</li>
+          <li>Real-time construction of user-defined knowledge graphs</li>
+          <li>Built-in compatibility with Cytoscape and Neo4j</li>
+          <li>Graph analytics support, including link prediction</li>
+          <li>Designed following FAIR principles for data reuse and transparency</li>
+        </ul>
+      </div>
 
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-              <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg font-medium text-gray-900">Visualization</h3>
-                <p class="mt-2 text-gray-500">
-                  Create interactive visualizations of your data and results.
-                </p>
-              </div>
-            </div>
 
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-              <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg font-medium text-gray-900">API Access</h3>
-                <p class="mt-2 text-gray-500">
-                  Programmatic access to all platform features through our REST API.
-                </p>
-              </div>
-            </div>
-          </div>
+      <!-- Collaboration & Interoperability -->
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900">Collaboration & Interoperability Focus</h2>
+        <p class="mt-4 text-base text-gray-500">
+          BioDataFuse is the result of a collaborative effort among several European academic and research institutions. The project reflects a shared commitment to improving biomedical data interoperability and harmonization, aligning with priorities set by the ELIXIR Interoperability Platform.
+        </p>
+      </div>
 
-          <h2 class="mt-12 text-2xl font-bold text-gray-900">Supported Databases</h2>
-          
-          <div class="mt-6 space-y-4">
-            <div v-for="db in databases" :key="db.id" class="bg-white overflow-hidden shadow rounded-lg">
-              <div class="px-4 py-5 sm:p-6">
-                <div class="flex items-center">
-                  <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-100 text-indigo-600">
-                    <component :is="db.icon" class="h-6 w-6" />
-                  </div>
-                  <div class="ml-4">
-                    <h3 class="text-lg font-medium text-gray-900">{{ db.name }}</h3>
-                    <p class="mt-1 text-gray-500">{{ db.description }}</p>
-                    <div class="mt-2">
-                      <a 
-                        :href="db.url" 
-                        target="_blank" 
-                        rel="noopener"
-                        class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                      >
-                        Learn more →
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <h2 class="mt-12 text-2xl font-bold text-gray-900">Contact Us</h2>
-          
-          <div class="mt-6 bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <div class="grid grid-cols-1 gap-6">
-                <div>
-                  <h3 class="text-lg font-medium text-gray-900">Support</h3>
-                  <p class="mt-2 text-gray-500">
-                    Need help? Contact our support team at 
-                    <a href="mailto:support@biodatafuse.com" class="text-indigo-600 hover:text-indigo-900">
-                      support@biodatafuse.com
-                    </a>
-                  </p>
-                </div>
-                <div>
-                  <h3 class="text-lg font-medium text-gray-900">Documentation</h3>
-                  <p class="mt-2 text-gray-500">
-                    Visit our 
-                    <a href="#" class="text-indigo-600 hover:text-indigo-900">
-                      documentation
-                    </a>
-                    for detailed guides and API references.
-                  </p>
-                </div>
-                <div>
-                  <h3 class="text-lg font-medium text-gray-900">Community</h3>
-                  <p class="mt-2 text-gray-500">
-                    Join our community on 
-                    <a href="#" class="text-indigo-600 hover:text-indigo-900">
-                      GitHub
-                    </a>
-                    to contribute and stay updated.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- Open Source -->
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900">Open Source & UI Access</h2>
+        <p class="mt-4 text-base text-gray-500">
+          The project is fully open-source and community-driven. You can explore and contribute to the core packages:
+        </p>
+        <div class="mt-6 flex flex-wrap gap-4">
+          <a
+            href="https://github.com/BioDataFuse/pyBiodatafuse"
+            target="_blank"
+            class="inline-block px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700"
+          >
+            pyBiodatafuse (Python Backend)
+          </a>
+          <a
+            href="https://github.com/BioDataFuse/biodatafuseUI"
+            target="_blank"
+            class="inline-block px-6 py-3 bg-indigo-100 text-indigo-700 font-medium rounded-md hover:bg-indigo-200"
+          >
+            biodatafuseUI (Web Interface)
+          </a>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import {
