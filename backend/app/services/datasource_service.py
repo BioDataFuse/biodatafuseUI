@@ -381,16 +381,6 @@ class DataSourceService:
             select(models.IdentifierSet).where(models.IdentifierSet.id == set_id)
         )
         annotation = result.scalar_one_or_none()
-
-        if annotation:
-            if annotation.combined_df:
-                annotation.combined_df = annotation.combined_df
-            if annotation.combined_metadata:
-                annotation.combined_metadata = annotation.combined_metadata
-            if annotation.opentargets_df:
-                annotation.opentargets_df = annotation.opentargets_df
-            if annotation.pygraph:
-                annotation.pygraph = annotation.pygraph
         return annotation
 
     # async def get_source_metadata(self, source_name: str) -> Dict:
