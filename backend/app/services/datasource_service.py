@@ -150,49 +150,29 @@ class DataSourceService:
         identifier_set = identifier_set.scalar_one_or_none()
         if not identifier_set:
             raise ValueError("Identifier set not found")
-        print(f"datasource_service: Identifier set found with ID {identifier_set.id}")
         # Create annotation for identifier set
         annotation = models.Annotation(
             identifier_set_id=set_id
         )
-        print(f"datasource_service: Creating annotation for identifier set with ID {set_id}")
-        print(f"datasource_service: Annotation created with ID {annotation.identifier_set_id}")
-        print(f"datasource_service: {annotation}")
+
         self.db.add(annotation)
-        print(f"datasource_service: Adding annotation to the database")
         await self.db.commit()
-        print(f"datasource_service: Committing annotation to the database")
         # await self.db.refresh(annotation)
-        print(f"datasource_service: Annotation created with ID {annotation.id}")
         try:
-            # bridgedb_json = json.loads(identifier_set.mapped_identifiers_subset)
-            # bridgedb_df = pd.DataFrame(bridgedb_json)
             bridgedb_df = pd.DataFrame(identifier_set.mapped_identifiers).T
             bridgedb_df = bridgedb_df.rename(columns={'identifier_source': 'identifier.source', 'target_source': 'target.source'})
             bridgedb_metadata = identifier_set.bridgedb_metadata
-            print(f"datasource_service: Loaded mapped_identifiers_subset with {len(bridgedb_df)} rows")
-            print(f"datasource_service: Loaded mapped_identifiers_subset with {bridgedb_df.head()} entries")
+
 
         except Exception as e:
             raise ValueError (f"Error loading mapped_identifiers_subset: {e}")
         if not bridgedb_df.empty:
             try:
-                print(f"datasource_service: Processing selected data sources for identifier set {set_id}")
-                # combined_df, combined_metadata, pygraph, opentargets_df, captured_warnings = await self._process_selected_sources(
-                #     bridgedb_df=bridgedb_df,
-                #     bridgedb_metadata=bridgedb_metadata,
-                #     datasources=datasources,
-                # )
                 combined_df, combined_metadata, opentargets_df, captured_warnings = await self._process_selected_sources(
                     bridgedb_df=bridgedb_df,
                     bridgedb_metadata=bridgedb_metadata,            
                     datasources=datasources,
                 )
-                print(f"datasource_service: Processed selected data sources for identifier set {set_id}")
-                print(f"datasource_service: Combined DataFrame: {combined_df.head()}")
-                print(f"datasource_service: Combined Metadata: {combined_metadata}")
-                # print(f"datasource_service: OpenTargets DataFrame: {opentargets_df.head()}")
-                print(f"datasource_service: Captured warnings: {captured_warnings}")
 
                 # Store results in database
                 annotation.combined_df = combined_df.to_dict(orient="index")
@@ -202,7 +182,6 @@ class DataSourceService:
 
                 # annotation.pygraph = pygraph
                 annotation.captured_warnings = captured_warnings if captured_warnings else None
-                print(f"Captured warnings: {annotation.captured_warnings}")
                 annotation.status = "completed"
                 await self.db.commit()
                 await self.db.refresh(annotation)
@@ -213,7 +192,6 @@ class DataSourceService:
                 await self.db.commit()
 
             await self.db.commit()
-            print("I am here 312")
 
             return annotation
 
@@ -310,12 +288,10 @@ class DataSourceService:
                             metadata.append(pubchem_assay_metadata)
                         elif source_name == "molmedb_compounds":
                             inhibitor_df, inhibitor_metadata = molmedb.get_gene_compound_inhibitor(bridgedb_df=bridgedb_df)
-                            print(f"Retrieved Inhibitor DataFrame: {inhibitor_df.head()}")  #TODO: check why the PPI dataframe is empty
                             dataframes.append(inhibitor_df)
                             metadata.append(inhibitor_metadata)
                         elif source_name == "stringdb":
                             ppi_df, ppi_metadata = stringdb.get_ppi(bridgedb_df=bridgedb_df)
-                            print(f"Retrieved PPI DataFrame: {ppi_df.head()}") #TODO: check why the PPI dataframe is empty
                             dataframes.append(ppi_df)
                             metadata.append(ppi_metadata)
 
@@ -335,40 +311,13 @@ class DataSourceService:
                         continue
 
             warning_messages = [str(w.message) for w in caught_warnings]
-            if warning_messages:
-                print(f"Warnings captured: {warning_messages}")
 
             filtered_warnings = [warning for warning in warning_messages if warning.startswith("There is no annotation for your input list")]
 
             # Combine all dataframes
-            # List of potenitial dataframes
-            print(f"Available dataframes: {dataframes}")
-            print(f"Combining {len(dataframes)} dataframes...")            
             combined_df = combine_sources(bridgedb_df, dataframes)
-            print(f"Combined DataFrame: {combined_df.head()}")
-            print(f"Combined DataFrame colnames: {combined_df.columns.tolist()}")
             # List of potenitail metadata
-            print(f"Available metadata: {metadata}")
-            print(f"Combining {len(metadata)} metadata...")
             combined_metadata = create_or_append_to_metadata(bridgedb_metadata, metadata)
-
-            # Create a graph from the annotated dataframe
-            # if opentargets_df is not None:
-            #     pygraph = generator.save_graph(
-            #         combined_df=combined_df,
-            #         combined_metadata=combined_metadata,
-            #         disease_compound=opentargets_df,
-            #         graph_name="examples",
-            #         graph_dir="./data",
-            #     )  #TODO: the save_graph function is not found in the pyBiodatafuse package, even after installing from main, check and fix
-            # else:
-            #     pygraph = generator.save_graph(
-            #         combined_df=combined_df,
-            #         combined_metadata=combined_metadata,
-            #         graph_name="examples",
-            #         graph_dir="./data",
-            #     )
-            print("I am here 302")
 
             # return combined_df, combined_metadata, pygraph, opentargets_df, warning_messages
             return combined_df, combined_metadata, opentargets_df, filtered_warnings            
