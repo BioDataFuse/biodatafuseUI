@@ -17,5 +17,5 @@ work in progress...
     '''
 ## Run docker compose
 While in the main directory:
-docker-compose -f docker-compose.yml up
+docker compose -f compose.yaml up
 
