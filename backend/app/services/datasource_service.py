@@ -138,7 +138,7 @@ class DataSourceService:
                 "description": "Gene and compound annotations for AOP Wiki-approved Adverse Outcome Pathways and their components",
                 "requires_key": False,
                 "requires_map_name": False,
-                "base_url": constants.AOPWIKIRDF_ENDPOINT,
+                "base_url": constants.AOPWIKI_ENDPOINT,
             },
         }
 
