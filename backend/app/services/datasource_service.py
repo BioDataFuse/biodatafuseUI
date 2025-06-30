@@ -15,6 +15,7 @@ from pyBiodatafuse.annotators import (
     pubchem,
     stringdb,
     wikipathways,
+    kegg
 )
 from pyBiodatafuse.utils import (
     combine_sources,
@@ -119,19 +120,26 @@ class DataSourceService:
                 "base_url": constants.PUBCHEM_ENDPOINT,
             },
             "molmedb_compounds": {
-                "name": f"{constants.MOLMEDB} - Transporter inhibitor annotation",
+                "name": f"{constants.MOLMEDB} - Transporter inhibitor annotation (linking the compounds to inhibited genes)",
                 "description": "Molecular interactions with membranes",
                 "requires_key": False,
                 "requires_map_name": False,
                 "base_url": constants.MOLMEDB_ENDPOINT,
             },
-            # "aop_wiki_rdf": {
-            #     "name": f"{constants.AOPWIKIRDF} - Adverse Outcome Pathways",
-            #     "description": "Gene and compound annotations for AOP Wiki-approved Adverse Outcome Pathways and their components"
-            #     "requires_key": False,
-            #     "requires_map_name": False,
-            #     "base_url": constants.AOPWIKIRDF_ENDPOINT,
-            # },
+            "molmedb_gene": {
+                "name": f"{constants.MOLMEDB} - Transporter inhibitor annotation (linking transporters encoded by genes to their inhibitors)",
+                "description": "Molecular interactions with membranes",
+                "requires_key": False,
+                "requires_map_name": False,
+                "base_url": constants.MOLMEDB_ENDPOINT,
+            },
+            "aop_wiki_rdf": {
+                "name": f"{constants.AOPWIKIRDF} - Adverse Outcome Pathways",
+                "description": "Gene and compound annotations for AOP Wiki-approved Adverse Outcome Pathways and their components",
+                "requires_key": False,
+                "requires_map_name": False,
+                "base_url": constants.AOPWIKIRDF_ENDPOINT,
+            },
         }
 
     async def get_available_sources(self) -> List[Dict]:
@@ -262,12 +270,12 @@ class DataSourceService:
                             ) 
                             dataframes.append(opentargets_reactome_df)
                             metadata.append(opentargets_reactome_metadata)
-                        # elif source_name == "kegg":
-                        #     kegg_df, kegg_metadata = bgee.get_kegg_data(
-                        #         bridgedb_df=bridgedb_df
-                        #     ) #TODO: implement kegg data retrieval
-                        #     dataframes.append(kegg_df)
-                        #     metadata.append(kegg_metadata)
+                        elif source_name == "kegg":
+                            kegg_df, kegg_metadata = kegg.get_pathways(
+                                bridgedb_df=bridgedb_df
+                            )
+                            dataframes.append(kegg_df)
+                            metadata.append(kegg_metadata)
                         elif source_name == "opentargets_go":
                             opentargets_go_df, opentargets_go_metadata = opentargets.get_gene_go_process(
                                 bridgedb_df=bridgedb_df
@@ -286,10 +294,14 @@ class DataSourceService:
                             )
                             dataframes.append(pubchem_assay_df)
                             metadata.append(pubchem_assay_metadata)
-                        elif source_name == "molmedb_compounds":
+                        elif source_name == "molmedb_gene":
                             inhibitor_df, inhibitor_metadata = molmedb.get_gene_compound_inhibitor(bridgedb_df=bridgedb_df)
                             dataframes.append(inhibitor_df)
                             metadata.append(inhibitor_metadata)
+                        elif source_name == "molmedb_compounds":
+                            molmedb_transporter_inhibited_df, molmedb_transporter_inhibited_metadata = molmedb.get_compound_gene_inhibitor(bridgedb_df=bridgedb_df)
+                            dataframes.append(molmedb_transporter_inhibited_df)
+                            metadata.append(molmedb_transporter_inhibited_metadata)
                         elif source_name == "stringdb":
                             ppi_df, ppi_metadata = stringdb.get_ppi(bridgedb_df=bridgedb_df)
                             dataframes.append(ppi_df)
