@@ -25,7 +25,6 @@ async def get_graph_summary(
     # current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    print(f"[summary] Received request for set_id: {set_id}")
 
     try:
         from backend.app.models import Annotation
@@ -39,7 +38,6 @@ async def get_graph_summary(
         
         analysis_service = AnalysisService(db)
         summary, error = await analysis_service.get_graph_summary(annotation, Path(f"./data/processed/{set_id}"))
-        print(f"[summary] Summary: {summary}")
         if error:
             raise HTTPException(status_code=500, detail=error)
         else:
@@ -55,7 +53,6 @@ async def get_node_counts(
     db: AsyncSession = Depends(get_db),
     # current_user=Depends(get_current_user)
     ):
-    print(f"[nodes] Received request for set_id: {set_id}")
 
     try:
         from backend.app.models import Annotation
@@ -83,7 +80,6 @@ async def get_edge_counts(
     db: AsyncSession = Depends(get_db), 
     # current_user=Depends(get_current_user)
     ):
-    print(f"[edges] Received request for set_id: {set_id}")
 
     try:
         from backend.app.models import Annotation
