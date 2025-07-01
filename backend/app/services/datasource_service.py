@@ -164,6 +164,13 @@ class DataSourceService:
                 "requires_map_name": False,
                 "base_url": constants.AOPWIKI_ENDPOINT,
             },
+            "aop_wiki_rdf": {
+                "name": f"{constants.AOPWIKIRDF} - Adverse Outcome Pathways",
+                "description": "Gene and compound annotations for AOP Wiki-approved Adverse Outcome Pathways and their components",
+                "requires_key": False,
+                "requires_map_name": False,
+                "base_url": constants.AOPWIKI_ENDPOINT,
+            },
         }
 
     async def get_available_sources(self) -> List[Dict]:

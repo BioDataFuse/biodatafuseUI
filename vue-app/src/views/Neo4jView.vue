@@ -15,12 +15,12 @@
       <div class="mt-12 bg-white rounded-2xl shadow-xl overflow-hidden">
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
           <div class="flex space-x-8">
-            <p
+            <div
               @click="selectedTab = 'visualization'"
-              class="pb-2 text-xl font-medium focus:outline-none"
+              class="pb-2 text-xl font-medium focus:outline-none cursor-pointer"
             >
               <h2 class="text-xl font-semibold text-white">Visualization in Neo4j</h2>
-            </p>
+            </div>
           </div>
         </div>
       </div>

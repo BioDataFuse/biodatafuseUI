@@ -1,10 +1,10 @@
 from pathlib import Path
-from pyBiodatafuse.analyzer.summarize import BioGraph
-from backend.app.services.graph_service import GraphService
-from backend.app import models
+import pandas as pd
+from .graph_service import GraphService
+
+from .. import models
 from sqlalchemy.ext.asyncio import AsyncSession
 import matplotlib.pyplot as plt
-import pandas as pd
 
 class AnalysisService:
     def __init__(self, db: AsyncSession):

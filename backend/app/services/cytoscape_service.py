@@ -3,8 +3,8 @@ from pyBiodatafuse.graph import cytoscape
 from py4cytoscape import cytoscape_ping
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.app.services.graph_service import GraphService
-from backend.app import models
+from .graph_service import GraphService
+from .. import models
 
 
 class CytoscapeService:

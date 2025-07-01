@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from backend.app.database import get_db
-from backend.app.services.analysis_service import AnalysisService
-from backend.app.models import Annotation
-from .auth import get_current_user
 from pathlib import Path
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from ..database import get_db
+from ..services.analysis_service import AnalysisService
+from ..models import Annotation
+from .auth import get_current_user
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -27,7 +26,6 @@ async def get_graph_summary(
 ):
 
     try:
-        from backend.app.models import Annotation
         result = await db.execute(
             select(Annotation).where(Annotation.identifier_set_id == set_id)
         )
@@ -55,7 +53,6 @@ async def get_node_counts(
     ):
 
     try:
-        from backend.app.models import Annotation
         result = await db.execute(
             select(Annotation).where(Annotation.identifier_set_id == set_id)
         )
@@ -82,7 +79,6 @@ async def get_edge_counts(
     ):
 
     try:
-        from backend.app.models import Annotation
         result = await db.execute(
             select(Annotation).where(Annotation.identifier_set_id == set_id)
         )

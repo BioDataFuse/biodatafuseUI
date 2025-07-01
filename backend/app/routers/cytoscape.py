@@ -3,7 +3,7 @@ from sqlalchemy import select
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Path as FastAPIPath
-from backend.app.services.cytoscape_service import CytoscapeService
+from ..services.cytoscape_service import CytoscapeService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
@@ -23,7 +23,7 @@ async def cytoscape_visualization(
 ):
 
     try:
-        from backend.app.models import Annotation
+        from ..models import Annotation
         result = await db.execute(
             select(Annotation).where(Annotation.identifier_set_id == set_id)
         )

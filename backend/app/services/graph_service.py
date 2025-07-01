@@ -4,7 +4,7 @@ import networkx as nx
 from typing import Optional, Tuple, Dict, Any
 
 from pyBiodatafuse.graph import saver
-from backend.app.models import Annotation
+from ..models import Annotation
 
 
 class GraphService:
