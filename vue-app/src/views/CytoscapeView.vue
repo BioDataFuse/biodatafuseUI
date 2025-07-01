@@ -92,6 +92,7 @@ const checkingConnection = ref(false)
 const cytoscapeConnected = ref(false)
 const graphName = ref('')
 const identifierSetId = localStorage.getItem('currentIdentifierSetId')
+const cytoscapeBaseUrl = 'http://localhost:1234'
 
 const cytoscapeStatus = ref({
   message: 'Checking Cytoscape connection...',
@@ -101,34 +102,47 @@ const cytoscapeStatus = ref({
 
 const checkCytoscapeConnection = async () => {
   checkingConnection.value = true
-  try {
-    const response = await fetch('http://localhost:1234/v1/status', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+  
+  // Try multiple possible endpoints
+  const endpoints = [
+    '/v1',
+    '/v1/version', 
+    '/version',
+    ''
+  ]
+  
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(`${cytoscapeBaseUrl}${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      if (response.ok) {
+        cytoscapeConnected.value = true
+        cytoscapeStatus.value = {
+          message: `Cytoscape is running and ready! (endpoint: ${endpoint || '/'})`,
+          icon: '✅',
+          class: 'bg-green-100 text-green-800'
+        }
+        checkingConnection.value = false
+        return
       }
-    })
-    
-    if (response.ok) {
-      cytoscapeConnected.value = true
-      cytoscapeStatus.value = {
-        message: 'Cytoscape is running and ready!',
-        icon: '✅',
-        class: 'bg-green-100 text-green-800'
-      }
-    } else {
-      throw new Error('Cytoscape not responding')
+    } catch (error) {
+      continue
     }
-  } catch (error) {
-    cytoscapeConnected.value = false
-    cytoscapeStatus.value = {
-      message: 'Cytoscape not detected. Please start Cytoscape Desktop.',
-      icon: '❌',
-      class: 'bg-red-100 text-red-800'
-    }
-  } finally {
-    checkingConnection.value = false
   }
+  
+  // If we get here, none of the endpoints worked
+  cytoscapeConnected.value = false
+  cytoscapeStatus.value = {
+    message: 'Cytoscape not detected. Please start Cytoscape Desktop and ensure CyREST app is installed.',
+    icon: '❌',
+    class: 'bg-red-100 text-red-800'
+  }
+  checkingConnection.value = false
 }
 
 const loadCytoscapeGraph = async () => {
@@ -164,26 +178,34 @@ const loadCytoscapeGraph = async () => {
 
     // Step 2: Load graph into local Cytoscape
     statusMessage.value = 'Loading graph into Cytoscape...'
-    const cytoscapeResponse = await fetch('http://localhost:1234/v1/networks', {
+    
+    // Try the networks endpoint
+    const cytoscapeResponse = await fetch(`${cytoscapeBaseUrl}/v1/networks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        ...graphData,
-        data: {
-          ...graphData.data,
-          name: networkName
-        }
+        data: graphData,
+        name: networkName,
+        collection: "BioDataFuse"
       })
     })
 
     if (cytoscapeResponse.ok) {
       const result = await cytoscapeResponse.json()
-      statusMessage.value = `Graph "${networkName}" loaded successfully into Cytoscape! Network ID: ${result.networkSUID || 'N/A'}`
+      statusMessage.value = `Graph "${networkName}" loaded successfully into Cytoscape!`
       
-      // Optional: Apply BioDataFuse styling
-      await applyBioDataFuseStyle()
+      // Try to apply layout
+      if (result.networkSUID) {
+        try {
+          await fetch(`${cytoscapeBaseUrl}/v1/apply/layouts/force-directed/${result.networkSUID}`, {
+            method: 'GET'
+          })
+        } catch (layoutError) {
+          console.warn('Could not apply layout:', layoutError)
+        }
+      }
       
     } else {
       const errorText = await cytoscapeResponse.text()
@@ -201,28 +223,6 @@ const loadCytoscapeGraph = async () => {
     }
   } finally {
     loading.value = false
-  }
-}
-
-const applyBioDataFuseStyle = async () => {
-  try {
-    // Apply the BioDataFuse visual style if available
-    await fetch('http://localhost:1234/v1/styles', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: "BioDataFuse_style",
-        defaults: [
-          {"visualProperty": "NODE_FILL_COLOR", "value": "#FF0000"},
-          {"visualProperty": "EDGE_COLOR", "value": "#000000"},
-        ],
-        mappings: []
-      })
-    })
-  } catch (error) {
-    console.warn('Could not apply BioDataFuse style:', error)
   }
 }
 
