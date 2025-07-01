@@ -70,14 +70,13 @@
     <div class="bg-gray-50 py-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="lg:text-center">
-          <h2 class="text-base text-indigo-600 font-semibold tracking-wide uppercase">Supported Databases</h2>
           <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-            Comprehensive Data Sources
+            Supported Data Sources
           </p>
         </div>
 
         <div class="mt-10">
-          <div class="space-y-10 md:space-y-0 md:grid md:grid-cols-3 md:gap-x-8 md:gap-y-10">
+          <div class="space-y-10 md:space-y-0 md:grid md:grid-cols-4 md:gap-x-8 md:gap-y-10">
             <div v-for="db in databases" :key="db.name" class="relative bg-white p-6 rounded-lg shadow">
               <h3 class="text-lg font-medium text-gray-900">{{ db.name }}</h3>
               <p class="mt-2 text-base text-gray-500">{{ db.description }}</p>
@@ -148,10 +147,10 @@ const features = [
     description: 'Connect and analyze data from multiple biological databases seamlessly.',
     icon: CircleStackIcon
   },
-  {
-    name: 'Advanced Analytics',
-    description: 'Powerful tools for statistical analysis and data visualization.',
-    icon: Squares2X2Icon
+    {
+    name: 'Custom Knowledge Graphs',
+    description: "Automatically build knowledge graphs based on user's inputs.",
+    icon: LightBulbIcon
   },
   {
     name: 'Network Analysis',
@@ -167,16 +166,94 @@ const features = [
 
 const databases = [
   {
+    name: 'AOP WIKI RDF',
+    description: 'Adverse Outcome Pathways knowledgebase for toxicity mechanisms.',
+    type: 'Toxicology',
+    tagClass: 'bg-red-100 text-red-800'
+  },
+  {
+    name: 'Bgee',
+    description: 'Gene expression data across species and conditions.',
+    type: 'Transcriptomics',
+    tagClass: 'bg-yellow-100 text-yellow-800'
+  },
+  {
     name: 'DisGeNET',
     description: 'Gene-disease associations database with comprehensive coverage of human diseases.',
     type: 'Genomics',
     tagClass: 'bg-green-100 text-green-800'
   },
   {
+    name: 'g:Profiler',
+    description: 'Functional enrichment analysis and gene profiling tools.',
+    type: 'Functional Genomics',
+    tagClass: 'bg-teal-100 text-teal-800'
+  },
+  {
+    name: 'IntAct',
+    description: 'Molecular interaction database from EMBL-EBI.',
+    type: 'Proteomics',
+    tagClass: 'bg-blue-100 text-blue-800'
+  },
+  {
+    name: 'KEGG',
+    description: 'Pathway database integrating genomic, chemical, and systemic functional information.',
+    type: 'Pathways',
+    tagClass: 'bg-purple-100 text-purple-800'
+  },
+  {
+    name: 'MINERVA',
+    description: 'Platform for visualization and curation of molecular interaction maps.',
+    type: 'Visualization',
+    tagClass: 'bg-pink-100 text-pink-800'
+  },
+  {
+    name: 'MitoCarta',
+    description: 'Inventory of mitochondrial proteins with supporting data.',
+    type: 'Mitochondrial Biology',
+    tagClass: 'bg-orange-100 text-orange-800'
+  },
+  {
+    name: 'MolMeDB',
+    description: 'Molecular membrane interaction database.',
+    type: 'Chemoinformatics',
+    tagClass: 'bg-indigo-100 text-indigo-800'
+  },
+  {
+    name: 'OpenTargets',
+    description: 'Platform for target identification and prioritization.',
+    type: 'Drug Discovery',
+    tagClass: 'bg-green-100 text-green-800'
+  },
+  {
+    name: 'PubChem',
+    description: 'Chemical compounds and bioassay data.',
+    type: 'Chemoinformatics',
+    tagClass: 'bg-indigo-100 text-indigo-800'
+  },
+  {
     name: 'STRING',
     description: 'Protein-protein interaction networks.',
     type: 'Proteomics',
     tagClass: 'bg-blue-100 text-blue-800'
+  },
+  {
+    name: 'TFlink',
+    description: 'Transcription factor–gene interaction data.',
+    type: 'Regulatory Networks',
+    tagClass: 'bg-gray-100 text-gray-800'
+  },
+  {
+    name: 'Wikidata',
+    description: 'Open knowledge graph for linked data integration.',
+    type: 'Knowledge Graphs',
+    tagClass: 'bg-yellow-100 text-yellow-800'
+  },
+  {
+    name: 'WikiPathways',
+    description: 'Community-curated biological pathways.',
+    type: 'Pathways',
+    tagClass: 'bg-purple-100 text-purple-800'
   },
   {
     name: 'Reactome',
