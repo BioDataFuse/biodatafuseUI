@@ -1,7 +1,3 @@
-# biodatafuseUI (beta)
-
-work in progress...
-
 # Docker
 ## Building the docker images
 - **Build the backend image**
