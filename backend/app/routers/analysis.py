@@ -1,4 +1,5 @@
 from pathlib import Path
+from sqlalchemy import select
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..database import get_db

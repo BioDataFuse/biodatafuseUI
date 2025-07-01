@@ -1,6 +1,7 @@
 from pathlib import Path
 import pandas as pd
 from .graph_service import GraphService
+from pyBiodatafuse.analyzer.summarize import BioGraph
 
 from .. import models
 from sqlalchemy.ext.asyncio import AsyncSession
