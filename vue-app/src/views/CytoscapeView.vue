@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
     <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <!-- Header -->
       <div class="text-center">
         <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl">
           Graph Visualization and Analysis
@@ -11,7 +10,6 @@
         </p>
       </div>
 
-      <!-- Instructions -->
       <div class="mt-12 bg-white rounded-2xl shadow-xl overflow-hidden">
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
           <h2 class="text-xl font-semibold text-white">Visualization in Cytoscape</h2>
@@ -21,11 +19,11 @@
             <strong>Instructions:</strong><br><br>
             • Ensure <strong>Cytoscape Desktop</strong> is installed and running.<br>
             • The <strong>REST API</strong> must be enabled (default setting).<br>
+            • Ensure the <strong>local Cytoscape bridge application</strong> is running (by executing <code>python cytoscape_bridge.py</code> in a terminal).<br>
             • Complete the query building step before visualization.<br>
             • A graph with no edges will result in an error.
           </p>
 
-          <!-- Graph Name Input -->
           <div class="mb-6">
             <label class="block text-gray-700 font-medium mb-2">Custom Graph Name</label>
             <input
@@ -36,11 +34,9 @@
             />
           </div>
 
-          <!-- Status Messages -->
           <p v-if="statusMessage" class="mt-6 text-lg text-green-600">{{ statusMessage }}</p>
           <p v-if="errorMessage" class="mt-6 text-lg text-red-600">{{ errorMessage }}</p>
 
-          <!-- Footer Buttons -->
           <div class="mt-8 flex justify-between items-center bg-white rounded-b-xl shadow-lg px-6 py-4">
             <button
               @click="goBack"
@@ -76,6 +72,9 @@ const loading = ref(false)
 const graphName = ref('')
 const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 
+// Define the URL
+const LOCAL_CYTOSCAPE_BRIDGE_URL = 'http://localhost:5001/load_graph_local';
+
 const loadCytoscapeGraph = async () => {
   statusMessage.value = ''
   errorMessage.value = ''
@@ -92,12 +91,47 @@ const loadCytoscapeGraph = async () => {
 
   loading.value = true
   try {
-    const response = await axios.post(`/api/visualize&analysis/cytoscape/${identifierSetId}`, {
+    statusMessage.value = 'Fetching graph data from server...'
+    const backendResponse = await axios.post(`/api/visualize&analysis/cytoscape/${identifierSetId}`, {
       graph_name: graphName.value.trim()
-    })
-    statusMessage.value = response.data.message
+    });
+
+    const { graph_data, network_name } = backendResponse.data;
+
+    if (!graph_data) {
+      errorMessage.value = 'Server returned incomplete graph data.';
+      loading.value = false;
+      return;
+    }
+
+    statusMessage.value = 'Sending graph data to local Cytoscape bridge...'
+    const localResponse = await axios.post(LOCAL_CYTOSCAPE_BRIDGE_URL, {
+      graph_data: graph_data,
+      network_name: network_name
+    });
+
+    if (localResponse.data.success) {
+      statusMessage.value = localResponse.data.message;
+    } else {
+      errorMessage.value = localResponse.data.message || 'Failed to load graph into Cytoscape via local bridge.';
+    }
+
   } catch (error) {
-    errorMessage.value = error.response?.data?.detail || 'Failed to connect to Cytoscape.'
+    console.error("Error during Cytoscape graph loading:", error);
+    if (error.response) {
+      // Error from either backend or local bridge
+      errorMessage.value = error.response.data?.detail || error.response.data?.message || 'An unknown error occurred.';
+    } else if (error.request) {
+      // No response received (e.g., local bridge not running, or network issue to backend)
+      if (error.config.url === LOCAL_CYTOSCAPE_BRIDGE_URL) {
+          errorMessage.value = `Could not connect to local Cytoscape bridge at ${LOCAL_CYTOSCAPE_BRIDGE_URL}. Please ensure it is running.`;
+      } else {
+          errorMessage.value = 'Network error or backend server is unreachable.';
+      }
+    } else {
+      // Something else happened in setting up the request
+      errorMessage.value = 'Request setup error: ' + error.message;
+    }
   } finally {
     loading.value = false
   }

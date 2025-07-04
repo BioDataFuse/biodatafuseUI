@@ -1,7 +1,5 @@
 from pathlib import Path
 from pyBiodatafuse.graph import cytoscape
-from py4cytoscape import cytoscape_ping
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from .graph_service import GraphService
 from .. import models
@@ -11,19 +9,23 @@ class CytoscapeService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def load_graph_into_cytoscape(self, annotations: models.Annotation, graph_dir: Path, graph_name: str):
+    async def get_cytoscape_json(self, annotations: models.Annotation, graph_dir: Path):
+        """
+        Generates Cytoscape-compatible JSON graph data.
+        This function no longer interacts directly with Cytoscape or attempts to get styling from pyBiodatafuse.
+        """
         try:
-            if cytoscape_ping() != "You are connected to Cytoscape!":
-                return {
-                    "success": False,
-                    "message": "Cytoscape is not running or REST API is unreachable. Please ensure Cytoscape desktop is open."
-                }
-
+            # Create the NetworkX graph
             pygraph, error = GraphService.create_pygraph(annotations, graph_dir)
             if error:
-                return {"success": False, "message": error}
+                return None, error
 
-            cytoscape.load_graph(pygraph, network_name=graph_name)
-            return {"success": True, "message": f"Graph loaded into Cytoscape as '{graph_name}'."}
+            if not pygraph.nodes() and not pygraph.edges():
+                return None, "The generated graph is empty (no nodes or edges)."
+
+            cytoscape_json_data = cytoscape.convert_graph_to_json(pygraph)
+
+            return cytoscape_json_data, None
+
         except Exception as e:
-            return {"success": False, "message": f"Error loading graph into Cytoscape: {str(e)}"}
+            return None, f"Error preparing graph data for Cytoscape: {str(e)}"

@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Path as FastAPIPath
+from fastapi import APIRouter, Depends, HTTPException
 from ..services.cytoscape_service import CytoscapeService
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,13 +15,16 @@ class CytoscapeRequest(BaseModel):
     graph_name: str
 
 @router.post("/cytoscape/{set_id}")
-async def cytoscape_visualization(
-    set_id: int,  
+async def get_cytoscape_graph_data(
+    set_id: int,
     req: CytoscapeRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-
+    """
+    Retrieves a graph in Cytoscape JSON format.
+    This data is intended to be consumed by a local application that interacts with Cytoscape.
+    """
     try:
         from ..models import Annotation
         result = await db.execute(
@@ -33,13 +36,21 @@ async def cytoscape_visualization(
             raise HTTPException(status_code=404, detail="Processed annotation not found.")
 
         graph_dir = Path(f"./data/processed/{set_id}")
+
         cytoscape_service = CytoscapeService(db)
-        result = await cytoscape_service.load_graph_into_cytoscape(annotation, graph_dir, req.graph_name)
+        cytoscape_json_data, error = await cytoscape_service.get_cytoscape_json(
+            annotation, graph_dir
+        )
 
-        if result["success"]:
-            return {"message": result["message"]}
-        else:
-            raise HTTPException(status_code=500, detail=result["message"])
+        if error:
+            raise HTTPException(status_code=500, detail=error)
 
+        return {
+            "graph_data": cytoscape_json_data,
+            "network_name": req.graph_name
+        }
+
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
