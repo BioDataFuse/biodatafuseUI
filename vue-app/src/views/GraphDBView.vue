@@ -1,14 +1,11 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col">
       <!-- Header Section -->
       <div class="text-center mb-12">
         <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl">
           GraphDB Integration
         </h1>
-        <p class="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-          Generate RDF graphs from your biological data and  upload them to GraphDB
-        </p>
       </div>
 
       <!-- Progress Indicator -->
@@ -17,13 +14,13 @@
           <div v-for="(step, index) in steps" :key="step.name" class="flex items-center">
             <div 
               :class="[
-                'flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium',
+                'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
                 getStepStatus(index) === 'complete' ? 'bg-indigo-600 text-white' :
                 getStepStatus(index) === 'current' ? 'bg-indigo-100 text-indigo-600 border-2 border-indigo-600' :
                 'bg-gray-200 text-gray-500'
               ]"
             >
-              <svg v-if="getStepStatus(index) === 'complete'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <svg v-if="getStepStatus(index) === 'complete'" class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
               </svg>
               <span v-else>{{ index + 1 }}</span>
@@ -33,9 +30,6 @@
               getStepStatus(index) === 'complete' ? 'bg-indigo-600' : 'bg-gray-200'
             ]"></div>
           </div>
-        </div>
-        <div class="flex justify-center mt-3">
-          <span class="text-sm text-gray-600">{{ steps[currentStepIndex].description }}</span>
         </div>
       </div>
 
@@ -392,66 +386,182 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Repository Configuration -->
-            <div>
-              <div class="mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Repository Configuration</h3>
-                <div class="bg-gray-50 rounded-lg p-6 space-y-4">
-                  <!-- Connection Details -->
-                  <div class="grid grid-cols-1 gap-4">
-                    <input
-                      type="url"
-                      v-model="graphdbConfig.baseUrl"
-                      placeholder="GraphDB URL (e.g., http://localhost:7200)"
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                    <div class="grid grid-cols-2 gap-4">
-                      <input
-                        type="text"
-                        v-model="graphdbConfig.username"
-                        placeholder="Username (optional)"
-                        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      />
-                      <input
-                        type="password"
-                        v-model="graphdbConfig.password"
-                        placeholder="Password (optional)"
-                        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      />
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Connection and Repository Creation -->
+            <div class="lg:col-span-2">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Step 1: Connect to GraphDB Instance -->
+                <div class="mb-6">
+                  <div class="flex items-center mb-3">
+                    <span class="flex items-center justify-center w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full text-sm font-semibold mr-3">1</span>
+                    <h3 class="text-lg font-semibold text-gray-900">Connect to GraphDB</h3>
+                  </div>
+                  <p class="text-sm text-gray-600 mb-4">Establish connection to your GraphDB server.</p>
+                  
+                  <div class="bg-gray-50 rounded-lg p-4 space-y-4">
+                    <!-- Connection Type Selector -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Connection Type</label>
+                      <div class="space-y-1">
+                        <label class="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
+                          <input 
+                            type="radio" 
+                            v-model="connectionType" 
+                            value="local" 
+                            @change="updateUrlForConnectionType"
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          >
+                          <div class="ml-2 flex-1">
+                            <div class="text-sm font-medium text-gray-900">Local</div>
+                            <div class="text-xs text-gray-500">GraphDB on your computer</div>
+                          </div>
+                        </label>
+                        
+                        <label class="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
+                          <input 
+                            type="radio" 
+                            v-model="connectionType" 
+                            value="docker" 
+                            @change="updateUrlForConnectionType"
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          >
+                          <div class="ml-2 flex-1">
+                            <div class="text-sm font-medium text-gray-900">Docker Desktop</div>
+                            <div class="text-xs text-gray-500">Mac/Windows Docker</div>
+                          </div>
+                        </label>
+                        
+                        <label class="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
+                          <input 
+                            type="radio" 
+                            v-model="connectionType" 
+                            value="docker-bridge" 
+                            @change="updateUrlForConnectionType"
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          >
+                          <div class="ml-2 flex-1">
+                            <div class="text-sm font-medium text-gray-900">Docker Bridge</div>
+                            <div class="text-xs text-gray-500">Linux Docker</div>
+                          </div>
+                        </label>
+                        
+                        <label class="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
+                          <input 
+                            type="radio" 
+                            v-model="connectionType" 
+                            value="remote" 
+                            @change="updateUrlForConnectionType"
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          >
+                          <div class="ml-2 flex-1">
+                            <div class="text-sm font-medium text-gray-900">Remote</div>
+                            <div class="text-xs text-gray-500">External server</div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <!-- GraphDB URL -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">GraphDB URL</label>
+                      <div class="flex gap-2">
+                        <input
+                          type="url"
+                          v-model="graphdbConfig.baseUrl"
+                          :placeholder="getUrlPlaceholder()"
+                          class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <button
+                          @click="testConnection"
+                          :disabled="!graphdbConfig.baseUrl || graphdbLoading"
+                          class="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          <span v-if="graphdbLoading">Testing...</span>
+                          <span v-else>Test</span>
+                        </button>
+                      </div>
+                      <div v-if="connectionType" class="text-xs text-gray-500 mt-1">
+                        {{ getConnectionTypeHint() }}
+                      </div>
+                      
+                      <!-- Connection Status -->
+                      <div v-if="connectionStatus" class="mt-2">
+                        <div v-if="connectionStatus.type === 'success'" class="text-sm text-green-600 flex items-center">
+                          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                          </svg>
+                          Connected
+                        </div>
+                        <div v-else class="text-sm text-red-600 flex items-start">
+                          <svg class="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                          </svg>
+                          <span class="break-words text-xs">{{ connectionStatus.message }}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <!-- Create New Repository -->
-                  <div v-if="connectionStatus?.type === 'success'" class="pt-4 border-t border-gray-200">
-                    <div class="flex gap-3">
+                <!-- Step 2: Create New Repository -->
+                <div v-if="connectionStatus?.type === 'success'" class="mb-6">
+                  <div class="flex items-center mb-3">
+                    <span class="flex items-center justify-center w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full text-sm font-semibold mr-3">2</span>
+                    <h3 class="text-lg font-semibold text-gray-900">Create Repository</h3>
+                  </div>
+                  <p class="text-sm text-gray-600 mb-4">Create new repository or select existing one.</p>
+                  
+                  <div class="bg-blue-50 rounded-lg p-4 space-y-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Repository Name</label>
                       <input
                         type="text"
                         v-model="newRepositoryName"
-                        placeholder="Repository name (e.g., my_biodata_graph)"
-                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="my_biodatafuse_graph"
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       />
-                      <button
-                        @click="createRepository"
-                        :disabled="graphdbLoading || !newRepositoryName.trim()"
-                        class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                      >
-                        <span v-if="graphdbLoading" class="flex items-center">
-                          <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                          Creating...
-                        </span>
-                        <span v-else>Create</span>
-                      </button>
                     </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input
+                          type="text"
+                          placeholder="Optional"
+                          class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input
+                          type="password"
+                          placeholder="Optional"
+                          class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      @click="createRepository"
+                      :disabled="graphdbLoading || !newRepositoryName.trim()"
+                      class="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                      <span v-if="graphdbLoading" class="flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                        Creating...
+                      </span>
+                      <span v-else>Create Repository</span>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Repository Sidebar -->
-            <div>
+            <!-- Right Column: Repository Sidebar -->
+            <div class="lg:col-span-1">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">Available Repositories</h3>
+                <p>Click on one of the available</p>
                 <button 
                   @click="listRepositories" 
                   :disabled="!graphdbConfig.baseUrl || graphdbLoading"
@@ -803,6 +913,7 @@
 
 <script>
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
 import { useRouter } from 'vue-router'
 const router = useRouter()
@@ -835,6 +946,12 @@ export default {
   components: {
     UploadCard
   },
+  setup() {
+    const authStore = useAuthStore()
+    return {
+      authStore
+    }
+  },
   data() {
     return {
       currentStepIndex: 0,
@@ -847,8 +964,8 @@ export default {
       formData: {
         baseUri: 'https://biodatafuse.org/example/',
         versionIri: 'https://biodatafuse.org/example/test.owl',
-        authorName: '',
-        authorEmail: '',
+        authorName: '', // Will be populated from user login
+        authorEmail: '', // Will be populated from user login
         orcid: 'https://orcid.org/0000-0000-0000-0000',
         graphName: 'my_graph',
         generateShacl: true,
@@ -873,7 +990,7 @@ export default {
       loadingMessage: '',
       errorMessage: '',
       graphdbConfig: {
-        baseUrl: 'http://localhost:7200',
+        baseUrl: 'http://host.docker.internal:7200',
         repositoryName: '',
         username: '',
         password: ''
@@ -903,6 +1020,7 @@ export default {
         shex: false,
         namespaces: false
       },
+      connectionType: 'local',
     }
   },
   computed: {
@@ -1000,6 +1118,7 @@ export default {
   },
   mounted() {
     this.loadStoredData()
+    this.loadUserDefaults()
     
     // If we're already on step 2 and have a GraphDB URL, load repositories
     if (this.currentStepIndex === 1 && this.graphdbConfig.baseUrl) {
@@ -1128,20 +1247,46 @@ export default {
       this.graphdbStatusMessage = ''
       
       try {
-        const response = await axios.post('/api/graphdb/test-connection', {
+        // Log the request data being sent
+        const requestData = {
           baseUrl: this.graphdbConfig.baseUrl,
           username: this.graphdbConfig.username || null,
           password: this.graphdbConfig.password || null
-        })
+        }
         
+        console.log('🔍 Frontend: Sending test connection request:')
+        console.log('📋 Request data:', JSON.stringify(requestData, null, 2))
+        console.log('🔗 Request URL:', '/api/graphdb/test-connection')
+        console.log('📊 Request method: POST')
+        
+        const response = await axios.post('/api/graphdb/test-connection', requestData)
+        
+        console.log('✅ Frontend: Connection test successful:', response.data)
         this.connectionStatus = { type: 'success', message: response.data.message }
         
         // Automatically fetch repositories after successful connection
         await this.listRepositories()
         
       } catch (error) {
-        const errorMessage = error.response?.data?.detail || 'Connection failed. Please check your settings.'
-        this.connectionStatus = { type: 'error', message: errorMessage }
+        console.error('❌ Frontend: Connection test failed:', error)
+        
+        // Log detailed error information
+        if (error.response) {
+          console.error('📋 Response status:', error.response.status)
+          console.error('📋 Response headers:', error.response.headers)
+          console.error('📋 Response data:', JSON.stringify(error.response.data, null, 2))
+          
+          const errorMessage = error.response.data?.detail || 'Connection failed. Please check your settings.'
+          console.error('📋 Error message:', errorMessage)
+          this.connectionStatus = { type: 'error', message: errorMessage }
+        } else if (error.request) {
+          console.error('📋 Network error - no response received')
+          console.error('📋 Request details:', error.request)
+          this.connectionStatus = { type: 'error', message: 'Network error - could not reach server' }
+        } else {
+          console.error('📋 Request setup error:', error.message)
+          this.connectionStatus = { type: 'error', message: error.message }
+        }
       } finally {
         this.graphdbLoading = false
       }
@@ -1303,7 +1448,7 @@ export default {
           graphData: {
             namespaces: Object.fromEntries(
               this.formData.customNamespaces.map(ns => [ns.prefix, ns.uri])
-            )
+                       )
           }
         })
         this.graphdbStatusMessage = response.data.message
@@ -1330,7 +1475,7 @@ export default {
       this.uploadingItems.clear()
       this.uploadStatus = {
         rdf: null,
-        shacl: null,
+               shacl: null,
         shex: null,
         namespaces: null
       }
@@ -1577,11 +1722,194 @@ export default {
       } catch (error) {
         console.error('Upload error:', error)
       }
-    }
+    },
 
+    updateUrlForConnectionType() {
+      switch (this.connectionType) {
+        case 'local':
+          this.graphdbConfig.baseUrl = 'http://localhost:7200'
+          break
+        case 'docker':
+          this.graphdbConfig.baseUrl = 'http://host.docker.internal:7200'
+          break
+        case 'docker-bridge':
+          this.graphdbConfig.baseUrl = 'http://172.17.0.1:7200'
+          break
+        case 'remote':
+          this.graphdbConfig.baseUrl = 'https://'
+          break
+      }
+    },
+
+    getUrlPlaceholder() {
+      switch (this.connectionType) {
+        case 'local':
+          return 'http://localhost:7200'
+        case 'docker':
+          return 'http://host.docker.internal:7200'
+        case 'docker-bridge':
+          return 'http://172.17.0.1:7200'
+        case 'remote':
+          return 'https://your-graphdb-server.com:7200'
+        default:
+          return 'GraphDB URL'
+      }
+    },
+
+    getConnectionTypeHint() {
+      switch (this.connectionType) {
+        case 'local':
+          return 'Use localhost when both this app and GraphDB are running directly on your computer'
+        case 'docker':
+          return 'Use host.docker.internal for Docker Desktop on Mac/Windows bridge network'
+        case 'docker-bridge':
+          return 'Use 172.17.0.1 for Linux Docker default bridge network'
+        case 'remote':
+          return 'Use the full URL including protocol (http:// or https://) for remote GraphDB instances'
+        default:
+          return ''
+      }
+    },
+    
+    async loadUserDefaults() {
+      try {
+        // First check if user is authenticated but user data is missing
+        if (this.authStore.isAuthenticated && !this.authStore.user) {
+          console.log('🔄 User is authenticated but user data missing, fetching profile...')
+          try {
+            await this.authStore.fetchUserProfile()
+            console.log('✅ Successfully fetched user profile from API')
+          } catch (error) {
+            console.warn('⚠️ Failed to fetch user profile from API:', error)
+            // If the API call fails with 500, the token might be invalid
+            if (error.response?.status === 500) {
+              console.warn('🔄 API returned 500, token might be invalid. Clearing auth state.')
+              // Don't clear auth automatically, just log the issue
+              // this.authStore.clearAuth()
+            }
+          }
+        }
+
+        // Now try to get user info from the properly loaded auth store
+        if (this.authStore.user) {
+          const user = this.authStore.user
+          console.log('🔍 Auth store user data:', user)
+          console.log('🆔 User ID:', user.id)
+          console.log('👤 User name:', user.name)
+          console.log('📧 User email:', user.email)
+          
+          if (user.name) {
+            this.formData.authorName = user.name
+            console.log('✅ Set authorName from auth store:', user.name)
+          }
+          if (user.email) {
+            this.formData.authorEmail = user.email
+            console.log('✅ Set authorEmail from auth store:', user.email)
+          }
+          if (user.orcid) {
+            this.formData.orcid = user.orcid
+            console.log('✅ Set orcid from auth store:', user.orcid)
+          }
+        } else {
+          console.log('❌ No user data in auth store')
+        }
+
+        // Enhanced fallback: Try to decode JWT token directly to get email and potentially other info
+        if (this.authStore.token) {
+          try {
+            const token = this.authStore.token
+            // Simple JWT decode (just the payload, no verification)
+            const payload = JSON.parse(atob(token.split('.')[1]))
+            console.log('🔍 JWT payload:', payload)
+            console.log('🆔 JWT subject (email):', payload.sub)
+            
+            if (payload.sub && payload.sub.includes('@') && !this.formData.authorEmail) {
+              this.formData.authorEmail = payload.sub
+              console.log('✅ Got email from JWT token:', payload.sub)
+            }
+
+            // If we have email but no name, try to create a name from email
+            if (this.formData.authorEmail && !this.formData.authorName) {
+              const emailParts = this.formData.authorEmail.split('@')[0]
+              const nameFromEmail = emailParts.replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+              this.formData.authorName = nameFromEmail
+              console.log('✅ Generated name from email:', nameFromEmail)
+            }
+          } catch (jwtError) {
+            console.warn('⚠️ Failed to decode JWT token:', jwtError)
+          }
+        }
+
+        // Fallback: Try to get user info from localStorage
+        if (!this.formData.authorName || !this.formData.authorEmail) {
+          const userInfo = localStorage.getItem('userInfo') || localStorage.getItem('user')
+          if (userInfo) {
+            const user = JSON.parse(userInfo)
+            console.log('🔍 LocalStorage user data:', user)
+            
+            if (!this.formData.authorName && (user.name || user.full_name || user.displayName)) {
+              this.formData.authorName = user.name || user.full_name || user.displayName
+              console.log('✅ Got name from localStorage:', this.formData.authorName)
+            }
+            if (!this.formData.authorEmail && user.email) {
+              this.formData.authorEmail = user.email
+              console.log('✅ Got email from localStorage:', user.email)
+            }
+            if (!this.formData.orcid && user.orcid) {
+              this.formData.orcid = user.orcid
+            }
+          }
+        }
+
+        // Another fallback: Try session storage
+        if (!this.formData.authorName || !this.formData.authorEmail) {
+          const sessionUser = sessionStorage.getItem('userInfo') || sessionStorage.getItem('user')
+          if (sessionUser) {
+            const user = JSON.parse(sessionUser)
+            console.log('🔍 SessionStorage user data:', user)
+            
+            if (!this.formData.authorName && (user.name || user.full_name || user.displayName)) {
+              this.formData.authorName = user.name || user.full_name || user.displayName
+              console.log('✅ Got name from sessionStorage:', this.formData.authorName)
+            }
+            if (!this.formData.authorEmail && user.email) {
+              this.formData.authorEmail = user.email
+              console.log('✅ Got email from sessionStorage:', user.email)
+            }
+            if (!this.formData.orcid && user.orcid) {
+              this.formData.orcid = user.orcid
+            }
+          }
+        }
+
+        console.log('✅ User defaults loaded:', {
+          authorName: this.formData.authorName,
+          authorEmail: this.formData.authorEmail,
+          orcid: this.formData.orcid,
+          authStoreUser: this.authStore.user,
+          authStoreUserId: this.authStore.user?.id,
+          isAuthenticated: this.authStore.isAuthenticated,
+          hasToken: !!this.authStore.token
+        })
+        
+      } catch (error) {
+        console.warn('⚠️ Could not load user defaults:', error)
+      }
+      
+      // Set fallback defaults if still no user info is available
+      if (!this.formData.authorName) {
+        this.formData.authorName = 'BiodataFuse User'
+        console.log('🔄 Using fallback author name')
+      }
+      if (!this.formData.authorEmail) {
+        this.formData.authorEmail = 'user@biodatafuse.org'
+        console.log('🔄 Using fallback author email')
+      }
+    },
+
+    // ...existing code...
   }
 }
-
 </script>
 
 <style scoped>

@@ -29,7 +29,6 @@ class UserInfo(BaseModel):
 class UserResponse(UserBase):
     id: int
     api_key: str
-    map_name: str
     is_active: bool
     preferences: Dict
     created_at: datetime

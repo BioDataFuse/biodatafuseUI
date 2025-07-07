@@ -34,7 +34,35 @@ async def test_connection(
 ):
     """Test connection to GraphDB instance."""
     logger.info(f"🔌 Testing GraphDB connection to: {request.baseUrl}")
+    
+    # Add detailed request logging
+    logger.info(f"📋 Request details:")
+    logger.info(f"  - baseUrl: {request.baseUrl}")
+    logger.info(f"  - username: {request.username}")
+    logger.info(f"  - password: {'***' if request.password else None}")
+    logger.info(f"  - user: {current_user.email}")
+    
+    # Validate the request
+    if not request.baseUrl:
+        logger.error("❌ Missing baseUrl in request")
+        raise HTTPException(
+            status_code=400,
+            detail="baseUrl is required"
+        )
+    
+    if not request.baseUrl.startswith(('http://', 'https://')):
+        logger.error(f"❌ Invalid baseUrl format: {request.baseUrl}")
+        raise HTTPException(
+            status_code=400,
+            detail="baseUrl must start with http:// or https://"
+        )
+    
+    # Check for common Docker networking issues
+    if 'localhost' in request.baseUrl or '127.0.0.1' in request.baseUrl:
+        logger.warning("⚠️ Docker networking: localhost/127.0.0.1 detected - this may not work from inside a container")
+    
     try:
+        logger.info(f"🔍 Attempting to list repositories from GraphDB...")
         # Test connection by trying to list repositories
         repositories = GraphDBManager.list_repositories(
             request.baseUrl, request.username, request.password
@@ -48,9 +76,17 @@ async def test_connection(
         
     except Exception as e:
         logger.error(f"❌ GraphDB connection failed: {str(e)}")
+        logger.error(f"❌ Exception type: {type(e).__name__}")
+        logger.error(f"❌ Full exception details: {repr(e)}")
+        
+        # Provide Docker-specific error guidance
+        error_message = str(e)
+        if "Connection refused" in error_message and ("localhost" in request.baseUrl or "127.0.0.1" in request.baseUrl):
+            error_message += "\n\n🐳 Docker Networking Issue: When running in Docker, 'localhost' refers to the container, not your host machine.\n\nTry these alternatives:\n• host.docker.internal:7200 (Docker Desktop for Mac/Windows)\n• 172.17.0.1:7200 (Linux Docker default bridge)\n• Your host machine's actual IP address\n• Or use the 'Docker Host' option in the connection type selector"
+        
         raise HTTPException(
             status_code=400,
-            detail=f"Failed to connect to GraphDB: {str(e)}"
+            detail=f"Failed to connect to GraphDB: {error_message}"
         )
 
 
