@@ -79,7 +79,7 @@ propcache==0.3.1
 PubChemPy==1.0.4
 py4cytoscape==1.12.0
 pyasn1==0.4.8
-pyBiodatafuse @ git+https://github.com/BioDataFuse/pyBiodatafuse.git@d686071a6d9bf122648331aa5185dbfe98266077
+pyBiodatafuse @ git+https://github.com/BioDataFuse/pyBiodatafuse.git@main
 pycryptodome==3.22.0
 pydantic==2.11.3
 pydantic_core==2.33.1
