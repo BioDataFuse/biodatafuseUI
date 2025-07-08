@@ -82,7 +82,7 @@ async def annotations_from_datasources(
         print(f"Selected datasources: {datasources}")
         # combined_df, combined_metadata, pygraph, opentargets_df, captured_warnings  = await datasource_service.create_annotations_for_identifier_set(
         #     set_id=set_id,
-        #     datasources=datasources,  # Using the correct parameter name
+        #     datasources=datasources, 
         # )
 
         # print(f"Processing result: {annotation.combined_df.head()}")
