@@ -48,6 +48,27 @@
             >
               ← Select another visualization tool
             </button>
+            <!-- Download Cytoscape graph (JSON) -->
+            <button 
+              @click="downloadGraphJSON" 
+              class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
+              <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+              </svg>
+              Download Cytoscape graph (JSON)
+            </button>
+
+            <!-- Download Cytoscape style -->
+            <a
+              href="/api/visualize&analysis/cytoscape/style/download"
+              class="inline-flex items-center border-2 border-dashed border-green-600 px-4 py-2 text-sm font-semibold text-green-700 rounded-lg hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-400"
+              download
+            >
+              <svg class="w-4 h-4 mr-2 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+              </svg>
+              Download Cytoscape style
+            </a>
 
             <button
               @click="loadCytoscapeGraph"
@@ -65,13 +86,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const statusMessage = ref('')
 const errorMessage = ref('')
+const cytoscapeResults = ref(null)
+
 const loading = ref(false)
 const graphName = ref('')
 const identifierSetId = localStorage.getItem('currentIdentifierSetId')
@@ -103,7 +126,71 @@ const loadCytoscapeGraph = async () => {
   }
 }
 
+onMounted(async () => {
+  loading.value = true
+
+  if (!identifierSetId) {
+    errorMessage.value = 'No identifier set ID found. Please go back and reprocess.'
+    loading.value = false
+    return
+  }
+
+  if (!graphName.value.trim()) {
+    errorMessage.value = 'Please provide a graph name to fetch Cytoscape data.'
+    loading.value = false
+    return
+  }
+
+  try {
+    const response = await axios.post(`/api/visualize&analysis/cytoscape/download/${identifierSetId}`, {
+      graph_name: graphName.value.trim()
+    })
+
+    cytoscapeResults.value = response.data
+    statusMessage.value = "Cytoscape graph loaded successfully."
+  } catch (error) {
+    errorMessage.value = error.response?.data?.detail || 'Failed to fetch Cytoscape graph data.'
+    console.error("Error loading cytoscapeResults:", error)
+  } finally {
+    loading.value = false
+  }
+})
 const goBack = () => {
   router.push('/visualize&analysis')
 }
+
+const downloadGraphJSON = async () => {
+  if (!identifierSetId || !graphName.value.trim()) {
+    errorMessage.value = 'Identifier set ID or graph name is missing.';
+    return;
+  }
+
+  try {
+    const response = await axios.post(`/api/visualize&analysis/cytoscape/download/${identifierSetId}`, {
+      graph_name: graphName.value.trim()
+    });
+
+    const graphData = response.data?.cytoscape_graph;
+    if (!graphData) {
+      throw new Error('No cytoscape_graph found in response.');
+    }
+
+    const json = JSON.stringify(graphData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${graphName.value.trim()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+
+    statusMessage.value = 'Cytoscape graph JSON download started.';
+  } catch (err) {
+    console.error('Download error:', err);
+    errorMessage.value = err.response?.data?.detail || err.message || 'Failed to download Cytoscape JSON.';
+  }
+};
+
+
 </script>
