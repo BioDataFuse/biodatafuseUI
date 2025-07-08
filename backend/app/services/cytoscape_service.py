@@ -2,12 +2,10 @@ from pathlib import Path
 from pyBiodatafuse.graph import cytoscape as cytoscape_graph
 from py4cytoscape import cytoscape_ping
 
-from fastapi import Depends, HTTPException
-from ..database import get_db
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from .graph_service import GraphService
 from .. import models
+import json
 
 class CytoscapeService:
     def __init__(self, db: AsyncSession):
@@ -56,3 +54,21 @@ class CytoscapeService:
         except Exception as e:
             return {"success": False, "message": f"Error loading graph into Cytoscape: {str(e)}"}
         
+    async def get_cytoscape_json(self, annotations: models.Annotation, graph_dir: Path):
+        try:
+            pygraph, error = GraphService.create_pygraph(annotations, graph_dir)
+            if error:
+                return None, error
+
+            if not pygraph.nodes() and not pygraph.edges():
+                return None, "The generated graph is empty (no nodes or edges)."
+
+            raw_graph = cytoscape_graph.convert_graph_to_json(pygraph)
+            elements_only = raw_graph.get("elements")
+            cytoscape_json_data = {"elements": elements_only}
+
+            print("Returning Cytoscape JSON:", json.dumps(cytoscape_json_data, indent=2))
+            return cytoscape_json_data, None
+
+        except Exception as e:
+            return None, f"Error preparing graph data for Cytoscape: {str(e)}"
