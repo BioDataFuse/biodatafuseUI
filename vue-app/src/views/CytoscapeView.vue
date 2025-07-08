@@ -16,20 +16,14 @@
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4">
           <h2 class="text-xl font-semibold text-white">Visualization in Cytoscape</h2>
         </div>
-        <div class="p-6 text-gray-700">
-          <p class="text-xl text-gray-600 mb-6">
-            <strong>Instructions:</strong><br><br>
-            • Ensure <strong>Cytoscape Desktop</strong> is installed and running.<br>
-            • The <strong>REST API</strong> must be enabled (default setting).<br>
-            • Complete the query building step before visualization.<br>
-            • A graph with no edges will result in an error.
-          </p>
-
+        <div class="p-6 text-gray-700 space-y-6">
+          
           <!-- Graph Name Input -->
           <div class="mb-6">
             <label class="block text-gray-700 font-medium mb-2">Custom Graph Name</label>
             <input
               v-model="graphName"
+              @input="handleInput"
               type="text"
               placeholder="e.g. MyCytoscapeGraph"
               class="w-full border border-gray-300 rounded px-3 py-2"
@@ -37,38 +31,17 @@
           </div>
 
           <!-- Status Messages -->
-          <p v-if="statusMessage" class="mt-6 text-lg text-green-600">{{ statusMessage }}</p>
-          <p v-if="errorMessage" class="mt-6 text-lg text-red-600">{{ errorMessage }}</p>
+          <p v-if="statusMessage" class="text-lg text-green-600">{{ statusMessage }}</p>
+          <p v-if="errorMessage" class="text-lg text-red-600">{{ errorMessage }}</p>
 
           <!-- Footer Buttons -->
-          <div class="mt-8 flex justify-between items-center bg-white rounded-b-xl shadow-lg px-6 py-4">
+          <div class="flex justify-between items-center bg-white rounded-xl shadow-lg px-6 py-4">
             <button
               @click="goBack"
               class="px-4 py-2 border border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-100"
             >
               ← Select another visualization tool
             </button>
-            <!-- Download Cytoscape graph (JSON) -->
-            <button 
-              @click="downloadGraphJSON" 
-              class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
-              <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
-              </svg>
-              Download Cytoscape graph (JSON)
-            </button>
-
-            <!-- Download Cytoscape style -->
-            <a
-              href="/api/visualize&analysis/cytoscape/style/download"
-              class="inline-flex items-center border-2 border-dashed border-green-600 px-4 py-2 text-sm font-semibold text-green-700 rounded-lg hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-400"
-              download
-            >
-              <svg class="w-4 h-4 mr-2 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
-              </svg>
-              Download Cytoscape style
-            </a>
 
             <button
               @click="loadCytoscapeGraph"
@@ -79,6 +52,54 @@
               <span>{{ loading ? 'Loading...' : 'Load your graph into Cytoscape' }}</span>
             </button>
           </div>
+
+          <!-- Manual Import Section -->
+          <div class="mt-10 border-t pt-8">
+            <p class="text-lg font-semibold text-gray-800 mb-4">
+              Manual Import Instructions (if running Cytoscape separately)
+            </p>
+            <p class="text-sm text-gray-600 mb-6">
+              If you are running the UI locally using Docker (and Cytoscape is also running on the same machine),
+              use the <strong>"Load your graph into Cytoscape"</strong> button above.
+              Otherwise, follow these steps to import manually:
+            </p>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 mb-4">
+              <li>Download the graph JSON and style file using the buttons below.</li>
+              <li>Open Cytoscape.</li>
+              <li>Use <strong>File → Import → Network from File...</strong> to load the graph.</li>
+              <li>Use <strong>File → Import → Styles from File...</strong> to import the style.</li>
+              <li>After import, go to the <strong>Style panel</strong> and select the style name.</li>
+              <li>To organize nodes, go to <strong>Layout → [select layout]</strong> such as "Circular layout".</li>
+            </ul>
+
+            <!-- Download Buttons -->
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+              <button 
+                @click="downloadGraphJSON" 
+                class="inline-flex items-center border border-gray-400 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                </svg>
+                Download Graph (JSON)
+              </button>
+
+              <a
+                href="/api/visualize&analysis/cytoscape/style/download"
+                class="inline-flex items-center border border-green-500 px-4 py-2 text-sm font-semibold text-green-700 rounded-lg hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-400"
+                download
+              >
+                <svg class="w-4 h-4 mr-2 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                </svg>
+                Download Style File
+              </a>
+            </div>
+
+            <p class="text-sm text-gray-500 mt-4">
+              ⚠️ Layouts are not included in the style file. After importing the graph, apply a layout from the <strong>Layout</strong> menu in Cytoscape.
+            </p>
+          </div>
+
         </div>
       </div>
     </div>
@@ -98,6 +119,12 @@ const cytoscapeResults = ref(null)
 const loading = ref(false)
 const graphName = ref('')
 const identifierSetId = localStorage.getItem('currentIdentifierSetId')
+
+const handleInput = () => {
+  if (errorMessage.value.includes('graph name') || errorMessage.value.includes('Identifier set')) {
+    errorMessage.value = ''
+  }
+}
 
 const loadCytoscapeGraph = async () => {
   statusMessage.value = ''
@@ -119,6 +146,7 @@ const loadCytoscapeGraph = async () => {
       graph_name: graphName.value.trim()
     })
     statusMessage.value = response.data.message
+    errorMessage.value = '' // clear error on success
   } catch (error) {
     errorMessage.value = error.response?.data?.detail || 'Failed to connect to Cytoscape.'
   } finally {
@@ -148,6 +176,7 @@ onMounted(async () => {
 
     cytoscapeResults.value = response.data
     statusMessage.value = "Cytoscape graph loaded successfully."
+    errorMessage.value = '' // clear error on success
   } catch (error) {
     errorMessage.value = error.response?.data?.detail || 'Failed to fetch Cytoscape graph data.'
     console.error("Error loading cytoscapeResults:", error)
@@ -155,42 +184,42 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
 const goBack = () => {
   router.push('/visualize&analysis')
 }
 
 const downloadGraphJSON = async () => {
   if (!identifierSetId || !graphName.value.trim()) {
-    errorMessage.value = 'Identifier set ID or graph name is missing.';
-    return;
+    errorMessage.value = 'Graph name is missing.'
+    return
   }
 
   try {
     const response = await axios.post(`/api/visualize&analysis/cytoscape/download/${identifierSetId}`, {
       graph_name: graphName.value.trim()
-    });
+    })
 
-    const graphData = response.data?.cytoscape_graph;
+    const graphData = response.data?.cytoscape_graph
     if (!graphData) {
-      throw new Error('No cytoscape_graph found in response.');
+      throw new Error('No cytoscape_graph found in response.')
     }
 
-    const json = JSON.stringify(graphData, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${graphName.value.trim()}.json`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(link.href);
+    const json = JSON.stringify(graphData, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `${graphName.value.trim()}.json`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(link.href)
 
-    statusMessage.value = 'Cytoscape graph JSON download started.';
+    statusMessage.value = 'Cytoscape graph JSON download started.'
+    errorMessage.value = '' // clear any previous error
   } catch (err) {
-    console.error('Download error:', err);
-    errorMessage.value = err.response?.data?.detail || err.message || 'Failed to download Cytoscape JSON.';
+    console.error('Download error:', err)
+    errorMessage.value = err.response?.data?.detail || err.message || 'Failed to download Cytoscape JSON.'
   }
-};
-
-
+}
 </script>
