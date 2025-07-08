@@ -148,7 +148,7 @@
                     Download combined dataframe with all annotations (TSV)
                   </button>
                 </div>
-                <!-- Download combined_metadata JSON -->
+                <!-- Download combined metadata JSON -->
                 <div class="mt-1 flex justify-left space-x-2"> <!-- Reduced margin-top and space between buttons -->
                   <button @click="downloadJSON('combined_metadata')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
                     <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -272,7 +272,7 @@ const array = Object.keys(obj).map(key => {
 // Function to download JSON (for combined_metadata)
 function downloadJSON(type) {
   const data = type === 'combined_metadata' ? annotationResults.value.combined_metadata : {};
-  const json = JSON.stringify(data, null, 2); // Convert to pretty JSON
+  const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
