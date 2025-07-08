@@ -169,6 +169,17 @@ class VisualizationResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# Cytoscape Schemas
+class CytoscapeResponse(BaseModel):
+    identifier_set_id: int
+    cytoscape_graph: Optional[Dict[str, any]] = None
+    status: str
+    error_message: Optional[str] = None
+    
+    class Config:
+        arbitrary_types_allowed = True
+
+
 # RDF Generation Schemas
 class RDFGenerationRequest(BaseModel):
     identifier_set_id: int
@@ -246,3 +257,4 @@ class GraphDBTripleCountResponse(BaseModel):
 class GraphDBQueryResponse(BaseModel):
     results: Dict
     message: str
+
