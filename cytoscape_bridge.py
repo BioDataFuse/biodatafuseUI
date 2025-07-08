@@ -5,6 +5,7 @@ import py4cytoscape as p4c
 import json
 import logging
 import os
+from networkx.readwrite.json_graph import node_link_graph
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -121,31 +122,141 @@ def load_graph_local():
         network_name = data.get('network_name', 'BioDataFuse Network')
 
         if not graph_data:
-            logger.error("No graph data provided.")
             return jsonify({"status": "error", "message": "No graph data provided"}), 400
 
-        logger.debug(f"Incoming raw graph_data: {json.dumps(graph_data, indent=2)}")
-        processed_graph_data = {}
+        # Ensure the correct structure
+        if "elements" not in graph_data:
+            return jsonify({"status": "error", "message": "'elements' key missing in graph data."}), 400
 
-        if "elements" not in graph_data and "nodes" in graph_data and "edges" in graph_data:
-            logger.info("Wrapping graph data with 'elements' key for Cytoscape.js format.")
-            processed_graph_data = {"elements": graph_data}
-        else:
-            processed_graph_data = graph_data
+        elements = graph_data["elements"]
+        nodes = elements.get("nodes", [])
+        edges = elements.get("edges", [])
 
-        logger.info(f"Attempting to load network '{network_name}' into Cytoscape Desktop...")
+        # Convert graph data into the correct structure for node_link_graph
+        # This should be a dict with keys: nodes and links (without 'elements')
+        nx_data = {
+            "nodes": [],
+            "links": []  # Use 'links' instead of 'edges'
+        }
 
-        p4c.create_network_from_cytoscapejs(
-            json.dumps(processed_graph_data), 
-            title=network_name,
-            collection="BioDataFuse"
-        )
-        logger.info(f"Graph '{network_name}' successfully loaded into Cytoscape Desktop.")
+        # Extract nodes
+        for node in nodes:
+            nx_data["nodes"].append({
+                "id": node["data"]["id"],  # Ensure that each node has an 'id' field
+                **node["data"]  # Add any other properties from node["data"]
+            })
+
+        # Extract edges
+        for edge in edges:
+            nx_data["links"].append({
+                "source": edge["data"]["source"],  # Ensure there is a source
+                "target": edge["data"]["target"],  # Ensure there is a target
+                **edge["data"]  # Add other edge properties
+            })
+
+        # Now call node_link_graph with the correct structure
+        adj_g = node_link_graph(nx_data)
+
+        # Call load_graph to apply style to the Cytoscape network
+        load_graph(adj_g, network_name)
+
         return jsonify({"status": "success", "message": f"Graph '{network_name}' loaded into Cytoscape."}), 200
 
     except Exception as e:
-        logger.error(f"Error loading graph into Cytoscape: {e}", exc_info=True)
         return jsonify({"status": "error", "message": str(e)}), 500
+
+def load_graph(g, network_name):
+    """Load the obtained graph into a running instance of Cytoscape."""
+    adj_g = g
+
+    # Step 1: Create the network in Cytoscape
+    p4c.networks.create_network_from_networkx(
+        adj_g,
+        title=network_name,
+        collection="BioDataFuse",
+    )
+
+    # Step 2: Define the visual style as a dictionary
+    default = {
+        "title": "BioDataFuse_style",
+        "defaults": [
+            {"visualProperty": "NODE_FILL_COLOR", "value": "#FF0000"},
+            {"visualProperty": "EDGE_COLOR", "value": "#000000"},
+            {"visualProperty": "NODE_SIZE", "value": 30},
+            {"visualProperty": "EDGE_WIDTH", "value": 2},
+            {"visualProperty": "NODE_LABEL_FONT_SIZE", "value": 10},
+        ],
+        "mappings": [],
+    }
+
+    # Step 3: Create the visual style if not already created
+    try:
+        p4c.styles.create_visual_style(default)
+        print(f"Visual style 'BioDataFuse_style' created successfully.")
+    except Exception as e:
+        print(f"Error creating visual style: {e}")
+
+    # Step 4: Set the visual style to the network
+    style_name = "BioDataFuse_style"
+    try:
+        # Set visual style to the network
+        p4c.styles.set_visual_style(style_name, network=network_name)
+        print(f"Visual style '{style_name}' applied to network '{network_name}' successfully.")
+    except Exception as e:
+        print(f"Error applying visual style '{style_name}' to network '{network_name}': {e}")
+
+    # Step 5: Define node shape and color mapping
+    column = "label"  # Column name from the node data (adjust based on your data)
+    values = [
+        "GENE", "ANATOMICAL", "DISEASE", "GO_BP", "GO_MF", "GO_CC", "PATHWAY", 
+        "COMPOUND", "SIDE_EFFECT", "HOMOLOG", "KEY_EVENT", "MIE", "AOP", "AO"
+    ]
+    shapes = [
+        "ELLIPSE", "HEXAGON", "VEE", "PARALLELOGRAM", "ROUND_RECTANGLE", 
+        "RECTANGLE", "OCTAGON", "DIAMOND", "TRIANGLE", "Ellipse", "TRIANGLE", 
+        "TRIANGLE", "VEE", "OCTAGON"
+    ]
+    colors = [
+        "#42d4f4", "#4363d8", "#e6194B", "#ff7b00", "#ffa652", "#ffcd90", 
+        "#3cb44b", "#ffd700", "#aaffc3", "#9b59b6", "#aaffc3", "#3cb44b", 
+        "#000075", "#e6194B"
+    ]
+
+    # Step 6: Apply node color mapping
+    try:
+        p4c.set_node_color_mapping(
+            column,
+            values,
+            colors,
+            mapping_type="d",  # Apply as discrete values
+            style_name=style_name,  # Reference to the visual style
+            network=network_name
+        )
+        print("Node color mapping applied successfully.")
+    except Exception as e:
+        print(f"Error applying node color mapping: {e}")
+
+    # Step 7: Apply node shape mapping
+    try:
+        p4c.set_node_shape_mapping(
+            column,
+            values,
+            shapes,
+            style_name=style_name,  # Reference to the visual style
+            network=network_name
+        )
+        print("Node shape mapping applied successfully.")
+    except Exception as e:
+        print(f"Error applying node shape mapping: {e}")
+
+    # Step 8: Apply layout (optional)
+    try:
+        p4c.layouts.apply_layout("force-directed", network=network_name)
+        print("Layout applied successfully.")
+    except Exception as e:
+        print(f"Error applying layout: {e}")
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=True)

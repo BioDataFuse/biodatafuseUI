@@ -110,6 +110,10 @@ const loadCytoscapeGraph = async () => {
       network_name: network_name
     });
 
+    console.log("Sending to local bridge:", {
+  graph_data: graph_data,
+  network_name: network_name
+})
     if (localResponse.data.success) {
       statusMessage.value = localResponse.data.message;
     } else {
