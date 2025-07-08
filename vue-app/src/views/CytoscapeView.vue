@@ -17,7 +17,6 @@
           <h2 class="text-xl font-semibold text-white">Visualization in Cytoscape</h2>
         </div>
         <div class="p-6 text-gray-700 space-y-6">
-          
           <!-- Graph Name Input -->
           <div class="mb-6">
             <label class="block text-gray-700 font-medium mb-2">Custom Graph Name</label>
@@ -34,34 +33,37 @@
           <p v-if="statusMessage" class="text-lg text-green-600">{{ statusMessage }}</p>
           <p v-if="errorMessage" class="text-lg text-red-600">{{ errorMessage }}</p>
 
-          <!-- Footer Buttons -->
-          <div class="flex justify-between items-center bg-white rounded-xl shadow-lg px-6 py-4">
-            <button
-              @click="goBack"
-              class="px-4 py-2 border border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-100"
-            >
-              ← Select another visualization tool
-            </button>
-
-            <button
-              @click="loadCytoscapeGraph"
-              :disabled="loading"
-              class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            >
-              <span v-if="loading" class="animate-spin mr-2">🔄</span>
-              <span>{{ loading ? 'Loading...' : 'Load your graph into Cytoscape' }}</span>
-            </button>
+          <!-- Instructions for Remote Web Server and Local Cytoscape -->
+          <div class="mt-10 border-t pt-8">
+            <p class="text-lg font-semibold text-gray-800 mb-4">
+              Instructions for loading the graph into Cytoscape on Local Machine
+            </p>
+            <ul class="list-disc list-inside text-gray-700 space-y-1 mb-4">
+              <li>Ensure Cytoscape Desktop is installed and running on your local machine.</li>
+              <li>Start the local Cytoscape bridge by running <code>python cytoscape_bridge.py</code> in a terminal on your local machine.</li>
+                <div class="mt-4">
+                  <!-- Download Link for cytoscape_bridge.py -->
+                  <a
+                    href="http://localhost:8000/static/cytoscape_bridge.py"
+                    target="_blank"
+                    class="inline-flex items-center border border-blue-500 px-4 py-2 text-sm font-semibold text-blue-700 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    download
+                  >
+                    <svg class="w-4 h-4 mr-2 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                    </svg>
+                    Cytoscape Bridge (cytoscape_bridge.py)
+                  </a>
+                </div>
+              <li>Ensure the REST API is enabled in Cytoscape (default setting).</li>
+              <li>In the BioDataFuse webpage, enter the graph name and click <strong>"Load your graph into Cytoscape"</strong>.</li>
+              <li>The graph will be sent to your local Cytoscape instance via the local Cytoscape bridge.</li>
+            </ul>
           </div>
-
           <!-- Manual Import Section -->
           <div class="mt-10 border-t pt-8">
             <p class="text-lg font-semibold text-gray-800 mb-4">
-              Manual Import Instructions (if running Cytoscape separately)
-            </p>
-            <p class="text-sm text-gray-600 mb-6">
-              If you are running the UI locally using Docker (and Cytoscape is also running on the same machine),
-              use the <strong>"Load your graph into Cytoscape"</strong> button above.
-              Otherwise, follow these steps to import manually:
+              Manual Import Instructions
             </p>
             <ul class="list-disc list-inside text-gray-700 space-y-1 mb-4">
               <li>Download the graph JSON and style file using the buttons below.</li>
@@ -99,12 +101,32 @@
               ⚠️ Layouts are not included in the style file. After importing the graph, apply a layout from the <strong>Layout</strong> menu in Cytoscape.
             </p>
           </div>
+          <!-- Footer Buttons -->
+          <div class="flex justify-between items-center bg-white rounded-xl shadow-lg px-6 py-4">
+            <button
+              @click="goBack"
+              class="px-4 py-2 border border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-100"
+            >
+              ← Select another visualization tool
+            </button>
+
+            <button
+              @click="loadCytoscapeGraph"
+              :disabled="loading"
+              class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              <span v-if="loading" class="animate-spin mr-2">🔄</span>
+              <span>{{ loading ? 'Loading...' : 'Load your graph into Cytoscape' }}</span>
+            </button>
+          </div>
+
 
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -142,7 +164,7 @@ const loadCytoscapeGraph = async () => {
 
   loading.value = true
   try {
-    const response = await axios.post(`/api/visualize&analysis/cytoscape/${identifierSetId}`, {
+    const response = await axios.post(`/api/visualize&analysis/cytoscape/local_to_local/${identifierSetId}`, {
       graph_name: graphName.value.trim()
     })
     statusMessage.value = response.data.message
