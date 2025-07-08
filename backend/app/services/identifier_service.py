@@ -1,9 +1,5 @@
-import json
-import logging
-from collections import defaultdict
 from io import BytesIO, StringIO
-from typing import Dict, List, Optional, Tuple
-import mimetypes
+from typing import List, Optional, Tuple
 
 import pandas as pd
 from pyBiodatafuse import id_mapper
@@ -27,14 +23,14 @@ class IdentifierService:
         column_name: Optional[str] = None,
         file_type: Optional[str] = None,  # <- ADD THIS
     ) -> models.IdentifierSet:
-        # Process identifiers
+
         identifiers, warnings = self._process_identifiers(
             text_input,
             file_content,
             column_name=column_name,
             file_type=file_type  # <- pass here too
         )
-        # Create new identifier set
+
         identifier_set = models.IdentifierSet(
             user_id=user_id,
             identifier_type=identifier_type,
@@ -47,13 +43,11 @@ class IdentifierService:
         self.db.add(identifier_set)
         await self.db.commit()
         await self.db.refresh(identifier_set)
-        # If we have valid identifiers, perform the mapping
+
         if identifiers:
             try:
-                # Create DataFrame for BridgeDB
                 ids_df = pd.DataFrame({"identifier": identifiers})
 
-                # Perform mapping using the pyBiodatafuse package's bridgedb_xref function
                 bridgedb_df, bridgedb_metadata = id_mapper.bridgedb_xref(
                     identifiers=ids_df,
                     input_species=input_species,
@@ -67,13 +61,13 @@ class IdentifierService:
                     },
                     inplace=True,
                 )
-
                 bridgedb_subset_df = bridgedb_df[
                     bridgedb_df["target_source"].isin(
-                        ["Ensembl", "NCBI Gene", "PubChem Compound", "ChEMBL compound"]
+                        ["Ensembl", "NCBI Gene", "PubChem Compound", "HMDB"]
                     ) & (bridgedb_df["target"] != bridgedb_df["identifier"])
                 ].sort_values(by=["identifier", "target_source"])
 
+                print(bridgedb_subset_df.head())
                 identifier_set.mapped_identifiers = bridgedb_df.to_dict(orient="index")
                 identifier_set.mapped_identifiers_subset = bridgedb_subset_df.to_dict(
                     orient="index"
