@@ -41,6 +41,7 @@ class IdentifierSet(Base):
 
     user = relationship("User", back_populates="identifier_set")
     annotation = relationship("Annotation", back_populates="identifier_set")
+    cytoscape_files = relationship("CytoscapeFile", back_populates="identifier_set")
 
 
 class Annotation(Base):
@@ -53,9 +54,20 @@ class Annotation(Base):
     # pygraph = Column(PickleType, nullable=True)
     captured_warnings = Column(JSON, nullable=True)
     error_message = Column(String, nullable=True)
+    
 
     identifier_set = relationship("IdentifierSet", back_populates="annotation")
 
+class CytoscapeFile(Base):
+    __tablename__ = "cytoscape_files"
+    id = Column(Integer, primary_key=True, index=True)
+    identifier_set_id = Column(Integer, ForeignKey("identifier_sets.id"))
+    cytoscape_graph = Column(JSON, nullable=True)
+    status = Column(String)
+    error_message = Column(String, nullable=True)
+
+
+    identifier_set = relationship("IdentifierSet", back_populates="cytoscape_files")
 
 class RDFFile(Base):
     __tablename__ = "rdf_files"
