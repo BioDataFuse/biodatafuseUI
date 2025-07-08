@@ -65,6 +65,13 @@ export interface DataSourceProcessingResponse {
   updated_at: string;
 }
 
+export interface CytoscapeResponse {
+  identifier_set_id: number;
+  cytoscape_graph?: Record<string, any>;
+  status: string;
+  error_message?: string;
+}
+
 // Network Visualization Types
 export interface NodeData {
   id: string;
