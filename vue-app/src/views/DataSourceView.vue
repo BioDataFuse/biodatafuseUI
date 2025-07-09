@@ -61,66 +61,52 @@
             <form @submit.prevent="submitForm">
               <!-- Data Sources Selection -->
               <div class="space-y-4">
-                <div v-for="source in availableSources" :key="source.id" class="flex items-start">
-                  <div class="flex h-6 items-center">
-                    <input
-                      :id="source.id"
-                      type="checkbox"
-                      v-model="selectedSources"
-                      :value="source.id"
-                      class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    />
-                  </div>
-                  <div class="ml-3 flex-grow">
-                    <label :for="source.id" class="font-medium text-gray-700">{{ source.name }}</label>
-                    <p class="text-sm text-gray-500">{{ source.description }}</p>
-                    
-                    <!-- API Key Input Field (shown if source requires API key and is selected) -->
-                    <div v-if="source.requiresApiKey && selectedSources.includes(source.id)" class="mt-2">
-                      <label :for="source.id + '-api-key'" class="block text-sm font-medium text-gray-700">
-                        {{ source.name }} API key
-                        <a
-                          v-if="source.id === 'disgenet'"
-                          href="https://disgenet.com/plans"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="ml-2 text-indigo-600 hover:underline text-xs"
-                        >
-                          (see plans)
-                        </a>
-                      </label>
-                      <input
-                        :id="source.id + '-api-key'"
-                        type="password"
-                        v-model="sourceApiKeys[source.id]"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        :placeholder="'Enter your ' + source.name + ' API key'"
-                      />
-                    </div>
-                    <!-- API Key Input Field (shown if source requires API key and is selected) -->
-                    <div v-if="source.requiresMapName && selectedSources.includes(source.id)" class="mt-2">
-                      <label :for="source.id + '-map-name'" class="block text-sm font-medium text-gray-700">
-                        {{ source.name }}'s map name
-                        <a
-                          href="https://minerva-net.lcsb.uni.lu/table.html"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="ml-2 text-indigo-600 hover:underline text-xs"
-                        >
-                        (see the "map name" column in the extensive list)
-                        </a>
-                      </label>
-                      <input
-                        :id="source.id + '-map-name'"
-                        type="text"
-                        v-model="sourceMapName[source.id]"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        :placeholder="'Enter ' + source.name + ' map name, e.g. COVID19 Disease Map'"
-                      />
-                    </div>
-                    
-                  </div>
-                </div>
+<div v-for="(group, category) in groupedSources" :key="category" class="mb-8">
+  <h3 class="text-lg font-semibold text-indigo-700 mb-2">Data Sources for annotating {{ category }} input</h3>
+
+  <div v-for="source in group" :key="source.id" class="flex items-start border-b border-gray-200 pb-4 mb-4">
+    <div class="flex h-6 items-center">
+      <input
+        :id="source.id"
+        type="checkbox"
+        v-model="selectedSources"
+        :value="source.id"
+        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+      />
+    </div>
+    <div class="ml-3 flex-grow">
+      <label :for="source.id" class="font-medium text-gray-700">{{ source.name }}</label>
+      <p class="text-sm text-gray-500">{{ source.description }}</p>
+
+      <!-- API key input -->
+      <div v-if="source.requiresApiKey && selectedSources.includes(source.id)" class="mt-2">
+        <label :for="source.id + '-api-key'" class="block text-sm font-medium text-gray-700">
+          {{ source.name }} API key
+        </label>
+        <input
+          :id="source.id + '-api-key'"
+          type="password"
+          v-model="sourceApiKeys[source.id]"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+        />
+      </div>
+
+      <!-- Map name input -->
+      <div v-if="source.requiresMapName && selectedSources.includes(source.id)" class="mt-2">
+        <label :for="source.id + '-map-name'" class="block text-sm font-medium text-gray-700">
+          {{ source.name }} map name
+        </label>
+        <input
+          :id="source.id + '-map-name'"
+          type="text"
+          v-model="sourceMapName[source.id]"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
               </div>
 
               <!-- Error Display -->
@@ -162,7 +148,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ExclamationCircleIcon, ArrowRightIcon } from '@heroicons/vue/24/outline'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
@@ -223,6 +209,44 @@ onMounted(async () => {
     console.error('Error:', err)
   }
 })
+
+const groupedSources = computed(() => {
+  const groups = {
+    gene: [],
+    compound: [],
+    'both gene and compound': []
+  }
+
+  availableSources.value.forEach(source => {
+    // Hide opentargets_disease_compound if disgenet is not selected
+    if (
+      source.id === 'opentargets_disease_compound' &&
+      !selectedSources.value.includes('disgenet')
+    ) {
+      return // skip rendering this source
+    }
+
+    const category = source.category
+    if (!groups[category]) groups[category] = []
+    groups[category].push(source)
+  })
+
+  return groups
+})
+
+watch(selectedSources, (newSelection) => {
+  const hasDisgenet = newSelection.includes('disgenet')
+  const hasOTDC = newSelection.includes('opentargets_disease_compound')
+
+  if (!hasDisgenet && hasOTDC) {
+    // Remove opentargets_disease_compound if disgenet was unchecked
+    const index = selectedSources.value.indexOf('opentargets_disease_compound')
+    if (index !== -1) {
+      selectedSources.value.splice(index, 1)
+    }
+  }
+})
+
 
 // Navigation functions
 async function continueToAnnotations() {

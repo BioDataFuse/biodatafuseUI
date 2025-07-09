@@ -52,6 +52,13 @@ class DataSourceService:
                 "requires_map_name": False,
                 "base_url": constants.DISGENET_ENDPOINT,
             },
+            "opentargets_disease_compound": {
+                "name": f"{constants.OPENTARGETS} - Disease to compound annotation",
+                "description": "Target discovery and prioritization",
+                "requires_key": False,
+                "requires_map_name": False,
+                "base_url": constants.OPENTARGETS_ENDPOINT,
+            },
             "wikipathways_pathways": {
                 "name": f"{constants.WIKIPATHWAYS} - Pathways",
                 "description": "Biological pathway",
@@ -115,13 +122,6 @@ class DataSourceService:
                 "requires_map_name": False,
                 "base_url": constants.OPENTARGETS_ENDPOINT,
             },
-            "opentargets_disease_compound": {
-                "name": f"{constants.OPENTARGETS} - Disease to compound annotation",
-                "description": "Target discovery and prioritization",
-                "requires_key": False,
-                "requires_map_name": False,
-                "base_url": constants.OPENTARGETS_ENDPOINT,
-            },
             "opentargets_gene_compound": {
                 "name": f"{constants.OPENTARGETS} - Gene to compound annotation",
                 "description": "Target discovery and prioritization",
@@ -138,7 +138,7 @@ class DataSourceService:
             },
             "pubchem_assays": {
                 "name": f"{constants.PUBCHEM} - Assays",
-                "description": "Chemical information",
+                "description": "Chemical information (molecules screened on proteins as targets)",
                 "requires_key": False,
                 "requires_map_name": False,
                 "base_url": constants.PUBCHEM_ENDPOINT,
@@ -158,24 +158,29 @@ class DataSourceService:
                 "base_url": constants.MOLMEDB_ENDPOINT,
             },
             "aop_wiki_rdf": {
-                "name": f"{constants.AOPWIKIRDF} - Adverse Outcome Pathways",
-                "description": "Gene and compound annotations for AOP Wiki-approved Adverse Outcome Pathways and their components",
+                "name": f"Adverse Outcome Pathways (AOP-Wiki)",
+                "description": "Approved Adverse Outcome Pathways and their components",
                 "requires_key": False,
                 "requires_map_name": False,
                 "base_url": constants.AOPWIKI_ENDPOINT,
-            },
-            "aop_wiki_rdf": {
-                "name": f"{constants.AOPWIKIRDF} - Adverse Outcome Pathways",
-                "description": "Gene and compound annotations for AOP Wiki-approved Adverse Outcome Pathways and their components",
-                "requires_key": False,
-                "requires_map_name": False,
-                "base_url": constants.AOPWIKI_ENDPOINT,
-            },
+            }
         }
 
     async def get_available_sources(self) -> List[Dict]:
         """Get list of available data sources"""
-        return [{"id": key, **value} for key, value in self.available_sources.items()]
+        return [{"id": key, "category": self.get_source_category(key), **value} 
+                for key, value in self.available_sources.items()]
+
+    def get_source_category(self, key: str) -> str:
+        if key in ["bgee", "disgenet", "opentargets_disease_compound","minerva", "wikipathways_pathways", 
+                   "wikipathways_interactions", "minerva", "opentargets_go", "opentargets_reactome",
+                   "stringdb", "molmedb_gene", "intact_gene_interactions", "mitocarta",
+                   "opentargets_gene_compound", "pubchem_assays"]:
+            return "gene"
+        elif key in ["molmedb_compounds", "intact_compound_interactions"]:
+            return "compound"
+        elif key in ["kegg", "aop_wiki_rdf"]:
+            return "both gene and compound"
 
     async def create_annotations_for_identifier_set(
         self,
@@ -335,9 +340,7 @@ class DataSourceService:
                             metadata.append(molmedb_transporter_inhibited_metadata)
                         elif source_name == "aop_wiki_rdf": #TODO: needs to be updated
                             aopwiki_df, aopwiki_metadata = aopwiki.get_aops(
-                                bridgedb_df=bridgedb_df, 
-                                db="aopwiki",
-                                )
+                                bridgedb_df=bridgedb_df)
                             dataframes.append(aopwiki_df)
                             metadata.append(aopwiki_metadata)
                         elif source_name == "stringdb":
