@@ -195,7 +195,7 @@
                         <optgroup label="Compound Identifiers" class="font-semibold">
                           <option value="HMDB" class="py-1.5">HMDB ID (e.g., HMDB0000001)</option>
                           <option value="ChEBI" class="py-1.5">ChEBI ID (e.g., CHEBI:15377)</option>
-                          <option value="SMILES" class="py-1.5">SMILES Notation (e.g., C1=CC=CC=C1)</option>
+                          <option value="KEGG Compound" class="py-1.5">KEGG Compound (e.g., C00002)</option>
                           <option value="PubChem Compound" class="py-1.5">PubChem Compound (e.g., 100208)</option>
                         </optgroup>
                       </select>
