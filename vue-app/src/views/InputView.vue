@@ -190,8 +190,7 @@
                           <option value="NCBI Gene" class="py-1.5">NCBI Gene ID (e.g., 7157)</option>
                         </optgroup>
                         <optgroup label="Protein Identifiers" class="font-semibold">
-                          <option value="Uniprot-TrEMBL" class="py-1.5">UniProtKB ID (e.g., P12345)</option>
-                          <option value="Ensembl" class="py-1.5">Ensembl Protein ID (e.g., ENSP00000012048)</option>
+                          <option value="Uniprot-TrEMBL" class="py-1.5">UniProtKB ID (e.g., P11532)</option>
                         </optgroup>
                         <optgroup label="Compound Identifiers" class="font-semibold">
                           <option value="HMDB" class="py-1.5">HMDB ID (e.g., HMDB0000001)</option>
