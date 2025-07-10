@@ -248,20 +248,18 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// The active tab is stored in the selectedTab variable
-const selectedTab = ref('visualization')  // Default tab is 'visualization'
-const selectedVisualizationTool = ref('neo4j')  // Default tool is Neo4j
-// Watch for changes to selectedVisualizationTool to ensure the description updates
+const selectedTab = ref('visualization')  
+const selectedVisualizationTool = ref('neo4j')
 watch(selectedVisualizationTool, (newValue) => {
   console.log('Selected tool:', newValue)
 })
 
 // Flag to check if user came from the Query Step
-const isFromQueryStep = ref(false) // This flag will be set to true when user clicks Continue to Visualize and Analysis
+const isFromQueryStep = ref(false) 
 
 // For the file uploads
 const handleFileUpload = (fileType) => (event) => {
-  if (isFromQueryStep.value) return; // Do not allow upload if the user is in the visualization/analysis flow
+  if (isFromQueryStep.value) return; 
 
   const file = event.target.files[0]
   if (file) {
@@ -308,7 +306,6 @@ function handleContinue() {
   isFromQueryStep.value = true;
   if (selectedTab.value === 'visualization') {
     console.log(`Continuing to visualize using ${selectedVisualizationTool.value}`)
-    // TODO: Add router.push, redirect or trigger logic for each visualization tool
     if (selectedVisualizationTool.value === 'neo4j') {
       router.push('/visualize&analysis/neo4j')
     } else if (selectedVisualizationTool.value === 'cytoscape') {
