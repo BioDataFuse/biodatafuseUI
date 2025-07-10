@@ -73,66 +73,7 @@
       </div>
 
       <!-- File Upload Section for Different Files -->
-      <div v-if="!isFromQueryStep" class="mt-6 px-6 py-4 bg-white rounded-b-xl shadow-lg">
-        <h3 class="text-xl font-semibold text-gray-900">Upload Query Outputs (Optional)</h3>
 
-        <!-- Upload Combined Data -->
-        <div class="mt-4">
-          <button 
-            @click="triggerFileInput('combined_df')"
-            class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400"
-            :disabled="isFromQueryStep"
-          >
-            Upload combined dataframe with all annotations (combined_df.tsv)
-          </button>
-          <input 
-            ref="combinedFileInput"
-            type="file"
-            @change="handleFileUpload('combined_df')"
-            class="hidden"
-            accept=".tsv"
-            data-type="combined_df"
-          />
-        </div>
-
-        <!-- Upload combined_metadata -->
-        <div class="mt-4">
-          <button 
-            @click="triggerFileInput('combined_metadata')"
-            class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400"
-            :disabled="isFromQueryStep"
-          >
-            Upload combined metadata (combined_metadata.json)
-          </button>
-          <input 
-            ref="combinedMetadataFileInput"
-            type="file"
-            @change="handleFileUpload('combined_metadata')"
-            class="hidden"
-            accept=".json"
-            data-type="combined_metadata"
-          />
-        </div>
-
-        <!-- Upload OpenTargets Data -->
-        <div class="mt-4">
-          <button 
-            @click="triggerFileInput('opentargets_df')"
-            class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400"
-            :disabled="isFromQueryStep"
-          >
-            Upload disease annotations for compounds dataframe from the OpenTargets (opentargets_df.tsv)
-          </button>
-          <input 
-            ref="opentargetsFileInput"
-            type="file"
-            @change="handleFileUpload('opentargets_df')"
-            class="hidden"
-            accept=".tsv"
-            data-type="opentargets_df"
-          />
-        </div>
-      </div>
 
       <!-- Tab Content Area -->
       <div class="mt-6">

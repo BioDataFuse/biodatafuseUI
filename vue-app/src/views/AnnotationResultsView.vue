@@ -90,7 +90,6 @@
                       <option v-for="id in availableInputIds" :key="id" :value="id">{{ id }}</option>
                     </select>
                   </div>
-
                   <!-- Select Data Source -->
                   <div class="w-full sm:w-1/2" v-if="selectedInputId">
                     <label class="block text-xl font-medium text-gray-700">Select Data Source</label>
@@ -227,7 +226,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ExclamationCircleIcon, ArrowRightIcon } from '@heroicons/vue/24/outline'
 
@@ -252,8 +251,11 @@ const selectedInputId = ref('')
 const selectedDataSource = ref('')
 
 const availableInputIds = computed(() => {
-  return Object.values(annotationResults.value?.combined_df || {}).map(item => item.identifier)
-})
+  const allInputs = Object.values(annotationResults.value?.combined_df || {}).map(item => item.identifier);
+  const uniqueInputs = [...new Set(allInputs)];
+  return uniqueInputs;
+
+});
 
 const paginatedAnnotationData = computed(() => {
   const start = (currentAnnotationPage.value - 1) * rowsPerAnnotationPage
@@ -293,6 +295,35 @@ const selectedDataSourceData = computed(() => {
   const selectedRow = Object.values(annotationResults.value?.combined_df || {}).find(item => item.identifier === selectedInputId.value)
   return selectedRow ? selectedRow[selectedDataSource.value] : []
 })
+
+// Watch for changes in selectedInputId and reset annotation data
+watch(selectedInputId, (newInputId) => {
+  // Reset the data source selection and annotation data when input ID changes
+  selectedDataSource.value = ''; // Reset Data Source selection
+  currentAnnotationPage.value = 1; // Reset to first page
+  
+  // If a valid input ID is selected, fetch new data
+  if (newInputId) {
+    selectedDataSourceData.value = getSelectedDataSourceData(newInputId); // Get new data for the selected input
+  } else {
+    selectedDataSourceData.value = []; // Clear data if no valid input ID
+  }
+});
+
+// Watch for changes in selectedDataSource and reset data accordingly
+watch(selectedDataSource, (newDataSource) => {
+  if (selectedInputId.value) {
+    selectedDataSourceData.value = getSelectedDataSourceData(selectedInputId.value); // Update data based on selected input and source
+  }
+});
+
+// Function to get data for selected input ID and data source
+function getSelectedDataSourceData(inputId) {
+  // Fetch the row corresponding to the selected input ID
+  const selectedRow = Object.values(annotationResults.value?.combined_df || {}).find(item => item.identifier === inputId);
+  // Return the data for the selected data source from that row
+  return selectedRow ? selectedRow[selectedDataSource.value] : [];
+}
 
 // Function to download TSV (for combined_df)
 function downloadTSV(type) {
