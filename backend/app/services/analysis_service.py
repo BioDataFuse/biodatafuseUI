@@ -48,10 +48,8 @@ class AnalysisService:
             graph_obj = BioGraph(graph=pygraph)
             data = graph_obj.count_nodes_by_data_source(plot=False)
 
-            # Aggregate counts
             grouped = data.groupby(['node_type', 'node_source'])['count'].sum().unstack().fillna(0)
 
-            # Create bar plot with matplotlib
             fig, ax = plt.subplots(figsize=(10, 6))
             grouped.plot(kind='bar', stacked=True, ax=ax)
 
@@ -82,10 +80,8 @@ class AnalysisService:
             graph_obj = BioGraph(graph=pygraph)
             data = graph_obj.count_edge_by_data_source(plot=False)
 
-            # Aggregate and pivot to get grouped bar chart
             grouped = data.groupby(['edge_type', 'edge_source'])['count'].sum().unstack().fillna(0)
 
-            # Plot using matplotlib
             fig, ax = plt.subplots(figsize=(10, 6))
             grouped.plot(kind='bar', stacked=True, ax=ax)
 
