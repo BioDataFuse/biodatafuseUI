@@ -17,6 +17,13 @@ class AnalysisService:
             pygraph, error = GraphService.create_pygraph(annotation, graph_dir)
             if error:
                 return None, f"Graph error: {error}"
+            
+            for node_id, data in pygraph.nodes(data=True):
+                if "labels" not in data and "label" in data:
+                    data["labels"] = data["label"]
+                elif "labels" not in data:
+                    data["labels"] = "Unknown"
+
 
             graph_obj = BioGraph(graph=pygraph)
             summary_html = graph_obj.graph_summary
@@ -31,6 +38,12 @@ class AnalysisService:
             pygraph, error = GraphService.create_pygraph(annotation, graph_dir)
             if error:
                 return None, f"Graph error: {error}"
+
+            for node_id, data in pygraph.nodes(data=True):
+                if "labels" not in data and "label" in data:
+                    data["labels"] = data["label"]
+                elif "labels" not in data:
+                    data["labels"] = "Unknown"
 
             graph_obj = BioGraph(graph=pygraph)
             data = graph_obj.count_nodes_by_data_source(plot=False)
@@ -60,6 +73,12 @@ class AnalysisService:
             if error:
                 return None, f"Graph error: {error}"
 
+            for node_id, data in pygraph.nodes(data=True):
+                if "labels" not in data and "label" in data:
+                    data["labels"] = data["label"]
+                elif "labels" not in data:
+                    data["labels"] = "Unknown"
+                
             graph_obj = BioGraph(graph=pygraph)
             data = graph_obj.count_edge_by_data_source(plot=False)
 
