@@ -35,7 +35,6 @@ def process_selected_sources(
 
     for source in selected_sources_list:
         if source in data_source_functions:
-            print(source)
             if source == "disgenet":
                 tmp_data, tmp_metadata = data_source_functions[source](api_key=api_key, bridgedb_df=bridgedb_df)
             else:

@@ -67,7 +67,6 @@ class CytoscapeService:
             elements_only = raw_graph.get("elements")
             cytoscape_json_data = {"elements": elements_only}
 
-            print("Returning Cytoscape JSON:", json.dumps(cytoscape_json_data, indent=2))
             return cytoscape_json_data, None
 
         except Exception as e:

@@ -44,49 +44,37 @@ async def annotations_from_datasources(
         HTTPException: If the identifier set is not found, not owned by the user, no sources are provided,
                        or if an error occurs during processing.
     """
-    print("Starting function: process_datasources")
 
     try:
         # Verify ownership of identifier set
         identifier_service = IdentifierService(db)
-        print("Step 1: Fetching identifier set")
         identifier_set = await identifier_service.get_identifier_set(set_id)
-        print("Step 2: Identifier set fetched")
         if not identifier_set:
             raise HTTPException(status_code=404, detail="Identifier set not found")
-        print(f"Step 3: Identifier set found with ID {identifier_set.id}")
         if identifier_set.user_id != current_user.id:
             raise HTTPException(
                 status_code=403, detail="Not authorized to access this identifier set"
             )
-        print("Step 4: User authorized to access identifier set")
 
         # Validate data sources
         if not datasources:
             raise HTTPException(status_code=400, detail="No data sources provided")
-        print("Step 5: Data sources provided, proceeding with processing")
         # Convert datasources to the format expected by the service
         datasources = [
             {"source": datasource.source, "api_key": datasource.api_key, "map_name": datasource.map_name} for datasource in datasources
         ]
-        print(f"Step 6: Converted datasources: {datasources}")
         # Process selected datasources
         datasource_service = DataSourceService(db)
-        print("Step 7: Creating annotations for identifier set")
         annotation = await datasource_service.create_annotations_for_identifier_set(
             set_id=set_id,
             datasources=datasources,
         )
-        print(f"Step 8: Annotations created: {annotation}")
 
-        print(f"Selected datasources: {datasources}")
         # combined_df, combined_metadata, pygraph, opentargets_df, captured_warnings  = await datasource_service.create_annotations_for_identifier_set(
         #     set_id=set_id,
         #     datasources=datasources, 
         # )
 
-        # print(f"Processing result: {annotation.combined_df.head()}")
-        # print(f"Metadata: {annotation.combined_metadata}")
 
         # if annotation.combined_df is not None:
         return DataSourceProcessingResponse(
@@ -96,7 +84,6 @@ async def annotations_from_datasources(
             combined_df=annotation.combined_df,
             combined_metadata=annotation.combined_metadata,
             opentargets_df=annotation.opentargets_df,
-            # pygraph=annotation.pygraph,
             captured_warnings=annotation.captured_warnings,
             error_message=annotation.error_message,
         )

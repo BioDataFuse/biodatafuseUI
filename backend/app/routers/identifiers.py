@@ -41,9 +41,7 @@ async def process_identifiers(
     Raises:
         HTTPException: If there is an error during identifier set creation or processing.
     """
-    print("Starting function: process_identifiers")
     identifier_service = IdentifierService(db)
-    print("Step 1")
     file_content = None
     if file:
         file_content = await file.read()  # <- this is bytes
@@ -51,7 +49,6 @@ async def process_identifiers(
     else:
         file_content = None
         file_type = None
-    print(f"File type: {file_type}, Column name: {column_name}")
 
     identifier_set = await identifier_service.create_identifier_set(
         user_id=current_user.id,
@@ -62,7 +59,6 @@ async def process_identifiers(
         column_name=column_name,
         file_type=file_type
     )
-    print("Ending function process_identifiers")
     return schemas.IdentifierProcessingResponse(
         set_id=identifier_set.id,
         status=identifier_set.status,
@@ -83,11 +79,9 @@ async def get_identifier_mapping(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    print(f"Starting function: get_identifier_mapping")
     identifier_service = IdentifierService(db)
 
     identifier_set = await identifier_service.get_identifier_set(set_id)
-    print(f"identifier_set: {identifier_set}")
 
     if not identifier_set:
         raise HTTPException(status_code=404, detail="Identifier set not found")
@@ -96,7 +90,6 @@ async def get_identifier_mapping(
         raise HTTPException(
             status_code=403, detail="Not authorized to access this identifier set"
         )
-    print(f"Ending function: get_identifier_mapping")
     return identifier_set
 
 

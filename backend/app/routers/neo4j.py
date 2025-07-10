@@ -15,7 +15,6 @@ async def neo4j_visualization(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    print(f"[Neo4j] Received request for set_id: {set_id}")
 
     try:
         from ..models import Annotation
