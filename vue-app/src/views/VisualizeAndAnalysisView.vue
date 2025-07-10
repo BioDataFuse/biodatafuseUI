@@ -284,11 +284,6 @@ function goBack() {
   router.push('/query')
 }
 
-function continueToAnalysis() {
-  isFromQueryStep.value = true;
-  console.log("Continuing to visualize and analysis.")
-  // Proceed to visualization and analysis steps
-}
 
 // Dynamically generate button label based on selected tab and tool
 const continueButtonText = computed(() => {
@@ -304,7 +299,7 @@ const continueButtonText = computed(() => {
         return 'Continue to Visualize'
     }
   } else {
-    return 'Continue to Analysis'
+    return 'Back to Visualize'
   }
 })
 
@@ -322,8 +317,8 @@ function handleContinue() {
       router.push('/visualize&analysis/graphdb')
     }
   } else {
-    console.log("Continuing to graph analysis")
-    // TODO: Handle analysis step logic
+    selectedTab.value = 'visualization'
+    console.log("Redirected back to visualization tab from analysis")
   }
 }
 
