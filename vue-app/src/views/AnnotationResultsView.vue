@@ -296,13 +296,11 @@ const selectedDataSourceData = computed(() => {
   return selectedRow ? selectedRow[selectedDataSource.value] : []
 })
 
-// Watch for changes in selectedInputId and reset annotation data
 watch(selectedInputId, (newInputId) => {
   // Reset the data source selection and annotation data when input ID changes
   selectedDataSource.value = ''; // Reset Data Source selection
   currentAnnotationPage.value = 1; // Reset to first page
   
-  // If a valid input ID is selected, fetch new data
   if (newInputId) {
     selectedDataSourceData.value = getSelectedDataSourceData(newInputId); // Get new data for the selected input
   } else {
@@ -310,18 +308,14 @@ watch(selectedInputId, (newInputId) => {
   }
 });
 
-// Watch for changes in selectedDataSource and reset data accordingly
 watch(selectedDataSource, (newDataSource) => {
   if (selectedInputId.value) {
     selectedDataSourceData.value = getSelectedDataSourceData(selectedInputId.value); // Update data based on selected input and source
   }
 });
 
-// Function to get data for selected input ID and data source
 function getSelectedDataSourceData(inputId) {
-  // Fetch the row corresponding to the selected input ID
   const selectedRow = Object.values(annotationResults.value?.combined_df || {}).find(item => item.identifier === inputId);
-  // Return the data for the selected data source from that row
   return selectedRow ? selectedRow[selectedDataSource.value] : [];
 }
 
