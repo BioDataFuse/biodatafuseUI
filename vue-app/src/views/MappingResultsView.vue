@@ -150,11 +150,20 @@
                 <button
                   type="button"
                   @click="continueToDataSources"
-                  class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  :disabled="isMappingEmpty"
+                  class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm 
+                        hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
+                        focus-visible:outline-indigo-600 disabled:opacity-50"
                 >
                   Continue to Data Sources
                   <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
                 </button>
+
+              </div>
+              <div> 
+                <p v-if="isMappingEmpty" class="text-right text-sm text-red-600">
+                  Cannot continue: No identifiers were successfully mapped. Please check your input.
+                </p>
               </div>
             </div>
           </div>
@@ -208,6 +217,10 @@ onMounted(async () => {
 function goBack() {
   router.push('/query')
 }
+
+const isMappingEmpty = computed(() => {
+  return Object.keys(mappingResults.value?.mapped_identifiers_list || {}).length === 0
+})
 
 function continueToDataSources() {
   router.push('/query/datasources')
