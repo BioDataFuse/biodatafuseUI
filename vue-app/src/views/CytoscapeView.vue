@@ -36,7 +36,7 @@
           <!-- Instructions for Remote Web Server and Local Cytoscape -->
           <div class="mt-10 border-t pt-8">
             <button @click="toggleRemoteInstructions" class="text-indigo-600 font-medium hover:underline">
-              {{ showRemoteInstructions ? 'Instructions for loading the graph into Cytoscape on Local Machine (hide) ▲' : 'Instructions for running the BioDataFuse UI using Docker (show) ▼' }}
+              {{ showRemoteInstructions ? 'Instructions for loading the graph into Cytoscape on Local Machine (hide) ▲' : 'Instructions for loading the graph into Cytoscape on Local Machine (show) ▼' }}
             </button>
             <div v-if="showRemoteInstructions">
               <p class="text-lg font-semibold text-gray-800 mb-4">
