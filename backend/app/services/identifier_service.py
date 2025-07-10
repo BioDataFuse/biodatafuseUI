@@ -63,7 +63,7 @@ class IdentifierService:
                 )
                 bridgedb_subset_df = bridgedb_df[
                     bridgedb_df["target_source"].isin(
-                        ["Ensembl", "NCBI Gene", "PubChem Compound", "HMDB"]
+                        ["Ensembl", "NCBI Gene", "PubChem Compound", "HMDB", "ChemSpider"]
                     ) & (bridgedb_df["target"] != bridgedb_df["identifier"])
                 ].sort_values(by=["identifier", "target_source"])
 
