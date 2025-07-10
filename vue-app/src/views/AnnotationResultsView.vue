@@ -102,59 +102,83 @@
                 </div>
               </div>
 
-              <!-- Focused Table Display -->
+              <!-- Table Display -->
               <div v-if="selectedDataSourceData.length" class="mt-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-2 text-left">
                   Annotation results for 
                   <span class="underline font-bold">{{ selectedInputId }}</span> 
                   : {{ selectedDataSource }}
                 </h3>
-                <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-700 border rounded">
-                  <thead>
-                    <tr>
-                      <th
-                        v-for="(v, key, i) in selectedDataSourceData[0]"
-                        :key="`header-${key}-${i}`"
-                        class="px-2 py-1 font-semibold border-b text-left !text-left"
-                      >
-                        {{ key }}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(entry, idx) in selectedDataSourceData" :key="idx" class="border-t">
-                      <td
-                        v-for="(val, k) in entry"
-                        :key="`cell-${idx}-${k}`"
-                        class="px-2 py-1 border-b text-left !text-left"
-                      >
-                        {{ val }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-700 border rounded">
+                    <thead>
+                      <tr>
+                        <th
+                          v-for="(v, key, i) in selectedDataSourceData[0]"
+                          :key="`header-${key}-${i}`"
+                          class="px-2 py-1 font-semibold border-b text-left bg-gray-50"
+                        >
+                          {{ key }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(entry, idx) in paginatedAnnotationData" :key="idx" class="border-t">
+                        <td
+                          v-for="(val, k) in entry"
+                          :key="`cell-${idx}-${k}`"
+                          class="px-2 py-1 border-b text-left"
+                        >
+                          {{ val }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="mt-4 flex items-center space-x-4">
+                  <button
+                    @click="currentAnnotationPage--"
+                    :disabled="currentAnnotationPage === 1"
+                    class="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span class="text-sm text-gray-500">
+                    Page {{ currentAnnotationPage }} of {{ annotationTotalPages }}
+                  </span>
+                  <button
+                    @click="currentAnnotationPage++"
+                    :disabled="currentAnnotationPage === annotationTotalPages"
+                    class="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
+
               <!-- Download Buttons for combined_df and combined_metadata as TSV -->
               <div>
                 <div class="mt-8 text-left">
-                  <h3 class="text-xl font-semibold text-gray-900">Download annotation output and metadata</h3>
+                  <h3 class="text-xl font-semibold text-gray-900">Download outputs</h3>
                 </div>
                 <!-- Download combined_df TSV -->
-                <div class="mt-4 flex justify-left space-x-2"> <!-- Reduced margin-top and space between buttons -->
+                <div v-if="!isContinueDisabled" class="mt-4 flex justify-left space-x-2">
                   <button @click="downloadTSV('combined_df')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
                     <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
                     </svg>
-                    Download combined dataframe with all annotations (TSV)
+                    Combined table with all annotations (TSV)
                   </button>
                 </div>
                 <!-- Download combined metadata JSON -->
-                <div class="mt-1 flex justify-left space-x-2"> <!-- Reduced margin-top and space between buttons -->
+                <div class="mt-1 flex justify-left space-x-2">
                   <button @click="downloadJSON('combined_metadata')" class="inline-flex items-center border-2 border-dashed border-gray-500 px-4 py-2 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
                     <svg class="w-4 h-4 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
                     </svg>
-                    Download combined metadata (JSON)
+                    Combined query metadata (JSON)
                   </button>
                 </div>
                 <!-- Download Button for opentargets_df TSV if it is not empty or None -->
@@ -176,15 +200,23 @@
                 >
                   Back to Data Sources
                 </button>
-                <div class="flex space-x-3">
+                <div class="flex flex-col items-end space-y-2">
                   <button
                     @click="continueToVisualizeAndAnalysis"
-                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    :disabled="isContinueDisabled"
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm 
+                          hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
+                          focus-visible:outline-indigo-600 disabled:opacity-50"
                   >
                     Continue to Visualize and Analysis
                     <ArrowRightIcon class="ml-2 -mr-0.5 h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
+              </div>
+              <div> 
+                <p v-if="isContinueDisabled" class="text-right text-sm text-red-600">
+                  Cannot continue: No available annotations for any input. Please check your input or data source selections.
+                </p>
               </div>
             </div>
           </div>
@@ -203,13 +235,14 @@ const router = useRouter()
 const loading = ref(true)
 const error = ref(null)
 const annotationResults = ref(null)
+const currentAnnotationPage = ref(1)
+const rowsPerAnnotationPage = 5
 
 const steps = [
   { name: 'Input Identifiers', status: 'complete' },
   { name: 'Identifier Mapping', status: 'complete' },
   { name: 'Select Data Sources', status: 'complete' },
   { name: 'Annotations', status: 'current' },
-  // { name: 'Visualize', status: 'upcoming' }
 ]
 
 const currentStep = ref(3)
@@ -222,6 +255,15 @@ const availableInputIds = computed(() => {
   return Object.values(annotationResults.value?.combined_df || {}).map(item => item.identifier)
 })
 
+const paginatedAnnotationData = computed(() => {
+  const start = (currentAnnotationPage.value - 1) * rowsPerAnnotationPage
+  const end = start + rowsPerAnnotationPage
+  return selectedDataSourceData.value.slice(start, end)
+})
+
+const annotationTotalPages = computed(() => {
+  return Math.ceil(selectedDataSourceData.value.length / rowsPerAnnotationPage)
+})
 
 const availableDataSources = computed(() => {
   const inputId = selectedInputId.value
@@ -230,6 +272,21 @@ const availableDataSources = computed(() => {
   const row = Object.values(annotationResults.value?.combined_df || {}).find(item => item.identifier === inputId)
   return Object.keys(row).filter(k => !fixedFields.includes(k) && Array.isArray(row[k]))
 })
+
+const allInputsHaveNoDataSources = computed(() => {
+  const df = annotationResults.value?.combined_df
+  if (!df) return true
+
+  const allRows = Object.values(df)
+
+  return allRows.every(row => {
+    const dataSourceKeys = Object.keys(row).filter(
+      k => !fixedFields.includes(k) && Array.isArray(row[k])
+    )
+    return dataSourceKeys.length === 0
+  })
+})
+
 
 const selectedDataSourceData = computed(() => {
   if (!selectedInputId.value || !selectedDataSource.value) return []
@@ -258,18 +315,18 @@ const array = Object.keys(obj).map(key => {
 
   const rows = array.map(item => {
     return Object.values(item).map(value => {
-      // If the value is an object or array, stringify it
+      // 
       if (typeof value === 'object' && value !== null) {
-        return JSON.stringify(value);  // Convert object or array to JSON string
+        return JSON.stringify(value); 
       }
-      return value; // Otherwise, return the value as is
-    }).join('\t'); // Join with tab separator
+      return value;
+    }).join('\t'); 
   });
 
-  return [headers, ...rows].join('\n'); // Join rows with new lines
+  return [headers, ...rows].join('\n'); 
 }
 
-// Function to download JSON (for combined_metadata)
+// 
 function downloadJSON(type) {
   const data = type === 'combined_metadata' ? annotationResults.value.combined_metadata : {};
   const json = JSON.stringify(data, null, 2);
@@ -299,8 +356,17 @@ function goBack() {
   router.push('/query/datasources')
 }
 
+const isContinueDisabled = computed(() => {
+  return allInputsHaveNoDataSources.value
+})
+
+
 function continueToVisualizeAndAnalysis() {
-  // Set the flag in localStorage to indicate the user is moving to visualization/analysis.
+  if (isContinueDisabled.value) {
+    // Optional fallback
+    alert("Cannot continue: annotation results are empty.");
+    return;
+  }
   localStorage.setItem('isFromQueryStep', 'true');
   router.push('/visualize&analysis')
 }
