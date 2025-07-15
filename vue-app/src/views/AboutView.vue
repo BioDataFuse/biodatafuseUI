@@ -4,7 +4,7 @@
       <!-- Intro -->
       <div class="mt-10 space-y-6 text-base text-gray-500 leading-relaxed">
         <p>
-          <strong class="text-gray-900">BioDataFuse</strong> is a modern, open-source platform designed to streamline the integration and contextual analysis of diverse biomedical data sources. It provides a modular query-based system that allows users to build tailored <strong class="text-gray-900">knowledge graphs</strong> from heterogeneous data inputs.
+          <strong class="text-gray-900">BioDataFuse</strong> is an open-source platform designed to streamline the integration and contextual analysis of diverse biomedical data sources. It provides a modular query-based system that allows users to build tailored <strong class="text-gray-900">knowledge graphs</strong> from heterogeneous data inputs.
         </p>
         <p>
           At its core, BioDataFuse leverages the power of its Python package, <a href="https://github.com/BioDataFuse/pyBiodatafuse" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">pyBiodatafuse</a>, which aggregates and harmonizes biological data from supported databases. It integrates seamlessly with tools like Neo4j and Cytoscape, supporting local graph hosting and advanced network analysis.
