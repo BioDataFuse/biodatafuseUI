@@ -1,12 +1,6 @@
 <template>
   <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
-      <!-- Title -->
-      <h1 class="text-4xl font-extrabold text-gray-900">About BioDataFuse</h1>
-      <p class="mt-4 text-lg text-gray-500">
-        Your platform for harmonizing and analyzing biomedical data through modular queries and dynamic graph construction.
-      </p>
-
       <!-- Intro -->
       <div class="mt-10 space-y-6 text-base text-gray-500 leading-relaxed">
         <p>
