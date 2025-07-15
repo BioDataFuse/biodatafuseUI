@@ -388,8 +388,6 @@ const isContinueDisabled = computed(() => {
 
 function continueToVisualizeAndAnalysis() {
   if (isContinueDisabled.value) {
-    // Optional fallback
-    alert("Cannot continue: annotation results are empty.");
     return;
   }
   localStorage.setItem('isFromQueryStep', 'true');

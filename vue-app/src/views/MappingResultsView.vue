@@ -189,7 +189,6 @@ const steps = [
   { name: 'Identifier Mapping', status: 'current' },
   { name: 'Select Data Sources', status: 'upcoming' },
   { name: 'Annotations', status: 'upcoming' },
-  // { name: 'Visualize', status: 'upcoming' }
 ]
 
 const currentStep = ref(1)
