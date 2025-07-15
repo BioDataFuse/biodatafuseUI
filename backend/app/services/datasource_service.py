@@ -283,7 +283,7 @@ class DataSourceService:
                             dataframes.append(bgee_df)
                             metadata.append(bgee_metadata)
                         elif source_name == "minerva":
-                            minerva_df, minerva_metadata = minerva.get_gene_minerva_pathways(
+                            minerva_df, minerva_metadata = minerva.get_gene_pathways(
                                 bridgedb_df=bridgedb_df, map_name=map_name
                             )
                             dataframes.append(minerva_df)
