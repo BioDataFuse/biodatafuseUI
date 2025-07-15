@@ -47,7 +47,7 @@
                 <div class="mt-4">
                   <!-- Download Link for cytoscape_bridge.py -->
                   <a
-                    href="https://github.com/BioDataFuse/biodatafuseUI/blob/main/docker-compose.yaml"
+                    href="https://github.com/BioDataFuse/biodatafuseUI/blob/main/backend/app/static/cytoscape_bridge.py"
                     target="_blank"
                     class="inline-flex items-center border border-blue-500 px-4 py-2 text-sm font-semibold text-blue-700 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     download
