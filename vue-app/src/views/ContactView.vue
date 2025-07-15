@@ -4,10 +4,6 @@
       <h2 class="text-3xl font-extrabold text-gray-900 mb-4">Contact & Contributors</h2>
 
       <p class="text-lg text-gray-600 mb-4 max-w-3xl">
-        pyBioDataFuse is developed as part of the ELIXIR BioHackathon 2023, with contributions from multiple ELIXIR nodes.
-      </p>
-
-      <p class="text-lg text-gray-600 mb-4 max-w-3xl">
         For questions, feedback, or contributions, please visit our GitHub repository:
       </p>
       <a
