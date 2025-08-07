@@ -511,3 +511,52 @@ async def upload_custom_namespaces(
             status_code=400,
             detail=f"Failed to upload custom namespaces: {str(e)}"
         )
+
+
+@router.post("/upload-shacl-prefixes", response_model=GraphDBResponse)
+async def upload_shacl_prefixes_to_graphdb(
+    request: GraphDBUploadRequest,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload SHACL prefixes to GraphDB repository"""
+    logger.info(f"📋 Uploading SHACL prefixes to repository: {request.repositoryId}")
+    try:
+        import rdflib
+        rdf_service = RDFService(db)
+        
+        # Find SHACL prefixes file directly from generated files
+        generated_files = request.graphData.get("generated_files", [])
+        prefixes_file = next((f for f in generated_files if f.get("type") == "SHACL_Prefixes" or ('prefix' in f.get("name", "").lower() and 'shacl' in f.get("name", "").lower())), None)
+        
+        if not prefixes_file:
+            raise ValueError("No SHACL prefixes file found in generated data")
+        
+        # Get file info from database
+        file_info = await rdf_service.get_file_info(prefixes_file["id"], current_user.id)
+        if not file_info or not os.path.exists(file_info['path']):
+            raise ValueError("SHACL prefixes file not found")
+        
+        # Read TTL into rdflib Graph
+        g = rdflib.Graph()
+        g.parse(file_info['path'], format='turtle')
+        
+        # Upload using GraphDBManager
+        GraphDBManager.upload_to_graphdb(
+            request.baseUrl,
+            request.repositoryId,
+            request.username,
+            request.password,
+            g,
+            file_format="turtle"
+        )
+        
+        logger.info(f"✅ SHACL prefixes uploaded successfully")
+        return GraphDBResponse(
+            success=True,
+            message=f"SHACL prefixes uploaded to repository '{request.repositoryId}' successfully"
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to upload SHACL prefixes: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to upload SHACL prefixes: {str(e)}")

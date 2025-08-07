@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from pyBiodatafuse.graph.rdf import BDFGraph
 from pyBiodatafuse.graph.rdf.graphdb import GraphDBManager
+from pyBiodatafuse.graph.rdf.utils import get_shacl_prefixes
 
 from ..models import RDFFile
 from .. import models
@@ -74,6 +75,7 @@ class RDFService:
         generate_shex: bool = True,
         shex_threshold: float = 0.001,
         user_id: int = None,
+        custom_namespaces: List[Dict[str, str]] = None,
     ) -> RDFGenerationResponse:
         """Generate RDF graph from annotation data."""
         try:
@@ -166,11 +168,13 @@ class RDFService:
                     uml_file_path = None
                     if generate_uml_diagram:
                         uml_file_path = output_dir / f"{graph_name}_shacl.png"
+                    
                     bdf.shacl(
                         path=str(shacl_file_path),
                         threshold=shacl_threshold,
                         uml_figure_path=str(uml_file_path) if uml_file_path else None,
                     )
+                    
                     # Add SHACL file
                     shacl_file_id = str(uuid.uuid4())
                     self.generated_files[shacl_file_id] = {
@@ -189,6 +193,45 @@ class RDFService:
                     ))
                     
                     logger.info(f"✅ SHACL shapes generated successfully")
+                    
+                    # Generate SHACL prefixes
+                    logger.info(f"📋 Generating SHACL prefixes...")
+                    prefixes_file_path = output_dir / f"{graph_name}_shacl_prefixes.ttl"
+                    
+                    # Convert custom namespaces to the format expected by BDFGraph
+                    namespaces_dict = None
+                    if custom_namespaces:
+                        namespaces_dict = {ns['prefix']: ns['uri'] for ns in custom_namespaces}
+                        logger.info(f"🔧 Adding custom namespaces: {namespaces_dict}")
+                    
+                    
+                    # Call get_shacl_prefixes
+                    get_shacl_prefixes(
+                        namespaces=namespaces_dict,
+                        path=str(prefixes_file_path),
+                        new_uris=bdf.new_uris
+                    )
+                    
+                    # Add SHACL prefixes file if it was created
+                    if prefixes_file_path.exists():
+                        prefixes_file_id = str(uuid.uuid4())
+                        self.generated_files[prefixes_file_id] = {
+                            "name": f"{graph_name}_shacl_prefixes.ttl",
+                            "path": str(prefixes_file_path),
+                            "type": "SHACL_Prefixes",
+                            "user_id": user_id,
+                            "created_at": datetime.now()
+                        }
+                        await self.persist_file(prefixes_file_id, user_id, f"{graph_name}_shacl_prefixes.ttl", str(prefixes_file_path), "SHACL_Prefixes")
+                        
+                        generated_files.append(GeneratedFile(
+                            id=prefixes_file_id,
+                            name=f"{graph_name}_shacl_prefixes.ttl",
+                            type="SHACL_Prefixes",
+                            size=prefixes_file_path.stat().st_size
+                        ))
+                        
+                        logger.info(f"✅ SHACL prefixes generated successfully")
                     
                     # Add UML diagram if generated
                     if uml_file_path and uml_file_path.exists():

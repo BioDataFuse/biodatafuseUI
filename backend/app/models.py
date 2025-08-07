@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Boolean, Column, Integer, String, DateTime, JSON, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, DateTime, JSON, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import PickleType
@@ -21,6 +21,7 @@ class User(Base):
 
     # Relationships
     identifier_set = relationship("IdentifierSet", back_populates="user")
+    rdf_generations = relationship("RDFGeneration", back_populates="user")
 
 class IdentifierSet(Base):
     __tablename__ = "identifier_sets"
@@ -42,6 +43,7 @@ class IdentifierSet(Base):
     user = relationship("User", back_populates="identifier_set")
     annotation = relationship("Annotation", back_populates="identifier_set")
     cytoscape_files = relationship("CytoscapeFile", back_populates="identifier_set")
+    rdf_generations = relationship("RDFGeneration", back_populates="identifier_set")
 
 
 class Annotation(Base):
@@ -77,3 +79,29 @@ class RDFFile(Base):
     path = Column(String, nullable=False)
     type = Column(String, nullable=False)  # RDF, SHACL, UML
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class RDFGeneration(Base):
+    __tablename__ = "rdf_generations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    generation_id = Column(String, unique=True, index=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    identifier_set_id = Column(Integer, ForeignKey("identifier_sets.id"), nullable=False)
+    graph_name = Column(String, nullable=False)
+    base_uri = Column(String, nullable=False)
+    version_iri = Column(String, nullable=False)
+    author_name = Column(String, nullable=False)
+    author_email = Column(String, nullable=False)
+    orcid = Column(String, nullable=False)
+    generate_shacl = Column(Boolean, default=True)
+    shacl_threshold = Column(Float, default=0.001)
+    generate_uml_diagram = Column(Boolean, default=True)
+    generate_shex = Column(Boolean, default=True)
+    shex_threshold = Column(Float, default=0.001)
+    generated_files = Column(JSON)  # Store the list of generated files
+    status = Column(String, default="pending")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User", back_populates="rdf_generations")
+    identifier_set = relationship("IdentifierSet", back_populates="rdf_generations")
