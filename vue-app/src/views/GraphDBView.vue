@@ -1,464 +1,434 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col">
-      <!-- Header Section -->
-      <div class="text-center mb-12">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <!-- Header -->
+      <div class="text-center">
         <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl">
-          GraphDB Integration
+          Graph Visualization and Analysis
         </h1>
-      </div>
-
-      <!-- Progress Indicator -->
-      <div class="mb-8">
-        <div class="flex items-center justify-center space-x-4">
-          <div v-for="(step, index) in steps" :key="step.name" class="flex items-center">
-            <div 
-              :class="[
-                'flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium',
-                getStepStatus(index) === 'complete' ? 'bg-indigo-600 text-white' :
-                getStepStatus(index) === 'current' ? 'bg-indigo-100 text-indigo-600 border-2 border-indigo-600' :
-                'bg-gray-200 text-gray-500'
-              ]"
-            >
-              <svg v-if="getStepStatus(index) === 'complete'" class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
-              <span v-else>{{ index + 1 }}</span>
-            </div>
-            <div v-if="index < steps.length - 1" :class="[
-              'w-16 h-0.5 mx-3',
-              getStepStatus(index) === 'complete' ? 'bg-indigo-600' : 'bg-gray-200'
-            ]"></div>
-          </div>
-        </div>
+        <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
+          Load your graph into GraphDB.
+        </p>
       </div>
 
       <!-- Main Content Card -->
-      <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-        <!-- Step 1: RDF Generation -->
-        <div v-if="currentStepIndex === 0" class="p-8">
-          <div class="flex items-center mb-6">
-            <div class="bg-indigo-100 p-3 rounded-lg mr-4">
-              <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-            </div>
-            <div>
-              <h2 class="text-2xl font-bold text-gray-900">Generate RDF Graph</h2>
-              <p class="text-gray-600">Configure and create your RDF graph from biological annotation data</p>
-            </div>
-          </div>
-
-          <!-- Compact Form -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- Left Column -->
-            <div class="space-y-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Graph Information</label>
-                <div class="space-y-4">
-                  <input
-                    type="text"
-                    v-model="formData.graphName"
-                    placeholder="Graph name (e.g., my_gene_analysis)"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <input
-                    type="url"
-                    v-model="formData.baseUri"
-                    placeholder="Base URI (e.g., https://biodatafuse.org/example/)"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <input
-                    type="url"
-                    v-model="formData.versionIri"
-                    placeholder="Version IRI (e.g., https://biodatafuse.org/example/test.owl)"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Author Information</label>
-                <div class="space-y-4">
-                  <input
-                    type="text"
-                    v-model="formData.authorName"
-                    placeholder="Your name"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <input
-                    type="email"
-                    v-model="formData.authorEmail"
-                    placeholder="your.email@example.com"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <input
-                    type="url"
-                    v-model="formData.orcid"
-                    placeholder="ORCID (e.g., https://orcid.org/0000-0000-0000-0000)"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Right Column -->
-            <div class="space-y-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Schema Generation</label>
-                <div class="space-y-3">
-                  <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" v-model="formData.generateShacl" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                    <div class="ml-3 flex-1">
-                      <div class="text-sm font-medium text-gray-900">SHACL Shapes</div>
-                      <div class="text-sm text-gray-500">Generate validation schemas</div>
-                    </div>
-                    <div v-if="formData.generateShacl" class="ml-2">
-                      <input
-                        type="number"
-                        v-model.number="formData.shaclThreshold"
-                        step="0.001"
-                        min="0"
-                        max="1"
-                        placeholder="0.001"
-                        class="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
-                      />
-                    </div>
-                  </label>
-                  <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" v-model="formData.generateShex" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                    <div class="ml-3 flex-1">
-                      <div class="text-sm font-medium text-gray-900">ShEx Shapes</div>
-                      <div class="text-sm text-gray-500">Generate shape expressions</div>
-                    </div>
-                    <div v-if="formData.generateShex" class="ml-2">
-                      <input
-                        type="number"
-                        v-model.number="formData.shexThreshold"
-                        step="0.001"
-                        min="0"
-                        max="1"
-                        placeholder="0.001"
-                        class="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
-                      />
-                    </div>
-                  </label>
-                  <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" v-model="formData.generateUmlDiagram" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                    <div class="ml-3">
-                      <div class="text-sm font-medium text-gray-900">UML Diagrams</div>
-                      <div class="text-sm text-gray-500">Visual representation</div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Namespace Section -->
-              <div>
-                <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                  <input type="checkbox" v-model="formData.enableCustomNamespaces" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                  <div class="ml-3">
-                    <div class="text-sm font-medium text-gray-900">Custom Namespaces</div>
-                    <div class="text-sm text-gray-500">Add prefix shortcuts for querying</div>
-                  </div>
-                </label>
-                
-                <div v-if="formData.enableCustomNamespaces" class="mt-4 space-y-3">
-                  <div v-for="(namespace, index) in formData.customNamespaces" :key="index" class="flex gap-2">
-                    <input
-                      v-model="namespace.prefix"
-                      placeholder="foaf"
-                      class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                    <input
-                      v-model="namespace.uri"
-                      placeholder="http://xmlns.com/foaf/0.1/"
-                      class="flex-2 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                    <button @click="removeNamespace(index)" class="text-red-500 hover:text-red-700 p-2">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                      </svg>
-                    </button>
-                  </div>
-                  <button @click="addNamespace" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
-                    + Add namespace
-                  </button>
-                  
-                  <!-- Quick add common namespaces -->
-                  <div class="mt-3 pt-3 border-t border-gray-200">
-                    <p class="text-xs text-gray-500 mb-2">Quick add:</p>
-                    <div class="flex flex-wrap gap-2">
-                      <button
-                        v-for="common in commonNamespaces"
-                        :key="common.prefix"
-                        @click="addCommonNamespace(common)"
-                        class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded transition-colors"
-                      >
-                        {{ common.prefix }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+      <div class="mt-12 bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
+          <h2 class="text-xl font-semibold text-white">Visualization in GraphDB</h2>
+        </div>
+        <div class="p-6">
+          <!-- Custom Graph Name Input -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Custom Graph Name</label>
+            <input
+              v-model="formData.graphName"
+              @input="handleInput"
+              type="text"
+              placeholder="e.g. MyGraphDBGraph"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
 
           <!-- Status Messages -->
-          <div v-if="loading || errorMessage" class="mb-6">
-            <div v-if="loading" class="flex items-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-3"></div>
-              <span class="text-blue-700">{{ loadingMessage }}</span>
-            </div>
-            <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p class="text-red-700">{{ errorMessage }}</p>
-            </div>
+          <div v-if="statusMessage" class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p class="text-green-800">{{ statusMessage }}</p>
+          </div>
+          <div v-if="errorMessage" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-red-800">{{ errorMessage }}</p>
           </div>
 
-          <!-- Action Button -->
-          <div class="mt-8 flex justify-between px-6 py-4 bg-white rounded-b-xl shadow-lg">
+          <!-- Start Over Button -->
+          <div v-if="hasGeneratedData" class="mb-6">
             <button
-              @click="goBack"
-              class="px-4 py-2 border border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-100"
+              @click="resetWorkflow"
+              class="rounded-lg bg-gray-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400"
             >
-              ← Select another visualization tool
+              Start Over
             </button>
+          </div>
+
+          <!-- Step 1: Generate RDF Graph -->
+          <div v-if="!hasGeneratedData" class="bg-gray-50 rounded-lg p-6 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900">Step 1: Generate RDF Graph</h3>
+
+              
+              
+            </div>
+              <div>
+                An RDF Graph, its SHACL shapes, and ShEx shapes will be generated based on your input. You can also define custom namespaces and prefixes for the prefixes SHACL graph, which allows you to write SPARQL queries without needing to define the prefixes in the query editor.
+
+
+              </div>
+            
+            <!-- Compact Form -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 pt-5">
+              <!-- Left Column -->
+              <div class="space-y-3">
+                <input
+                  type="url"
+                  v-model="formData.baseUri"
+                  placeholder="Base URI (e.g., https://biodatafuse.org/example/)"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <input
+                  type="url"
+                  v-model="formData.versionIri"
+                  placeholder="Version IRI (e.g., https://biodatafuse.org/example/test.owl)"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <input
+                  type="text"
+                  v-model="formData.authorName"
+                  placeholder="Your name"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <!-- Right Column -->
+              <div class="space-y-3">
+                <input
+                  type="email"
+                  v-model="formData.authorEmail"
+                  placeholder="your.email@example.com"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <input
+                  type="url"
+                  v-model="formData.orcid"
+                  placeholder="ORCID (e.g., https://orcid.org/0000-0000-0000-0000)"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <div class="flex items-center space-x-4">
+                  <label class="flex items-center text-sm">
+                    <input type="checkbox" v-model="formData.generateShacl" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2">
+                    SHACL
+                  </label>
+                  <label class="flex items-center text-sm">
+                    <input type="checkbox" v-model="formData.generateShex" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2">
+                    ShEx
+                  </label>
+                  <label class="flex items-center text-sm">
+                    <input type="checkbox" v-model="formData.generateUmlDiagram" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2">
+                    UML
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom Namespaces -->
+            <div class="mb-4">
+              <label class="flex items-center mb-3">
+                <input type="checkbox" v-model="formData.enableCustomNamespaces" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2">
+                <span class="font-medium">Enable Custom Namespaces</span>
+              </label>
+              
+              <div v-if="formData.enableCustomNamespaces" class="space-y-2">
+                <div v-for="(namespace, index) in formData.customNamespaces" :key="index" class="flex gap-2">
+                  <input
+                    v-model="namespace.uri"
+                    placeholder="URI"
+                    class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <input
+                    v-model="namespace.prefix"
+                    placeholder="prefix"
+                    class="flex-2 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button @click="removeNamespace(index)" class="text-red-500 hover:text-red-700 p-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                </div>
+                <button @click="addNamespace" class="text-sm text-blue-600 hover:text-blue-800">
+                  + Add Namespace
+                </button>
+              </div>
+            </div>
+
+            <!-- Generate Button -->
             <button
               @click="generateRDF"
               :disabled="loading || !isFormValid"
-              class="px-8 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200"
+              class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              <span v-if="loading" class="flex items-center">
-                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Generating...
-              </span>
-              <span v-else>Generate RDF Graph</span>
+              <span v-if="loading" class="animate-spin mr-2">🔄</span>
+              <span>{{ loading ? 'Generating...' : 'Generate RDF Graph' }}</span>
             </button>
           </div>
-        </div>
 
-        <!-- Step 2: Preview & Configure -->
-        <div v-else-if="currentStepIndex === 1" class="p-8">
-          <div class="flex items-center mb-6">
-            <div class="bg-green-100 p-3 rounded-lg mr-4">
-              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <div>
-              <h2 class="text-2xl font-bold text-gray-900">Graph Generated Successfully</h2>
-              <p class="text-gray-600">{{ generatedData?.generated_files?.length || 0 }} files created • Ready to upload to GraphDB</p>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <!-- Files Preview -->
-            <div class="lg:col-span-2">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">Generated Files</h3>
-              <div class="bg-gray-50 rounded-lg max-h-64 overflow-y-auto">
-                <div v-if="!generatedData?.generated_files?.length" class="p-6 text-center text-gray-500">
-                  <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                  </svg>
-                  <p class="text-sm">No files generated yet</p>
-                </div>
-                
-                <div v-else class="divide-y divide-gray-200">
-                  <div v-for="file in generatedData?.generated_files" :key="file.id" 
-                       class="flex items-center justify-between p-4 hover:bg-white transition-colors">
-                    <div class="flex items-center min-w-0 flex-1">
-                      <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                      </div>
-                      <div class="min-w-0 flex-1">
-                        <div class="font-medium text-gray-900 truncate">{{ file.name }}</div>
-                        <div class="text-sm text-gray-500">{{ file.type }} • {{ formatFileSize(file.size) }}</div>
-                      </div>
-                    </div>
-                    <button @click="downloadFile(file)" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm ml-3 flex-shrink-0">
-                      Download
-                    </button>
-                  </div>
-                </div>
+          <!-- Download Section -->
+          <div v-if="hasGeneratedData" class="bg-gray-50 rounded-lg p-6 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="bg-green-100 p-2 rounded-lg mr-3">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
               </div>
+              <h3 class="text-lg font-semibold text-gray-900">Download Generated Files</h3>
             </div>
 
-            <!-- Schema Visualization -->
-            <div class="lg:col-span-3">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">Schema Visualization</h3>
-              <div class="space-y-4">
-                <!-- Display selected UML diagram -->
-                <div v-if="selectedVisualization && selectedUmlFile" class="bg-gray-50 rounded-lg p-4">
-                  <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-sm font-medium text-gray-900">
-                      {{ selectedVisualization === 'shacl' ? 'SHACL Schema' : 'ShEx Schema' }} UML Diagram
-                    </h4>
-                    <button 
-                      @click="downloadFile(selectedUmlFile)" 
-                      class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                      </svg>
-                      Download
-                    </button>
-                  </div>
-                  <div class="bg-white rounded border overflow-hidden shadow-sm">
-                    <div v-if="loadingImage" class="flex items-center justify-center p-8">
-                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
-                      <span class="ml-3 text-gray-600">Loading diagram...</span>
-                    </div>
-                    <img 
-                      v-else-if="imageUrl"
-                      :src="imageUrl" 
-                      :alt="`${selectedVisualization} UML Diagram`"
-                      class="w-full h-auto object-contain"
-                      style="max-height: 600px;"
-                      @error="handleImageError"
-                    />
-                    <div v-else class="flex items-center justify-center p-8 text-gray-500">
-                      <span>Failed to load diagram</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- No UML available message -->
-                <div v-else-if="selectedVisualization && !selectedUmlFile" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div class="flex">
-                    <svg class="w-5 h-5 text-yellow-400 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
-                    <div>
-                      <h4 class="text-sm font-medium text-yellow-800">UML Diagram Not Available</h4>
-                      <p class="text-sm text-yellow-700 mt-1">
-                        UML diagram generation was not enabled for {{ selectedVisualization === 'shacl' ? 'SHACL' : 'ShEx' }} shapes during RDF generation.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Default message when no selection -->
-                <div v-else class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div class="flex">
-                    <svg class="w-5 h-5 text-blue-400 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                    </svg>
-                    <div>
-                      <h4 class="text-sm font-medium text-blue-800">Schema Visualization</h4>
-                      <p class="text-sm text-blue-700 mt-1">
-                        Select a schema type above to view its UML diagram visualization.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-            <button @click="currentStepIndex = 0" class="text-gray-500 hover:text-gray-700 font-medium">
-              ← Back to Generation
-            </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Download RDF Graph -->
               <button
-                @click="currentStepIndex = 2"
-                :disabled="!hasGeneratedData"
-                class="px-8 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                @click="downloadSpecificFile('rdf')"
+                class="inline-flex items-center border border-blue-500 px-4 py-2 text-sm font-semibold text-blue-700 rounded-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
-                Continue to Setup
+                <svg class="w-4 h-4 mr-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                </svg>
+                Download RDF Graph
               </button>
-          </div>
-        </div>
 
-        <!-- Step 3: GraphDB Setup -->
-        <div v-else-if="currentStepIndex === 2" class="p-8">
-          <div class="flex items-center mb-6">
-            <div class="bg-blue-100 p-3 rounded-lg mr-4">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+              <!-- Download SHACL Shapes -->
+              <button
+                v-if="formData.generateShacl"
+                @click="downloadSpecificFile('shacl')"
+                class="inline-flex items-center border border-purple-500 px-4 py-2 text-sm font-semibold text-purple-700 rounded-lg hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              >
+                <svg class="w-4 h-4 mr-2 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                </svg>
+                Download SHACL Shapes
+              </button>
+
+              <!-- Download SHACL Prefixes -->
+              <button
+                v-if="formData.generateShacl"
+                @click="downloadSpecificFile('shacl-prefixes')"
+                class="inline-flex items-center border border-violet-500 px-4 py-2 text-sm font-semibold text-violet-700 rounded-lg hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-400"
+              >
+                <svg class="w-4 h-4 mr-2 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                </svg>
+                Download SHACL Prefixes
+              </button>
+
+              <!-- Download ShEx Shapes -->
+              <button
+                v-if="formData.generateShex"
+                @click="downloadSpecificFile('shex')"
+                class="inline-flex items-center border border-green-500 px-4 py-2 text-sm font-semibold text-green-700 rounded-lg hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-400"
+              >
+                <svg class="w-4 h-4 mr-2 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                </svg>
+                Download ShEx Shapes
+              </button>
+
+              <!-- Download SHACL UML Preview -->
+              <button
+                v-if="formData.generateShacl && formData.generateUmlDiagram"
+                @click="downloadSpecificFile('shacl-preview')"
+                class="inline-flex items-center border border-indigo-500 px-4 py-2 text-sm font-semibold text-indigo-700 rounded-lg hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              >
+                <svg class="w-4 h-4 mr-2 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                </svg>
+                Download SHACL Preview
+              </button>
+
+              <!-- Download ShEx UML Preview -->
+              <button
+                v-if="formData.generateShex && formData.generateUmlDiagram"
+                @click="downloadSpecificFile('shex-preview')"
+                class="inline-flex items-center border border-teal-500 px-4 py-2 text-sm font-semibold text-teal-700 rounded-lg hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              >
+                <svg class="w-4 h-4 mr-2 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4m0 0l4-4m-4 4V3" />
+                </svg>
+                Download ShEx Preview
+              </button>
+            </div>
+          </div>
+
+          <!-- Schema Visualization -->
+          <div v-if="hasGeneratedData && (formData.generateShacl || formData.generateShex)" class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h4 class="font-medium text-gray-900 mb-3">Schema Visualization</h4>
+            <div class="flex space-x-4 mb-4">
+              <button 
+                v-if="formData.generateShacl" 
+                @click="selectedVisualization = 'shacl'"
+                :class="['px-3 py-2 text-sm rounded-lg border', selectedVisualization === 'shacl' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50']"
+              >
+                SHACL Schema
+              </button>
+              <button 
+                v-if="formData.generateShex" 
+                @click="selectedVisualization = 'shex'"
+                :class="['px-3 py-2 text-sm rounded-lg border', selectedVisualization === 'shex' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50']"
+              >
+                ShEx Schema
+              </button>
+            </div>
+            
+            <div v-if="selectedVisualization && selectedUmlFile" class="bg-white rounded-lg border p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h5 class="text-sm font-medium text-gray-900">
+                  {{ selectedVisualization === 'shacl' ? 'SHACL' : 'ShEx' }} UML Diagram
+                </h5>
+                <button @click="downloadFile(selectedUmlFile)" class="text-blue-600 hover:text-blue-800 text-sm">
+                  Download
+                </button>
+              </div>
+              <div class="bg-white rounded border overflow-hidden">
+                <div v-if="loadingImage" class="flex items-center justify-center p-8">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  <span class="ml-3 text-gray-600">Loading diagram...</span>
+                </div>
+                <img 
+                  v-else-if="imageUrl"
+                  :src="imageUrl" 
+                  :alt="`${selectedVisualization} UML Diagram`"
+                  class="w-full h-auto object-contain"
+                  style="max-height: 400px;"
+                  @error="handleImageError"
+                />
+                <div v-else class="flex items-center justify-center p-8 text-gray-500">
+                  <span>Diagram not available</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual Setup Instructions (Collapsible) -->
+          <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <button 
+              @click="showManualSetup = !showManualSetup" 
+              class="flex items-center w-full text-left text-blue-600 hover:text-blue-800 font-medium"
+            >
+              <svg :class="['w-5 h-5 mr-2 transition-transform', showManualSetup ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
-            </div>
-            <div>
-              <h2 class="text-2xl font-bold text-gray-900">Setup GraphDB Repository</h2>
-              <p class="text-gray-600">Configure connection and select or create a repository for your data</p>
+              Manual GraphDB Setup Instructions
+            </button>
+            
+            <div v-if="showManualSetup" class="mt-4 prose prose-sm max-w-none">
+              <div class="bg-white rounded-lg p-6 border">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">Setting up GraphDB Locally</h4>
+                
+                <div class="space-y-6">
+                  <div class="border-l-4 border-blue-500 pl-4">
+                    <h5 class="font-semibold text-gray-900 mb-2">Step 1: Download and Install GraphDB</h5>
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700">
+                      <li>Visit <a href="https://graphdb.ontotext.com/" target="_blank" class="text-blue-600 hover:text-blue-800 underline">https://graphdb.ontotext.com/</a></li>
+                      <li>Click "Download GraphDB" and select the free version</li>
+                      <li>Choose your operating system (Windows, macOS, or Linux)</li>
+                      <li>Complete the registration form to download</li>
+                      <li>Extract the downloaded file to your preferred location and install</li>
+                    </ol>
+                  </div>
+
+
+                  <div class="border-l-4 border-purple-500 pl-4">
+                    <h5 class="font-semibold text-gray-900 mb-2">Step 2: Access GraphDB Workbench</h5>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                      <li>Open your web browser</li>
+                      <li>Navigate to <a href="http://localhost:7200" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-mono">http://localhost:7200</a></li>
+                      <li>You should see the GraphDB Workbench interface</li>
+                    </ul>
+                  </div>
+
+                  <div class="border-l-4 border-orange-500 pl-4">
+                    <h5 class="font-semibold text-gray-900 mb-2">Step 3: Create a Repository</h5>
+                    <ol class="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                      <li>In the Workbench, click on "Setup" → "Repositories"</li>
+                      <li>Click "Create new repository"</li>
+                      <li>Choose "GraphDB Repository" as the type</li>
+                      <li>Enter a repository ID (e.g., "biodatafuse-graph")</li>
+                      <li>Optionally add a title and description</li>
+                      <li>Click "Create" to finish</li>
+                    </ol>
+                  </div>
+
+                  <div class="border-l-4 border-red-500 pl-4">
+                    <h5 class="font-semibold text-gray-900 mb-2">Step 4: Import Your RDF Files</h5>
+                    <ol class="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                      <li>Select your newly created repository from the repository dropdown</li>
+                      <li>Go to "Import" → "RDF"</li>
+                      <li>Choose "Upload RDF files"</li>
+                      <li>Click "Choose Files" and select your downloaded .ttl files
+                        <li>Your graph ttl: your BioDataFuse query result in RDF</li>
+                        <li>Your SHACL/ShEX shapes ttl: your BioDataFuse graph shapes for validation</li>
+                        <li>
+                            Your SHACL prefixes ttl: your BioDataFuse graph prefixes to avoid having to state them in your SPARQL queries.
+                            <span class="italic text-gray-500">
+                              <br> Note: custom prefixes are still not implemented.</span>
+                            <span class="text-xs"></span>
+                        </li>
+                      </li>
+                      <li>Click "Import" to load the data</li>
+                      <li>Wait for the import to complete</li>
+                    </ol>
+                  </div>
+
+                  <div class="border-l-4 border-teal-500 pl-4">
+                    <h5 class="font-semibold text-gray-900 mb-2">Step 6: Explore Your Data</h5>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                      <li>Go to "SPARQL" to run queries against your data</li>
+                      <li>Use "Explore" → "Visual graph" for interactive exploration</li>
+                      <li>Try "Explore" → "Class relationships" to see your data structure</li>
+                      <li>Use the search functionality to find specific entities</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <h6 class="font-semibold text-blue-900 mb-2">💡 Tips:</h6>
+                  <ul class="list-disc list-inside space-y-1 text-sm text-blue-800">
+                    <li>Start with a simple SPARQL query like: <code class="bg-blue-100 px-1 rounded">SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10</code></li>
+                    <li>Check the "Namespaces" section to see all imported prefixes</li>
+                    <li>Monitor memory usage if working with large datasets</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column: Connection and Repository Creation -->
-            <div class="lg:col-span-2">
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Step 1: Connect to GraphDB Instance -->
-                <div class="mb-6">
-                  <div class="flex items-center mb-3">
-                    <span class="flex items-center justify-center w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full text-sm font-semibold mr-3">1</span>
-                    <h3 class="text-lg font-semibold text-gray-900">Connect to GraphDB</h3>
+          <!-- GraphDB Connection (Collapsible) -->
+          <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <button 
+              @click="showAdvancedOptions = !showAdvancedOptions" 
+              class="flex items-center w-full text-left text-blue-600 hover:text-blue-800 font-medium"
+            >
+              <svg :class="['w-5 h-5 mr-2 transition-transform', showAdvancedOptions ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+              Automated Upload to GraphDB Instance
+            </button>
+            
+            <div v-if="showAdvancedOptions" class="mt-4 space-y-6">
+              <!-- Step 2: GraphDB Setup -->
+               <div v-if="!hasGeneratedData" class="bg-white rounded-lg p-6 border">
+                Generate your RDF graph first to enable GraphDB setup.
+               </div>
+              <div v-if="hasGeneratedData" class="bg-white rounded-lg p-6 border">
+                <div class="flex items-center mb-4">
+                  <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                    </svg>
                   </div>
-                  <p class="text-sm text-gray-600 mb-4">Establish connection to your GraphDB server.</p>
-                  
-                  <div class="bg-gray-50 rounded-lg p-4 space-y-4">
-                    <!-- Connection Type Selector -->
+                  <h3 class="text-lg font-semibold text-gray-900">GraphDB Connection</h3>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <!-- Connection Setup -->
+                  <div class="space-y-4">
+                    <!-- Connection Type -->
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-2">Connection Type</label>
-                      <div class="space-y-1">
-                        <label class="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                          <input 
-                            type="radio" 
-                            v-model="connectionType" 
-                            value="local" 
-                            @change="updateUrlForConnectionType"
-                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          >
-                          <div class="ml-2 flex-1">
-                            <div class="text-sm font-medium text-gray-900">Local</div>
-                            <div class="text-xs text-gray-500">GraphDB on your computer</div>
-                          </div>
-                        </label>
-                        
-                        <label class="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                          <input 
-                            type="radio" 
-                            v-model="connectionType" 
-                            value="docker" 
-                            @change="updateUrlForConnectionType"
-                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          >
-                          <div class="ml-2 flex-1">
-                            <div class="text-sm font-medium text-gray-900">Docker Desktop</div>
-                            <div class="text-xs text-gray-500">Mac/Windows Docker</div>
-                          </div>
-                        </label>
-                        
-                        <label class="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                          <input 
-                            type="radio" 
-                            v-model="connectionType" 
-                            value="docker-bridge" 
-                            @change="updateUrlForConnectionType"
-                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          >
-                          <div class="ml-2 flex-1">
-                            <div class="text-sm font-medium text-gray-900">Docker Bridge</div>
-                            <div class="text-xs text-gray-500">Linux Docker</div>
-                          </div>
-                        </label>
-                        
-                        <label class="flex items-center p-2 border border-gray-200 rounded cursor-pointer hover:bg-gray-50">
-                          <input 
-                            type="radio" 
-                            v-model="connectionType" 
-                            value="remote" 
-                            @change="updateUrlForConnectionType"
-                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          >
-                          <div class="ml-2 flex-1">
-                            <div class="text-sm font-medium text-gray-900">Remote</div>
-                            <div class="text-xs text-gray-500">External server</div>
-                          </div>
-                        </label>
-                      </div>
+                      <select v-model="connectionType" @change="updateUrlForConnectionType" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
+                        <option value="docker">Docker Desktop (Windows, macOS)</option>
+                        <option value="docker-bridge">Docker Bridge (Linux)</option>
+                        <option value="local">Local (localhost:7200)</option>
+                        <option value="remote">Remote Server</option>
+                      </select>
                     </div>
 
                     <!-- GraphDB URL -->
@@ -469,415 +439,176 @@
                           type="url"
                           v-model="graphdbConfig.baseUrl"
                           :placeholder="getUrlPlaceholder()"
-                          class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg"
                         />
                         <button
                           @click="testConnection"
                           :disabled="!graphdbConfig.baseUrl || graphdbLoading"
-                          class="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:opacity-50"
+                          class="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
                         >
-                          <span v-if="graphdbLoading">Testing...</span>
-                          <span v-else>Test</span>
+                          {{ graphdbLoading ? 'Testing...' : 'Test' }}
                         </button>
                       </div>
-                      <div v-if="connectionType" class="text-xs text-gray-500 mt-1">
-                        {{ getConnectionTypeHint() }}
-                      </div>
-                      
                       <!-- Connection Status -->
-                      <div v-if="connectionStatus" class="mt-2">
-                        <div v-if="connectionStatus.type === 'success'" class="text-sm text-green-600 flex items-center">
-                          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                          </svg>
-                          Connected
+                      <div v-if="connectionStatus" class="mt-2 text-sm">
+                        <div v-if="connectionStatus.type === 'success'" class="text-green-600 flex items-center">
+                          ✓ Connected successfully
                         </div>
-                        <div v-else class="text-sm text-red-600 flex items-start">
-                          <svg class="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                          </svg>
-                          <span class="break-words text-xs">{{ connectionStatus.message }}</span>
+                        <div v-else class="text-red-600">
+                          ✗ {{ connectionStatus.message }}
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                <!-- Step 2: Create New Repository -->
-                <div v-if="connectionStatus?.type === 'success'" class="mb-6">
-                  <div class="flex items-center mb-3">
-                    <span class="flex items-center justify-center w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full text-sm font-semibold mr-3">2</span>
-                    <h3 class="text-lg font-semibold text-gray-900">Create Repository</h3>
-                  </div>
-                  <p class="text-sm text-gray-600 mb-4">Create new repository or select existing one.</p>
-                  
-                  <div class="bg-blue-50 rounded-lg p-4 space-y-4">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">Repository Name</label>
-                      <input
-                        type="text"
-                        v-model="newRepositoryName"
-                        placeholder="my_biodatafuse_graph"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      />
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <!-- Repository Management -->
+                    <div v-if="connectionStatus?.type === 'success'">
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Repository</label>
+                      <div class="flex gap-2 mb-2">
                         <input
                           type="text"
-                          placeholder="Optional"
-                          class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          v-model="newRepositoryName"
+                          placeholder="Repository name"
+                          class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg"
                         />
-                      </div>
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input
-                          type="password"
-                          placeholder="Optional"
-                          class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        />
+                        <button
+                          @click="createRepository"
+                          :disabled="graphdbLoading || !newRepositoryName.trim()"
+                          class="px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50"
+                        >
+                          Create
+                        </button>
                       </div>
                     </div>
-
-                    <button
-                      @click="createRepository"
-                      :disabled="graphdbLoading || !newRepositoryName.trim()"
-                      class="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                      <span v-if="graphdbLoading" class="flex items-center justify-center">
-                        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                        Creating...
-                      </span>
-                      <span v-else>Create Repository</span>
-                    </button>
                   </div>
-                </div>
-              </div>
-            </div>
 
-            <!-- Right Column: Repository Sidebar -->
-            <div class="lg:col-span-1">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">Available Repositories</h3>
-                <p>Click on one of the available</p>
-                <button 
-                  @click="listRepositories" 
-                  :disabled="!graphdbConfig.baseUrl || graphdbLoading"
-                  class="text-sm text-indigo-600 hover:text-indigo-800 font-medium disabled:opacity-50"
-                >
-                  Refresh
-                </button>
-              </div>
-              
-              <div class="bg-gray-50 rounded-lg max-h-96 overflow-y-auto">
-                <div v-if="!connectionStatus || connectionStatus.type !== 'success'" class="p-6 text-center text-gray-500">
-                  <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <p class="text-sm">Test connection first</p>
-                  <p class="text-xs text-gray-400 mt-1">Connect to GraphDB to see available repositories</p>
-                </div>
-                
-                <div v-else-if="repositories.length === 0" class="p-6 text-center text-gray-500">
-                  <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-8 8-4-4"></path>
-                  </svg>
-                  <p class="text-sm">No repositories found</p>
-                  <p class="text-xs text-gray-400 mt-1">Create a new repository to get started</p>
-                </div>
-                
-                <div v-else class="divide-y divide-gray-200">
-                  <div v-for="repo in repositories" :key="repo.id" 
-                       :class="[
-                         'p-4 transition-colors',
-                         graphdbConfig.repositoryName === repo.id ? 'bg-indigo-50 border-l-4 border-indigo-500' : 'hover:bg-white'
-                       ]">
-                    <div class="flex items-center justify-between mb-3">
-                      <div 
-                        class="min-w-0 flex-1 cursor-pointer"
-                        @click="selectRepository(repo.id)"
+                  <!-- Repository List -->
+                  <div v-if="connectionStatus?.type === 'success'">
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="block text-sm font-medium text-gray-700">Available Repositories</label>
+                      <button 
+                        @click="listRepositories" 
+                        class="text-sm text-blue-600 hover:text-blue-800"
                       >
-                        <div class="font-medium text-gray-900 truncate">{{ repo.id }}</div>
-                        <div class="text-sm text-gray-500 truncate">{{ repo.title || 'No description' }}</div>
-                      </div>
-                      <div v-if="graphdbConfig.repositoryName === repo.id" class="text-indigo-500 ml-2">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                        </svg>
-                      </div>
-                    </div>
-                    
-                    <!-- Repository Status -->
-                    <div class="flex space-x-2 mb-3">
-                      <span :class="[
-                        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                        repo.readable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      ]">
-                        {{ repo.readable ? 'Readable' : 'Not Readable' }}
-                      </span>
-                      <span :class="[
-                        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                        repo.writable ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                      ]">
-                        {{ repo.writable ? 'Writable' : 'Read Only' }}
-                      </span>
-                    </div>
-
-                    <!-- Repository Actions -->
-                    <div class="flex space-x-2">
-                      <button
-                        @click="confirmDeleteRepository(repo.id)"
-                        :disabled="graphdbLoading"
-                        class="px-3 py-1 text-xs border border-red-300 text-red-700 font-medium rounded hover:bg-red-50 disabled:opacity-50"
-                      >
-                        Delete
+                        Refresh
                       </button>
                     </div>
+                    <div class="bg-gray-50 rounded-lg max-h-48 overflow-y-auto">
+                      <div v-if="repositories.length === 0" class="p-4 text-center text-gray-500 text-sm">
+                        No repositories found
+                      </div>
+                      <div v-else class="divide-y divide-gray-200">
+                        <div v-for="repo in repositories" :key="repo.id" 
+                             :class="[
+                               'p-3 cursor-pointer text-sm transition-colors',
+                               graphdbConfig.repositoryName === repo.id ? 'bg-indigo-50 border-l-4 border-indigo-500' : 'hover:bg-white'
+                             ]"
+                             @click="selectRepository(repo.id)">
+                          <div class="font-medium text-gray-900">{{ repo.id }}</div>
+                          <div class="text-xs text-gray-500">{{ repo.title || 'No description' }}</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Action Buttons -->
-          <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-            <button @click="currentStepIndex = 1" class="text-gray-500 hover:text-gray-700 font-medium">
-              ← Back to Preview
-            </button>
-            <button
-              @click="currentStepIndex = 3"
-              :disabled="!graphdbConfig.repositoryName"
-              class="px-8 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              Continue to Upload
-            </button>
+              <!-- Step 3: Upload Data -->
+              <div v-if="hasGeneratedData && graphdbConfig.repositoryName" class="bg-white rounded-lg p-6 border">
+                <div class="flex items-center mb-4">
+                  <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-900">Step 3: Upload to Repository: {{ graphdbConfig.repositoryName }}</h3>
+                </div>
+
+                <!-- Upload Options -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" v-model="uploadSelections.rdf" :disabled="!hasGeneratedData" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <div class="ml-3">
+                      <div class="font-medium text-gray-900">RDF Graph</div>
+                      <div class="text-sm text-gray-500">Core biological data</div>
+                    </div>
+                    <span v-if="uploadStatus.rdf === 'success'" class="ml-auto text-green-600 text-sm">✓</span>
+                  </label>
+
+                  <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" :class="{ 'opacity-50': !formData.generateShacl }">
+                    <input type="checkbox" v-model="uploadSelections.shacl" :disabled="!formData.generateShacl" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <div class="ml-3">
+                      <div class="font-medium text-gray-900">SHACL Shapes</div>
+                      <div class="text-sm text-gray-500">Data validation schemas</div>
+                    </div>
+                    <span v-if="uploadStatus.shacl === 'success'" class="ml-auto text-green-600 text-sm">✓</span>
+                  </label>
+
+                  <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" :class="{ 'opacity-50': !formData.generateShacl }">
+                    <input type="checkbox" v-model="uploadSelections.shaclPrefixes" :disabled="!formData.generateShacl" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <div class="ml-3">
+                      <div class="font-medium text-gray-900">SHACL Prefixes</div>
+                      <div class="text-sm text-gray-500">Namespace definitions</div>
+                    </div>
+                    <span v-if="uploadStatus.shaclPrefixes === 'success'" class="ml-auto text-green-600 text-sm">✓</span>
+                  </label>
+
+                  <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" :class="{ 'opacity-50': !formData.generateShex }">
+                    <input type="checkbox" v-model="uploadSelections.shex" :disabled="!formData.generateShex" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <div class="ml-3">
+                      <div class="font-medium text-gray-900">ShEx Shapes</div>
+                      <div class="text-sm text-gray-500">Shape expressions</div>
+                    </div>
+                    <span v-if="uploadStatus.shex === 'success'" class="ml-auto text-green-600 text-sm">✓</span>
+                  </label>
+
+                  <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" :class="{ 'opacity-50': !formData.enableCustomNamespaces }">
+                    <input type="checkbox" v-model="uploadSelections.namespaces" :disabled="!formData.enableCustomNamespaces" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <div class="ml-3">
+                      <div class="font-medium text-gray-900">Custom Namespaces</div>
+                      <div class="text-sm text-gray-500">SPARQL prefixes</div>
+                    </div>
+                    <span v-if="uploadStatus.namespaces === 'success'" class="ml-auto text-green-600 text-sm">✓</span>
+                  </label>
+                </div>
+
+                <!-- Upload Actions -->
+                <div class="flex items-center justify-between">
+                  <div class="flex space-x-4">
+                    <button @click="selectAll" class="text-sm text-gray-600 hover:text-gray-800">Select All</button>
+                    <button @click="selectNone" class="text-sm text-gray-600 hover:text-gray-800">Select None</button>
+                  </div>
+                  <button
+                    @click="uploadSelected"
+                    :disabled="!hasSelectedItems || isAnyUploading"
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  >
+                    <span v-if="isAnyUploading" class="animate-spin mr-2">🔄</span>
+                    <span>{{ isAnyUploading ? 'Uploading...' : 'Upload Selected' }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Success Actions -->
+              <div v-if="uploadStatus.rdf === 'success'" class="text-center">
+                <button
+                  @click="openGraphDBWorkbench"
+                  class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  Open GraphDB Workbench
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Step 4: Upload Data -->
-        <div v-else-if="currentStepIndex === 3" class="p-8">
-          <div class="flex items-center mb-6">
-            <div class="bg-purple-100 p-3 rounded-lg mr-4">
-              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-              </svg>
-            </div>
-            <div>
-              <h2 class="text-2xl font-bold text-gray-900">Upload Data to GraphDB</h2>
-              <p class="text-gray-600">Upload your RDF graph and schemas to repository: <strong>{{ graphdbConfig.repositoryName }}</strong></p>
-            </div>
-          </div>
-
-
-
-          <!-- Upload Options -->
-          <div class="mb-8">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Select items to upload</h3>
-            <div class="space-y-4">
-              <!-- RDF Graph -->
-              <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div class="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    id="upload-rdf"
-                    v-model="uploadSelections.rdf" 
-                    :disabled="!hasGeneratedData || isUploading('rdf')"
-                    class="rounded border-gray-300 text-gray-900 focus:ring-gray-500"
-                  />
-                  <label for="upload-rdf" class="ml-3">
-                    <div class="font-medium text-gray-900">RDF Graph</div>
-                    <div class="text-sm text-gray-500">Core RDF triples containing your biological data and annotations</div>
-                  </label>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span v-if="uploadStatus.rdf === 'success'" class="text-green-600 text-sm">✓ Uploaded</span>
-                  <span v-else-if="isUploading('rdf')" class="text-gray-500 text-sm flex items-center">
-                    <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500 mr-1"></div>
-                    Uploading...
-                  </span>
-                </div>
-              </div>
-
-              <!-- SHACL Shapes -->
-              <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg" :class="{ 'opacity-50': !formData.generateShacl }">
-                <div class="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    id="upload-shacl"
-                    v-model="uploadSelections.shacl" 
-                    :disabled="!formData.generateShacl || isUploading('shacl')"
-                    class="rounded border-gray-300 text-gray-900 focus:ring-gray-500"
-                  />
-                  <label for="upload-shacl" class="ml-3">
-                    <div class="font-medium text-gray-900">SHACL Shapes</div>
-                    <div class="text-sm text-gray-500">
-                      {{ formData.generateShacl ? 'Data validation schemas' : 'Not generated - SHACL was disabled' }}
-                    </div>
-                  </label>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span v-if="uploadStatus.shacl === 'success'" class="text-green-600 text-sm">✓ Uploaded</span>
-                  <span v-else-if="isUploading('shacl')" class="text-gray-500 text-sm flex items-center">
-                    <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500 mr-1"></div>
-                    Uploading...
-                  </span>
-                </div>
-              </div>
-
-              <!-- ShEx Shapes -->
-              <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg" :class="{ 'opacity-50': !formData.generateShex }">
-                <div class="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    id="upload-shex"
-                    v-model="uploadSelections.shex" 
-                    :disabled="!formData.generateShex || isUploading('shex')"
-                    class="rounded border-gray-300 text-gray-900 focus:ring-gray-500"
-                  />
-                  <label for="upload-shex" class="ml-3">
-                    <div class="font-medium text-gray-900">ShEx Shapes</div>
-                    <div class="text-sm text-gray-500">
-                      {{ formData.generateShex ? 'Shape expressions for RDF validation' : 'Not generated - ShEx was disabled' }}
-                    </div>
-                  </label>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span v-if="uploadStatus.shex === 'success'" class="text-green-600 text-sm">✓ Uploaded</span>
-                  <span v-else-if="isUploading('shex')" class="text-gray-500 text-sm flex items-center">
-                    <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500 mr-1"></div>
-                    Uploading...
-                  </span>
-                </div>
-              </div>
-
-              <!-- Custom Namespaces -->
-              <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg" :class="{ 'opacity-50': !formData.enableCustomNamespaces }">
-                <div class="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    id="upload-namespaces"
-                    v-model="uploadSelections.namespaces" 
-                    :disabled="!formData.enableCustomNamespaces || isUploading('namespaces')"
-                    class="rounded border-gray-300 text-gray-900 focus:ring-gray-500"
-                  />
-                  <label for="upload-namespaces" class="ml-3">
-                    <div class="font-medium text-gray-900">Custom Namespaces</div>
-                    <div class="text-sm text-gray-500">
-                      {{ formData.enableCustomNamespaces ? 'Custom namespace prefixes for SPARQL queries' : 'No custom namespaces configured' }}
-                    </div>
-                  </label>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span v-if="uploadStatus.namespaces === 'success'" class="text-green-600 text-sm">✓ Uploaded</span>
-                  <span v-else-if="isUploading('namespaces')" class="text-gray-500 text-sm flex items-center">
-                    <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500 mr-1"></div>
-                    Uploading...
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Upload Actions -->
-            <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-              <div class="flex items-center space-x-4">
-                <button
-                  @click="selectAll"
-                  class="text-sm text-gray-600 hover:text-gray-800 font-medium"
-                >
-                  Select All Available
-                </button>
-                <button
-                  @click="selectNone"
-                  class="text-sm text-gray-600 hover:text-gray-800 font-medium"
-                >
-                  Select None
-                </button>
-              </div>
-              <button
-                @click="uploadSelected"
-                :disabled="!hasSelectedItems || isAnyUploading"
-                class="px-6 py-2 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
-              >
-                <span v-if="isAnyUploading">Uploading...</span>
-                <span v-else>Upload Selected</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Status Messages -->
-          <div v-if="graphdbStatusMessage || graphdbErrorMessage" class="mb-6">
-            <div v-if="graphdbStatusMessage" class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
-              <div class="flex items-center">
-                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                {{ graphdbStatusMessage }}
-              </div>
-            </div>
-            <div v-if="graphdbErrorMessage" class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
-              <div class="flex items-center">
-                <svg class="w-5 h-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                {{ graphdbErrorMessage }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Upload Summary -->
-          <div class="bg-gray-50 rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Upload Summary</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div class="text-center">
-                <div class="text-2xl font-bold" :class="uploadStatus.rdf === 'success' ? 'text-green-600' : 'text-gray-400'">
-                  {{ uploadStatus.rdf === 'success' ? '✓' : '○' }}
-                </div>
-                <div class="text-sm text-gray-600">RDF Graph</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold" :class="uploadStatus.shacl === 'success' ? 'text-green-600' : 'text-gray-400'">
-                  {{ uploadStatus.shacl === 'success' ? '✓' : '○' }}
-                </div>
-                <div class="text-sm text-gray-600">SHACL Shapes</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold" :class="uploadStatus.shex === 'success' ? 'text-green-600' : 'text-gray-400'">
-                  {{ uploadStatus.shex === 'success' ? '✓' : '○' }}
-                </div>
-                <div class="text-sm text-gray-600">ShEx Shapes</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold" :class="uploadStatus.namespaces === 'success' ? 'text-green-600' : 'text-gray-400'">
-                  {{ uploadStatus.namespaces === 'success' ? '✓' : '○' }}
-                </div>
-                <div class="text-sm text-gray-600">Namespaces</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-            <button @click="currentStepIndex = 2" class="text-gray-500 hover:text-gray-700 font-medium">
-              ← Back to Setup
-            </button>
-            <div class="flex space-x-3">
-              <button
-                @click="resetWorkflow"
-                class="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-              >
-                Start Over
-              </button>
-              <button
-                v-if="uploadStatus.rdf === 'success'"
-                @click="openGraphDBWorkbench"
-                class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-              >
-                Open GraphDB Workbench
-              </button>
-            </div>
-          </div>
+        <!-- Footer Actions -->
+        <div class="flex justify-between px-6 py-4 bg-gray-50 border-t">
+          <button
+            @click="goBack"
+            class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          >
+            ← Select another visualization tool
+          </button>
         </div>
       </div>
     </div>
@@ -904,7 +635,7 @@
           class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
         >
           <span v-if="graphdbLoading">Deleting...</span>
-          <span v-else>Delete Repository</span>
+          <span v-else">Delete Repository</span>
         </button>
       </div>
     </div>
@@ -914,38 +645,15 @@
 <script>
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-
 import { useRouter } from 'vue-router'
-const router = useRouter()
-function goBack() { //TODO: Implement goBack functionality
-  router.push('/visualize&analysis')
-}
 
-// Upload Card Component
-const UploadCard = {
-  props: ['title', 'description', 'disabled', 'loading'],
-  emits: ['click'],
-  template: `
-    <button
-      @click="$emit('click')"
-      :disabled="disabled"
-      class="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-400 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-      :class="{ 'border-indigo-400 bg-indigo-50': loading }"
-    >
-      <div class="flex items-center justify-between mb-2">
-        <h4 class="font-medium text-gray-900">{{ title }}</h4>
-        <div v-if="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500"></div>
-      </div>
-      <p class="text-sm text-gray-500">{{ description }}</p>
-    </button>
-  `
+const router = useRouter()
+function goBack() {
+  router.push('/visualize&analysis')
 }
 
 export default {
   name: 'GraphDBView',
-  components: {
-    UploadCard
-  },
   setup() {
     const authStore = useAuthStore()
     return {
@@ -1011,16 +719,21 @@ export default {
       uploadStatus: {
         rdf: null,      // null, 'uploading', 'success', 'error'
         shacl: null,
+        shaclPrefixes: null,
         shex: null,
         namespaces: null
       },
       uploadSelections: {
         rdf: true,
         shacl: false,
+        shaclPrefixes: false,
         shex: false,
         namespaces: false
       },
       connectionType: 'local',
+      showAdvancedOptions: false,
+      showManualSetup: false,
+      statusMessage: '',
     }
   },
   computed: {
@@ -1117,19 +830,81 @@ export default {
     }
   },
   mounted() {
-    this.loadStoredData()
+    this.resetAllState()
     this.loadUserDefaults()
-    
-    // If we're already on step 2 and have a GraphDB URL, load repositories
-    if (this.currentStepIndex === 1 && this.graphdbConfig.baseUrl) {
-      this.listRepositories()
-    }
   },
+  
   methods: {
+    resetAllState() {
+      // Reset form data
+      this.formData = {
+        baseUri: 'https://biodatafuse.org/example/',
+        versionIri: 'https://biodatafuse.org/example/test.owl',
+        authorName: '',
+        authorEmail: '',
+        orcid: 'https://orcid.org/0000-0000-0000-0000',
+        graphName: 'my_graph',
+        generateShacl: true,
+        shaclThreshold: 0.001,
+        generateUmlDiagram: true,
+        generateShex: true,
+        shexThreshold: 0.001,
+        enableCustomNamespaces: false,
+        customNamespaces: []
+      }
+      
+      // Reset generation state
+      this.generatedData = null
+      this.isGenerating = false
+      this.generationError = ''
+      this.generationSuccess = false
+      
+      // Reset GraphDB state
+      this.graphdbConfig = {
+        baseUrl: 'http://localhost:7200',
+        repositoryName: '',
+        username: '',
+        password: ''
+      }
+      this.uploadSelections = {
+        rdf: false,
+        shacl: false,
+        shaclPrefixes: false,
+        shex: false,
+        customNamespaces: false
+      }
+      this.uploadStatus = {
+        rdf: null,
+        shacl: null,
+        shaclPrefixes: null,
+        shex: null,
+        customNamespaces: null
+      }
+      this.uploadingItems = new Set()
+      this.graphdbStatusMessage = ''
+      this.graphdbErrorMessage = ''
+      this.repositories = []
+      this.isLoadingRepositories = false
+      this.repositoryError = ''
+      this.tripleCount = null
+      this.isCountingTriples = false
+      this.countError = ''
+      this.queryResult = null
+      this.isExecutingQuery = false
+      this.queryError = ''
+      this.sparqlQuery = ''
+    },
+    
     getStepStatus(index) {
       if (index < this.currentStepIndex) return 'complete'
       if (index === this.currentStepIndex) return 'current'
       return 'upcoming'
+    },
+
+    handleInput() {
+      // Clear any previous messages when user starts typing
+      this.statusMessage = ''
+      this.errorMessage = ''
     },
 
     async generateRDF() {
@@ -1139,29 +914,14 @@ export default {
       }
 
       this.loading = true
-      this.loadingMessage = 'Generating RDF graph...'
       this.errorMessage = ''
+      this.statusMessage = ''
 
       try {
         const identifierSetId = localStorage.getItem('currentIdentifierSetId')
         if (!identifierSetId || isNaN(Number(identifierSetId))) {
           throw new Error('No valid identifier set found. Please complete the previous steps in the query builder.')
         }
-
-        console.log('Generating RDF with data:', {
-          identifier_set_id: Number(identifierSetId),
-          base_uri: this.formData.baseUri,
-          version_iri: this.formData.versionIri,
-          author_name: this.formData.authorName,
-          author_email: this.formData.authorEmail,
-          orcid: this.formData.orcid,
-          graph_name: this.formData.graphName,
-          generate_shacl: this.formData.generateShacl,
-          shacl_threshold: this.formData.shaclThreshold,
-          generate_uml_diagram: this.formData.generateUmlDiagram,
-          generate_shex: this.formData.generateShex,
-          shex_threshold: this.formData.shexThreshold
-        })
 
         const response = await axios.post('/api/rdf/generate', {
           identifier_set_id: Number(identifierSetId),
@@ -1178,42 +938,23 @@ export default {
           shex_threshold: this.formData.shexThreshold
         })
 
-        console.log('RDF generation response:', response.data)
         this.generatedData = response.data
         localStorage.setItem('rdfGraphData', JSON.stringify(this.generatedData))
+        this.statusMessage = 'RDF graph generated successfully!'
         
-        // Auto-advance to next step
-        setTimeout(() => {
-          this.currentStepIndex = 1
-        }, 1000)
-
       } catch (error) {
         console.error('RDF generation error:', error)
         
-        // Enhanced error handling
         if (error.response) {
-          // Server responded with error status
           const detail = error.response.data?.detail || error.response.data?.message || 'Unknown server error'
           this.errorMessage = `Server Error (${error.response.status}): ${detail}`
-          
-          // Specific error messages for common issues
-          if (error.response.status === 400) {
-            this.errorMessage = `Bad Request: ${detail}. Please check your input data and try again.`
-          } else if (error.response.status === 404) {
-            this.errorMessage = 'RDF generation service not found. Please contact the administrator.'
-          } else if (error.response.status === 500) {
-            this.errorMessage = `Internal Server Error: ${detail}. This appears to be a backend issue - please contact the administrator.`
-          }
         } else if (error.request) {
-          // Network error
           this.errorMessage = 'Network error: Could not connect to the server. Please check your internet connection and try again.'
         } else {
-          // Client-side error
           this.errorMessage = error.message || 'Failed to generate RDF graph. Please try again.'
         }
       } finally {
         this.loading = false
-        this.loadingMessage = ''
       }
     },
 
@@ -1389,6 +1130,29 @@ export default {
     },
 
     async uploadShaclPrefixes() {
+      this.uploadingItems.add('shaclPrefixes')
+      this.uploadStatus.shaclPrefixes = 'uploading'
+      this.graphdbErrorMessage = ''
+      
+      try {
+        const response = await axios.post('/api/graphdb/upload-shacl-prefixes', {
+          baseUrl: this.graphdbConfig.baseUrl,
+          repositoryId: this.graphdbConfig.repositoryName,
+          username: this.graphdbConfig.username || null,
+          password: this.graphdbConfig.password || null,
+          graphData: this.generatedData
+        })
+        this.graphdbStatusMessage = response.data.message
+        this.uploadStatus.shaclPrefixes = 'success'
+      } catch (error) {
+        this.graphdbErrorMessage = error.response?.data?.detail || 'Failed to upload SHACL prefixes'
+        this.uploadStatus.shaclPrefixes = 'error'
+      } finally {
+        this.uploadingItems.delete('shaclPrefixes')
+      }
+    },
+
+    async uploadShaclShapes() {
       this.uploadingItems.add('shacl')
       this.uploadStatus.shacl = 'uploading'
       this.graphdbErrorMessage = ''
@@ -1467,18 +1231,19 @@ export default {
     },
 
     resetWorkflow() {
-      this.currentStepIndex = 0
       this.generatedData = null
       this.connectionStatus = null
-      this.graphdbStatusMessage = ''
-      this.graphdbErrorMessage = ''
+      this.statusMessage = ''
+      this.errorMessage = ''
       this.uploadingItems.clear()
       this.uploadStatus = {
         rdf: null,
-               shacl: null,
+        shacl: null,
+        shaclPrefixes: null,
         shex: null,
         namespaces: null
       }
+      this.graphdbConfig.repositoryName = ''
       localStorage.removeItem('rdfGraphData')
     },
 
@@ -1517,10 +1282,76 @@ export default {
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
     },
 
+    async downloadSpecificFile(fileType) {
+      if (!this.generatedData?.generation_id) {
+        this.errorMessage = 'No generation ID found. Please generate RDF first.'
+        return
+      }
+
+      try {
+        const endpoint = `/api/rdf/download-${fileType}/${this.generatedData.generation_id}`
+        
+        // Make authenticated request
+        const response = await axios.get(endpoint, {
+          responseType: 'blob',
+          headers: {
+            'Authorization': `Bearer ${this.authStore.token}`
+          }
+        })
+        
+        // Create download link
+        const url = URL.createObjectURL(response.data)
+        const a = document.createElement('a')
+        a.href = url
+        
+        // Set filename based on Content-Disposition header or default
+        const contentDisposition = response.headers['content-disposition']
+        let filename = `${fileType}_${this.generatedData.graph_name}`
+        
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, '')
+          }
+        } else {
+          // Set default extensions based on file type
+          if (fileType.includes('preview')) {
+            filename += '.png'
+          } else if (fileType === 'shex') {
+            filename += '.shex'
+          } else {
+            filename += '.ttl'
+          }
+        }
+        
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        
+        this.statusMessage = `${fileType} file downloaded successfully!`
+        
+      } catch (error) {
+        console.error(`Error downloading ${fileType} file:`, error)
+        
+        if (error.response?.status === 404) {
+          this.errorMessage = `${fileType} file not found. Make sure the file was generated.`
+        } else if (error.response?.status === 401) {
+          this.errorMessage = 'Authentication failed. Please log in again.'
+        } else {
+          this.errorMessage = `Failed to download ${fileType} file. Please try again.`
+        }
+      }
+    },
+
     async downloadFile(file) {
       try {
         const response = await axios.get(`/api/rdf/download/${file.id}`, {
-          responseType: 'blob'
+          responseType: 'blob',
+          headers: {
+            'Authorization': `Bearer ${this.authStore.token}`
+          }
         })
         
         const url = URL.createObjectURL(response.data)
@@ -1532,6 +1363,7 @@ export default {
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
       } catch (error) {
+        console.error('Error downloading file:', error)
         this.errorMessage = 'Failed to download file'
       }
     },
@@ -1684,6 +1516,7 @@ export default {
     selectAll() {
       this.uploadSelections.rdf = this.hasGeneratedData
       this.uploadSelections.shacl = this.formData.generateShacl
+      this.uploadSelections.shaclPrefixes = this.formData.generateShacl
       this.uploadSelections.shex = this.formData.generateShex
       this.uploadSelections.namespaces = this.formData.enableCustomNamespaces
     },
@@ -1691,6 +1524,7 @@ export default {
     selectNone() {
       this.uploadSelections.rdf = false
       this.uploadSelections.shacl = false
+      this.uploadSelections.shaclPrefixes = false
       this.uploadSelections.shex = false
       this.uploadSelections.namespaces = false
     },
@@ -1702,6 +1536,9 @@ export default {
         uploads.push(this.uploadRDFGraph())
       }
       if (this.uploadSelections.shacl && this.formData.generateShacl) {
+        uploads.push(this.uploadShaclShapes())
+      }
+      if (this.uploadSelections.shaclPrefixes && this.formData.generateShacl) {
         uploads.push(this.uploadShaclPrefixes())
       }
       if (this.uploadSelections.shex && this.formData.generateShex) {
@@ -1771,6 +1608,11 @@ export default {
       }
     },
     
+    async loadUserProfile() {
+      // Rename this method to match the call, or keep the original name
+      await this.loadUserDefaults()
+    },
+
     async loadUserDefaults() {
       try {
         // First check if user is authenticated but user data is missing
@@ -1784,8 +1626,6 @@ export default {
             // If the API call fails with 500, the token might be invalid
             if (error.response?.status === 500) {
               console.warn('🔄 API returned 500, token might be invalid. Clearing auth state.')
-              // Don't clear auth automatically, just log the issue
-              // this.authStore.clearAuth()
             }
           }
         }
@@ -1794,9 +1634,6 @@ export default {
         if (this.authStore.user) {
           const user = this.authStore.user
           console.log('🔍 Auth store user data:', user)
-          console.log('🆔 User ID:', user.id)
-          console.log('👤 User name:', user.name)
-          console.log('📧 User email:', user.email)
           
           if (user.name) {
             this.formData.authorName = user.name
@@ -1810,25 +1647,21 @@ export default {
             this.formData.orcid = user.orcid
             console.log('✅ Set orcid from auth store:', user.orcid)
           }
-        } else {
-          console.log('❌ No user data in auth store')
         }
 
-        // Enhanced fallback: Try to decode JWT token directly to get email and potentially other info
-        if (this.authStore.token) {
+        // Enhanced fallback: Try to decode JWT token directly
+        if (this.authStore.token && (!this.formData.authorEmail || !this.formData.authorName)) {
           try {
             const token = this.authStore.token
-            // Simple JWT decode (just the payload, no verification)
             const payload = JSON.parse(atob(token.split('.')[1]))
             console.log('🔍 JWT payload:', payload)
-            console.log('🆔 JWT subject (email):', payload.sub)
             
             if (payload.sub && payload.sub.includes('@') && !this.formData.authorEmail) {
               this.formData.authorEmail = payload.sub
               console.log('✅ Got email from JWT token:', payload.sub)
             }
 
-            // If we have email but no name, try to create a name from email
+            // Generate name from email if needed
             if (this.formData.authorEmail && !this.formData.authorName) {
               const emailParts = this.formData.authorEmail.split('@')[0]
               const nameFromEmail = emailParts.replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
@@ -1840,70 +1673,27 @@ export default {
           }
         }
 
-        // Fallback: Try to get user info from localStorage
-        if (!this.formData.authorName || !this.formData.authorEmail) {
-          const userInfo = localStorage.getItem('userInfo') || localStorage.getItem('user')
-          if (userInfo) {
-            const user = JSON.parse(userInfo)
-            console.log('🔍 LocalStorage user data:', user)
-            
-            if (!this.formData.authorName && (user.name || user.full_name || user.displayName)) {
-              this.formData.authorName = user.name || user.full_name || user.displayName
-              console.log('✅ Got name from localStorage:', this.formData.authorName)
-            }
-            if (!this.formData.authorEmail && user.email) {
-              this.formData.authorEmail = user.email
-              console.log('✅ Got email from localStorage:', user.email)
-            }
-            if (!this.formData.orcid && user.orcid) {
-              this.formData.orcid = user.orcid
-            }
-          }
+        // Set reasonable fallback defaults
+        if (!this.formData.authorName) {
+          this.formData.authorName = 'BiodataFuse User'
+          console.log('🔄 Using fallback author name')
+        }
+        if (!this.formData.authorEmail) {
+          this.formData.authorEmail = 'user@biodatafuse.org'
+          console.log('🔄 Using fallback author email')
         }
 
-        // Another fallback: Try session storage
-        if (!this.formData.authorName || !this.formData.authorEmail) {
-          const sessionUser = sessionStorage.getItem('userInfo') || sessionStorage.getItem('user')
-          if (sessionUser) {
-            const user = JSON.parse(sessionUser)
-            console.log('🔍 SessionStorage user data:', user)
-            
-            if (!this.formData.authorName && (user.name || user.full_name || user.displayName)) {
-              this.formData.authorName = user.name || user.full_name || user.displayName
-              console.log('✅ Got name from sessionStorage:', this.formData.authorName)
-            }
-            if (!this.formData.authorEmail && user.email) {
-              this.formData.authorEmail = user.email
-              console.log('✅ Got email from sessionStorage:', user.email)
-            }
-            if (!this.formData.orcid && user.orcid) {
-              this.formData.orcid = user.orcid
-            }
-          }
-        }
-
-        console.log('✅ User defaults loaded:', {
+        console.log('✅ Final form data:', {
           authorName: this.formData.authorName,
           authorEmail: this.formData.authorEmail,
-          orcid: this.formData.orcid,
-          authStoreUser: this.authStore.user,
-          authStoreUserId: this.authStore.user?.id,
-          isAuthenticated: this.authStore.isAuthenticated,
-          hasToken: !!this.authStore.token
+          orcid: this.formData.orcid
         })
         
       } catch (error) {
         console.warn('⚠️ Could not load user defaults:', error)
-      }
-      
-      // Set fallback defaults if still no user info is available
-      if (!this.formData.authorName) {
-        this.formData.authorName = 'BiodataFuse User'
-        console.log('🔄 Using fallback author name')
-      }
-      if (!this.formData.authorEmail) {
-        this.formData.authorEmail = 'user@biodatafuse.org'
-        console.log('🔄 Using fallback author email')
+        // Ensure we have some defaults even if everything fails
+        if (!this.formData.authorName) this.formData.authorName = 'BiodataFuse User'
+        if (!this.formData.authorEmail) this.formData.authorEmail = 'user@biodatafuse.org'
       }
     },
 
