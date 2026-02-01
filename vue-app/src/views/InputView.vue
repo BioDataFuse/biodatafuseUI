@@ -186,17 +186,18 @@
                           <option value="Ensembl" class="py-1.5">Ensembl Gene ID (e.g., ENSG00000012048)</option>
                           <option value="HGNC" class="py-1.5">HGNC Symbol (e.g., TP53)</option>
                           <option value="HGNC Accession Number" class="py-1.5">HGNC Accession (e.g., HGNC:11998)</option>
-                          <option value="RefSeq" class="py-1.5">RefSeq ID (e.g., NM_001301717)</option>
                           <option value="NCBI Gene" class="py-1.5">NCBI Gene ID (e.g., 7157)</option>
+                          <option value="RefSeq" class="py-1.5">RefSeq ID (e.g., NM_001301717)</option>
                         </optgroup>
                         <optgroup label="Protein Identifiers" class="font-semibold">
                           <option value="Uniprot-TrEMBL" class="py-1.5">UniProtKB ID (e.g., P11532)</option>
                         </optgroup>
                         <optgroup label="Compound Identifiers" class="font-semibold">
-                          <option value="HMDB" class="py-1.5">HMDB ID (e.g., HMDB0000001)</option>
                           <option value="ChEBI" class="py-1.5">ChEBI ID (e.g., CHEBI:15377)</option>
+                          <option value="HMDB" class="py-1.5">HMDB ID (e.g., HMDB0000001)</option>
                           <option value="KEGG Compound" class="py-1.5">KEGG Compound (e.g., C00002)</option>
                           <option value="PubChem Compound" class="py-1.5">PubChem Compound (e.g., 100208)</option>
+                          <option value="CompoundWiki" class="py-1.5">Compound Wiki (e.g., Q27094989)</option>
                         </optgroup>
                       </select>
                       <ChevronDownIcon class="absolute right-3 top-3.5 h-5 w-5 text-gray-400 
