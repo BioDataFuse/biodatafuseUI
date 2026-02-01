@@ -20,14 +20,14 @@
         <ul class="mt-4 space-y-2 text-lg text-gray-600">
           <li>
             <span class="font-medium text-gray-900">Tooba Abbassi-Daloii</span> —
-            <a href="mailto:t.abbassidaloii@maastrichtuniversity.nl" class="text-indigo-600 hover:underline">
-              t.abbassidaloii@maastrichtuniversity.nl
+            <a href="mailto:t.abbassidaloii@amsterdamumc.nl" class="text-indigo-600 hover:underline">
+              t.abbassidaloii@amsterdamumc.nl
             </a>
           </li>
           <li>
             <span class="font-medium text-gray-900">Yojana Gadiya</span> —
-            <a href="mailto:yojana.gadiya@itmp.fraunhofer.de" class="text-indigo-600 hover:underline">
-              yojana.gadiya@itmp.fraunhofer.de
+            <a href="mailto:yojana.gadiya@gmail.com" class="text-indigo-600 hover:underline">
+              yojana.gadiya@gmail.com
             </a>
           </li>
         </ul>
