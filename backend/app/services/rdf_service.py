@@ -95,9 +95,12 @@ class RDFService:
                 logger.error(f"❌ User {user_id} not authorized to access identifier set {identifier_set_id}")
                 raise ValueError("Not authorized to access this identifier set")
             
-            # Get annotation data
+            # Get annotation data - get the most recent one if multiple exist
             result = await self.db.execute(
-                select(models.Annotation).where(models.Annotation.identifier_set_id == identifier_set_id)
+                select(models.Annotation)
+                .where(models.Annotation.identifier_set_id == identifier_set_id)
+                .order_by(models.Annotation.id.desc())
+                .limit(1)
             )
             annotation = result.scalar_one_or_none()
             
