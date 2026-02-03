@@ -1,22 +1,22 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+  <div class="graphdb-view-root min-h-screen bg-gradient-to-b from-gray-50 to-white">
     <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <!-- Header -->
-      <div class="text-center">
-        <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl">
-          Graph Visualization and Analysis
-        </h1>
-        <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-          Load your graph into GraphDB.
-        </p>
-      </div>
-
-      <!-- Main Content Card -->
-      <div class="mt-12 bg-white rounded-lg shadow-lg overflow-hidden">
-        <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
-          <h2 class="text-xl font-semibold text-white">Visualization in GraphDB</h2>
+        <!-- Header -->
+        <div class="text-center">
+          <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl">
+            Graph Visualization and Analysis
+          </h1>
+          <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
+            Load your graph into GraphDB.
+          </p>
         </div>
-        <div class="p-6">
+
+        <!-- Main Content Card -->
+        <div class="mt-12 bg-white rounded-lg shadow-lg overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
+            <h2 class="text-xl font-semibold text-white">Visualization in GraphDB</h2>
+          </div>
+          <div class="p-6">
           <!-- Custom Graph Name Input -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-2">Custom Graph Name</label>
@@ -79,7 +79,7 @@
                 <input
                   type="url"
                   v-model="formData.versionIri"
-                  placeholder="Version IRI (e.g., https://biodatafuse.org/example/test.owl)"
+                  placeholder="Version IRI (e.g., https://biodatafuse.org/example/your_graph.ttl)"
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <input
@@ -383,12 +383,13 @@
                       <li>Select your newly created repository from the repository dropdown</li>
                       <li>Go to "Import" → "RDF"</li>
                       <li>Choose "Upload RDF files"</li>
-                      <li>Click "Choose Files" and select your downloaded .ttl files
-                        <li>Your graph ttl: your BioDataFuse query result in RDF</li>
-                        <li>Your SHACL/ShEX shapes ttl: your BioDataFuse graph shapes for validation</li>
-                        <li>
-                            Your SHACL prefixes ttl: your BioDataFuse graph prefixes to avoid having to state them in your SPARQL queries. Custom prefixes can be defined in the form above.
-                        </li>
+                      <li>
+                        Click "Choose Files" and select your downloaded .ttl files:
+                        <ul class="list-disc list-inside pl-4 space-y-1">
+                          <li>Your graph ttl: your BioDataFuse query result in RDF</li>
+                          <li>Your SHACL/ShEX shapes ttl: your BioDataFuse graph shapes for validation</li>
+                          <li>Your SHACL prefixes ttl: your BioDataFuse graph prefixes to avoid having to state them in your SPARQL queries. Custom prefixes can be defined in the form above.</li>
+                        </ul>
                       </li>
                       <li>Click "Import" to load the data</li>
                       <li>Wait for the import to complete</li>
@@ -632,42 +633,43 @@
         <!-- Footer Actions -->
         <div class="flex justify-between px-6 py-4 bg-gray-50 border-t">
           <button
+            type="button"
             @click="goBack"
             class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400"
           >
             ← Select another visualization tool
           </button>
         </div>
-      </div>
-    </div>
-  </div>
+      </div> <!-- end main content card -->
+    </div> <!-- end max width container -->
 
-  <!-- Delete Confirmation Modal -->
-  <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirm Repository Deletion</h3>
-      <p class="text-sm text-gray-600 mb-6">
-        Are you sure you want to delete the repository <strong>{{ repositoryToDelete }}</strong>? 
-        This action cannot be undone and will permanently remove all data in this repository.
-      </p>
-      <div class="flex justify-end space-x-3">
-        <button
-          @click="showDeleteConfirm = false; repositoryToDelete = ''"
-          class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-        >
-          Cancel
-        </button>
-        <button
-          @click="deleteRepository"
-          :disabled="graphdbLoading"
-          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
-        >
-          <span v-if="graphdbLoading">Deleting...</span>
-          <span v-else>Delete Repository</span>
-        </button>
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirm Repository Deletion</h3>
+        <p class="text-sm text-gray-600 mb-6">
+          Are you sure you want to delete the repository <strong>{{ repositoryToDelete }}</strong>? 
+          This action cannot be undone and will permanently remove all data in this repository.
+        </p>
+        <div class="flex justify-end space-x-3">
+          <button
+            @click="showDeleteConfirm = false; repositoryToDelete = ''"
+            class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            @click="deleteRepository"
+            :disabled="graphdbLoading"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+          >
+            <span v-if="graphdbLoading">Deleting...</span>
+            <span v-else>Delete Repository</span>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  </div> <!-- end graphdb view root -->
 </template>
 
 <script>
@@ -676,28 +678,20 @@ import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'GraphDBView',
+  
   setup() {
     const authStore = useAuthStore()
-    
-    return {
-      authStore
-    }
+    return { authStore }
   },
+
   data() {
     return {
-      currentStepIndex: 0,
-      steps: [
-        { name: 'Graph Generation', description: 'Create RDF graph from your biological data' },
-        { name: 'Preview & Configure', description: 'Preview generated files and configure settings' },
-        { name: 'GraphDB Setup', description: 'Configure GraphDB connection and repository' },
-        { name: 'Upload Data', description: 'Upload your data and schemas to GraphDB' }
-      ],
       formData: {
         baseUri: 'https://biodatafuse.org/example/',
-        versionIri: 'https://biodatafuse.org/example/test.owl',
+        versionIri: 'https://biodatafuse.org/example/your_graph.ttl',
         title: '',
         description: '',
-        creators: [{ fullName: '', orcid: '' }],  // List of creators with fullName and orcid
+        creators: [{ fullName: '', orcid: '' }],
         graphName: 'my_graph',
         generateShacl: true,
         shaclThreshold: 0.001,
@@ -707,19 +701,10 @@ export default {
         enableCustomNamespaces: false,
         customNamespaces: []
       },
-      commonNamespaces: [
-        { prefix: 'foaf', uri: 'http://xmlns.com/foaf/0.1/' },
-        { prefix: 'dc', uri: 'http://purl.org/dc/elements/1.1/' },
-        { prefix: 'dcterms', uri: 'http://purl.org/dc/terms/' },
-        { prefix: 'skos', uri: 'http://www.w3.org/2004/02/skos/core#' },
-        { prefix: 'owl', uri: 'http://www.w3.org/2002/07/owl#' },
-        { prefix: 'rdfs', uri: 'http://www.w3.org/2000/01/rdf-schema#' },
-        { prefix: 'xsd', uri: 'http://www.w3.org/2001/XMLSchema#' }
-      ],
       generatedData: null,
       loading: false,
-      loadingMessage: '',
       errorMessage: '',
+      statusMessage: '',
       graphdbConfig: {
         baseUrl: 'http://host.docker.internal:7200',
         repositoryName: '',
@@ -740,7 +725,7 @@ export default {
       repositoryToDelete: '',
       autoTestTimeout: null,
       uploadStatus: {
-        rdf: null,      // null, 'uploading', 'success', 'error'
+        rdf: null,
         shacl: null,
         shaclPrefixes: null,
         shex: null,
@@ -755,28 +740,23 @@ export default {
       },
       connectionType: 'local',
       showAdvancedOptions: false,
-      showManualSetup: false,
-      statusMessage: '',
+      showManualSetup: false
     }
   },
+
   computed: {
     hasGeneratedData() {
       return this.generatedData && this.generatedData.generated_files && this.generatedData.generated_files.length > 0
     },
     isFormValid() {
-      // Check basic required fields
       if (!this.formData.baseUri.trim() || 
           !this.formData.versionIri.trim() ||
           !this.formData.graphName.trim()) {
         return false
       }
-      
-      // Check that at least one creator is provided with both fullName and orcid
       if (!this.formData.creators || this.formData.creators.length === 0) {
         return false
       }
-      
-      // Check that at least the first creator has both fullName and orcid
       const firstCreator = this.formData.creators[0]
       return firstCreator.fullName.trim() && firstCreator.orcid.trim()
     },
@@ -785,33 +765,25 @@ export default {
     },
     selectedUmlFile() {
       if (!this.selectedVisualization || !this.generatedData?.generated_files) return null
-      
       const fileName = this.selectedVisualization === 'shacl' 
         ? `${this.formData.graphName}_shacl.png`
         : `${this.formData.graphName}_shex_diagram.png`
-      
       return this.generatedData.generated_files.find(file => file.name === fileName)
     },
-
     defaultVisualization() {
       if (!this.generatedData?.generated_files) return ''
-      
-      // Check if SHACL UML is available
       if (this.formData.generateShacl && this.formData.generateUmlDiagram) {
         const shaclFile = this.generatedData.generated_files.find(file => 
           file.name === `${this.formData.graphName}_shacl.png`
         )
         if (shaclFile) return 'shacl'
       }
-      
-      // Check if ShEx UML is available
       if (this.formData.generateShex && this.formData.generateUmlDiagram) {
         const shexFile = this.generatedData.generated_files.find(file => 
           file.name === `${this.formData.graphName}_shex_diagram.png`
         )
         if (shexFile) return 'shex'
       }
-      
       return ''
     },
     hasSelectedItems() {
@@ -822,123 +794,22 @@ export default {
     }
   },
 
-  watch: {
-    // Watch for step changes to automatically load repositories when reaching step 2
-    currentStepIndex(newStep, oldStep) {
-      if (newStep === 2 && oldStep === 1) {
-        // When moving to step 3, auto-test connection if it's a localhost URL
-        this.autoTestConnection()
-      }
-    },
-    
-    // Watch for changes to the GraphDB URL
-    'graphdbConfig.baseUrl': {
-      handler(newUrl) {
-        if (this.currentStepIndex === 2 && newUrl) {
-          // Auto-test connection when URL changes in step 3
-          this.autoTestConnection()
-        }
-      },
-      immediate: false
-    },
-
-    selectedUmlFile: {
-      handler(newFile) {
-        if (newFile) {
-          this.loadImagePreview(newFile)
-        } else {
-          this.imageUrl = null
-        }
-      },
-      immediate: true
-    },
-    defaultVisualization: {
-      handler(newDefault) {
-        if (newDefault && !this.selectedVisualization) {
-          this.selectedVisualization = newDefault
-        }
-      },
-      immediate: true
+  mounted() {
+    this.loadStoredData()
+    if (this.selectedUmlFile) {
+      this.loadImagePreview(this.selectedUmlFile)
+    }
+    if (this.defaultVisualization && !this.selectedVisualization) {
+      this.selectedVisualization = this.defaultVisualization
     }
   },
-  mounted() {
-    this.resetAllState()
-    this.loadUserDefaults()
-  },
-  
+
   methods: {
     goBack() {
-      this.$router.push({ path: '/visualize&analysis' })
-    },
-    
-    resetAllState() {
-      // Reset form data
-      this.formData = {
-        baseUri: 'https://biodatafuse.org/example/',
-        versionIri: 'https://biodatafuse.org/example/test.owl',
-        title: '',
-        description: '',
-        creators: [{ fullName: '', orcid: '' }],
-        graphName: 'my_graph',
-        generateShacl: true,
-        shaclThreshold: 0.001,
-        generateUmlDiagram: true,
-        generateShex: true,
-        shexThreshold: 0.001,
-        enableCustomNamespaces: false,
-        customNamespaces: []
-      }
-      
-      // Reset generation state
-      this.generatedData = null
-      this.isGenerating = false
-      this.generationError = ''
-      this.generationSuccess = false
-      
-      // Reset GraphDB state
-      this.graphdbConfig = {
-        baseUrl: 'http://localhost:7200',
-        repositoryName: '',
-        username: '',
-        password: ''
-      }
-      this.uploadSelections = {
-        rdf: false,
-        shacl: false,
-        shaclPrefixes: false,
-        shex: false,
-        customNamespaces: false
-      }
-      this.uploadStatus = {
-        rdf: null,
-        shacl: null,
-        shaclPrefixes: null,
-        shex: null,
-        customNamespaces: null
-      }
-      this.uploadingItems = new Set()
-      this.graphdbStatusMessage = ''
-      this.graphdbErrorMessage = ''
-      this.repositories = []
-      this.isLoadingRepositories = false
-      this.repositoryError = ''
-      this.tripleCount = null
-      this.isCountingTriples = false
-      this.countError = ''
-      this.queryResult = null
-      this.isExecutingQuery = false
-      this.queryError = ''
-      this.sparqlQuery = ''
-    },
-    
-    getStepStatus(index) {
-      if (index < this.currentStepIndex) return 'complete'
-      if (index === this.currentStepIndex) return 'current'
-      return 'upcoming'
+      window.location.href = '/visualize&analysis'
     },
 
     handleInput() {
-      // Clear any previous messages when user starts typing
       this.statusMessage = ''
       this.errorMessage = ''
     },
@@ -948,25 +819,20 @@ export default {
         this.errorMessage = 'Please fill in all required fields before generating the RDF graph.'
         return
       }
-
       this.loading = true
       this.errorMessage = ''
       this.statusMessage = ''
-
       try {
         const identifierSetId = localStorage.getItem('currentIdentifierSetId')
         if (!identifierSetId || isNaN(Number(identifierSetId))) {
           throw new Error('No valid identifier set found. Please complete the previous steps in the query builder.')
         }
-
-        // Convert creators to the format expected by the backend
         const creators = this.formData.creators
           .filter(creator => creator.fullName.trim() && creator.orcid.trim())
           .map(creator => ({
             full_name: creator.fullName.trim(),
-            orcid: creator.orcid.trim().replace('https://orcid.org/', '')  // Remove http prefix if present
+            orcid: creator.orcid.trim().replace('https://orcid.org/', '')
           }))
-
         const response = await axios.post('/api/rdf/generate', {
           identifier_set_id: Number(identifierSetId),
           base_uri: this.formData.baseUri,
@@ -984,14 +850,11 @@ export default {
             ? this.formData.customNamespaces.filter(ns => ns.prefix && ns.uri)
             : null
         })
-
         this.generatedData = response.data
         localStorage.setItem('rdfGraphData', JSON.stringify(this.generatedData))
         this.statusMessage = 'RDF graph generated successfully!'
-        
       } catch (error) {
         console.error('RDF generation error:', error)
-        
         if (error.response) {
           const detail = error.response.data?.detail || error.response.data?.message || 'Unknown server error'
           this.errorMessage = `Server Error (${error.response.status}): ${detail}`
@@ -1005,74 +868,29 @@ export default {
       }
     },
 
-    async autoTestConnection() {
-      // Only auto-test if it's a localhost URL and we haven't already tested
-      if (this.graphdbConfig.baseUrl && 
-          (this.graphdbConfig.baseUrl.includes('localhost') || this.graphdbConfig.baseUrl.includes('127.0.0.1')) &&
-          (!this.connectionStatus || this.connectionStatus.type !== 'success')) {
-        
-        console.log('◒ Auto-testing localhost connection...')
-        
-        // Add a small delay to avoid too frequent requests
-        if (this.autoTestTimeout) {
-          clearTimeout(this.autoTestTimeout)
-        }
-        
-        this.autoTestTimeout = setTimeout(async () => {
-          try {
-            await this.testConnection()
-          } catch (error) {
-            console.log('Auto connection test failed, user can manually retry')
-          }
-        }, 500)
-      }
-    },
-
     async testConnection() {
       this.connectionStatus = null
       this.graphdbLoading = true
       this.graphdbErrorMessage = ''
       this.graphdbStatusMessage = ''
-      
       try {
-        // Log the request data being sent
         const requestData = {
           baseUrl: this.graphdbConfig.baseUrl,
           username: this.graphdbConfig.username || null,
           password: this.graphdbConfig.password || null
         }
-        
-        console.log('🔍 Frontend: Sending test connection request:')
-        console.log('📋 Request data:', JSON.stringify(requestData, null, 2))
-        console.log('🔗 Request URL:', '/api/graphdb/test-connection')
-        console.log('📊 Request method: POST')
-        
         const response = await axios.post('/api/graphdb/test-connection', requestData)
-        
         console.log('✔ Frontend: Connection test successful:', response.data)
         this.connectionStatus = { type: 'success', message: response.data.message }
-        
-        // Automatically fetch repositories after successful connection
         await this.listRepositories()
-        
       } catch (error) {
         console.error('❌ Frontend: Connection test failed:', error)
-        
-        // Log detailed error information
         if (error.response) {
-          console.error('📋 Response status:', error.response.status)
-          console.error('📋 Response headers:', error.response.headers)
-          console.error('📋 Response data:', JSON.stringify(error.response.data, null, 2))
-          
-          const errorMessage = error.response.data?.detail || 'Connection failed. Please check your settings.'
-          console.error('📋 Error message:', errorMessage)
-          this.connectionStatus = { type: 'error', message: errorMessage }
+          const errorMsg = error.response.data?.detail || 'Connection failed. Please check your settings.'
+          this.connectionStatus = { type: 'error', message: errorMsg }
         } else if (error.request) {
-          console.error('📋 Network error - no response received')
-          console.error('📋 Request details:', error.request)
           this.connectionStatus = { type: 'error', message: 'Network error - could not reach server' }
         } else {
-          console.error('📋 Request setup error:', error.message)
           this.connectionStatus = { type: 'error', message: error.message }
         }
       } finally {
@@ -1080,37 +898,20 @@ export default {
       }
     },
 
-    isUploading(type) {
-      return this.uploadingItems.has(type)
-    },
-
     async uploadRDFGraph() {
       this.uploadingItems.add('rdf')
       this.uploadStatus.rdf = 'uploading'
       this.graphdbErrorMessage = ''
-      
       try {
-        console.log('🚀 Starting RDF upload with data:', {
-          baseUrl: this.graphdbConfig.baseUrl,
-          repositoryId: this.graphdbConfig.repositoryName,
-          username: this.graphdbConfig.username || null,
-          hasGeneratedData: !!this.generatedData,
-          generatedFilesCount: this.generatedData?.generated_files?.length || 0
-        })
-
-        // Validate required data before sending
         if (!this.generatedData) {
           throw new Error('No generated data available for upload')
         }
-
         if (!this.graphdbConfig.baseUrl) {
           throw new Error('GraphDB URL is required')
         }
-
         if (!this.graphdbConfig.repositoryName) {
           throw new Error('Repository name is required')
         }
-
         const payload = {
           baseUrl: this.graphdbConfig.baseUrl,
           repositoryId: this.graphdbConfig.repositoryName,
@@ -1118,59 +919,23 @@ export default {
           password: this.graphdbConfig.password || null,
           graphData: this.generatedData
         }
-
-        console.log('📤 Sending RDF upload request with payload structure:', {
-          baseUrl: payload.baseUrl,
-          repositoryId: payload.repositoryId,
-          username: payload.username,
-          hasGraphData: !!payload.graphData,
-          graphDataKeys: payload.graphData ? Object.keys(payload.graphData) : [],
-          generatedFilesCount: payload.graphData?.generated_files?.length || 0,
-          generationId: payload.graphData?.generation_id || 'NOT_FOUND'
-        })
-
-        // Log the full generated data structure for debugging
-        console.log('🔍 Full generated data structure:', JSON.stringify(this.generatedData, null, 2))
-
         const response = await axios.post('/api/graphdb/upload-rdf', payload)
-        
         console.log('✔ RDF upload successful:', response.data)
         this.graphdbStatusMessage = response.data.message || 'RDF graph uploaded successfully'
         this.uploadStatus.rdf = 'success'
-        
       } catch (error) {
         console.error('❌ RDF upload failed:', error)
-        
-        let errorMessage = 'Failed to upload RDF graph'
-        
+        let errMsg = 'Failed to upload RDF graph'
         if (error.response) {
-          // Server responded with error status
           const detail = error.response.data?.detail || error.response.data?.message
-          errorMessage = `Upload failed (${error.response.status}): ${detail || 'Unknown server error'}`
-          
-          console.error('Full server error response:', {
-            status: error.response.status,
-            statusText: error.response.statusText,
-            data: error.response.data,
-            headers: error.response.headers
-          })
-          
-          // Log the exact error detail for debugging
-          if (error.response.data) {
-            console.error('Server error detail:', JSON.stringify(error.response.data, null, 2))
-          }
-          
+          errMsg = `Upload failed (${error.response.status}): ${detail || 'Unknown server error'}`
         } else if (error.request) {
-          // Network error
-          errorMessage = 'Network error: Could not connect to upload service'
+          errMsg = 'Network error: Could not connect to upload service'
         } else {
-          // Client-side error
-          errorMessage = error.message || errorMessage
+          errMsg = error.message || errMsg
         }
-        
-        this.graphdbErrorMessage = errorMessage
+        this.graphdbErrorMessage = errMsg
         this.uploadStatus.rdf = 'error'
-        
       } finally {
         this.uploadingItems.delete('rdf')
       }
@@ -1180,7 +945,6 @@ export default {
       this.uploadingItems.add('shaclPrefixes')
       this.uploadStatus.shaclPrefixes = 'uploading'
       this.graphdbErrorMessage = ''
-      
       try {
         const response = await axios.post('/api/graphdb/upload-shacl-prefixes', {
           baseUrl: this.graphdbConfig.baseUrl,
@@ -1203,7 +967,6 @@ export default {
       this.uploadingItems.add('shacl')
       this.uploadStatus.shacl = 'uploading'
       this.graphdbErrorMessage = ''
-      
       try {
         const response = await axios.post('/api/graphdb/upload-prefixes', {
           baseUrl: this.graphdbConfig.baseUrl,
@@ -1226,7 +989,6 @@ export default {
       this.uploadingItems.add('shex')
       this.uploadStatus.shex = 'uploading'
       this.graphdbErrorMessage = ''
-      
       try {
         const response = await axios.post('/api/graphdb/upload-shex', {
           baseUrl: this.graphdbConfig.baseUrl,
@@ -1249,7 +1011,6 @@ export default {
       this.uploadingItems.add('namespaces')
       this.uploadStatus.namespaces = 'uploading'
       this.graphdbErrorMessage = ''
-      
       try {
         const response = await axios.post('/api/graphdb/upload-namespaces', {
           baseUrl: this.graphdbConfig.baseUrl,
@@ -1259,7 +1020,7 @@ export default {
           graphData: {
             namespaces: Object.fromEntries(
               this.formData.customNamespaces.map(ns => [ns.prefix, ns.uri])
-                       )
+            )
           }
         })
         this.graphdbStatusMessage = response.data.message
@@ -1273,6 +1034,7 @@ export default {
     },
 
     openGraphDBWorkbench() {
+      if (!this.graphdbConfig.baseUrl) return
       const workbenchUrl = `${this.graphdbConfig.baseUrl}/`
       window.open(workbenchUrl, '_blank')
     },
@@ -1283,15 +1045,18 @@ export default {
       this.statusMessage = ''
       this.errorMessage = ''
       this.uploadingItems.clear()
-      this.uploadStatus = {
-        rdf: null,
-        shacl: null,
-        shaclPrefixes: null,
-        shex: null,
-        namespaces: null
-      }
+      this.uploadStatus.rdf = null
+      this.uploadStatus.shacl = null
+      this.uploadStatus.shaclPrefixes = null
+      this.uploadStatus.shex = null
+      this.uploadStatus.namespaces = null
       this.graphdbConfig.repositoryName = ''
       localStorage.removeItem('rdfGraphData')
+      this.selectedVisualization = ''
+      if (this.imageUrl) {
+        URL.revokeObjectURL(this.imageUrl)
+        this.imageUrl = null
+      }
     },
 
     loadStoredData() {
@@ -1299,10 +1064,6 @@ export default {
       if (storedData) {
         try {
           this.generatedData = JSON.parse(storedData)
-          // Remove auto-advance - always start at step 1
-          // if (this.hasGeneratedData) {
-          //   this.currentStepIndex = 1
-          // }
         } catch (e) {
           localStorage.removeItem('rdfGraphData')
         }
@@ -1331,47 +1092,30 @@ export default {
       this.graphdbConfig.repositoryName = repositoryId
     },
 
-    formatFileSize(bytes) {
-      if (!bytes) return '0 Bytes'
-      const k = 1024
-      const sizes = ['Bytes', 'KB', 'MB', 'GB']
-      const i = Math.floor(Math.log(bytes) / Math.log(k))
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-    },
-
     async downloadSpecificFile(fileType) {
       if (!this.generatedData?.generation_id) {
         this.errorMessage = 'No generation ID found. Please generate RDF first.'
         return
       }
-
       try {
         const endpoint = `/api/rdf/download-${fileType}/${this.generatedData.generation_id}`
-        
-        // Make authenticated request
         const response = await axios.get(endpoint, {
           responseType: 'blob',
-          headers: {
-            'Authorization': `Bearer ${this.authStore.token}`
-          }
+          headers: this.authStore?.token
+            ? { Authorization: `Bearer ${this.authStore.token}` }
+            : {}
         })
-        
-        // Create download link
         const url = URL.createObjectURL(response.data)
         const a = document.createElement('a')
         a.href = url
-        
-        // Set filename based on Content-Disposition header or default
         const contentDisposition = response.headers['content-disposition']
         let filename = `${fileType}_${this.generatedData.graph_name}`
-        
         if (contentDisposition) {
           const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
           if (filenameMatch && filenameMatch[1]) {
             filename = filenameMatch[1].replace(/['"]/g, '')
           }
         } else {
-          // Set default extensions based on file type
           if (fileType.includes('preview')) {
             filename += '.png'
           } else if (fileType === 'shex') {
@@ -1380,18 +1124,14 @@ export default {
             filename += '.ttl'
           }
         }
-        
         a.download = filename
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
-        
         this.statusMessage = `${fileType} file downloaded successfully!`
-        
       } catch (error) {
         console.error(`Error downloading ${fileType} file:`, error)
-        
         if (error.response?.status === 404) {
           this.errorMessage = `${fileType} file not found. Make sure the file was generated.`
         } else if (error.response?.status === 401) {
@@ -1406,11 +1146,10 @@ export default {
       try {
         const response = await axios.get(`/api/rdf/download/${file.id}`, {
           responseType: 'blob',
-          headers: {
-            'Authorization': `Bearer ${this.authStore.token}`
-          }
+          headers: this.authStore?.token
+            ? { Authorization: `Bearer ${this.authStore.token}` }
+            : {}
         })
-        
         const url = URL.createObjectURL(response.data)
         const a = document.createElement('a')
         a.href = url
@@ -1430,46 +1169,34 @@ export default {
         console.warn('No GraphDB URL provided for listing repositories')
         return
       }
-
-      // Clear any previous error messages
       this.graphdbErrorMessage = ''
       this.graphdbStatusMessage = ''
-      
       this.graphdbLoading = true
       try {
         console.log('🔍 Fetching repositories from:', this.graphdbConfig.baseUrl)
-        
         const response = await axios.post('/api/graphdb/list-repositories', {
           baseUrl: this.graphdbConfig.baseUrl,
           username: this.graphdbConfig.username || null,
           password: this.graphdbConfig.password || null
         })
-        
         console.log('📋 Repository response:', response.data)
-        
         this.repositories = response.data.repositories || []
-        
         if (this.repositories.length === 0) {
           this.graphdbStatusMessage = 'No repositories found in this GraphDB instance.'
         } else {
           this.graphdbStatusMessage = `Found ${this.repositories.length} repositories.`
-          
         }
-        
       } catch (error) {
         console.error('❌ Failed to fetch repositories:', error)
-        const errorMessage = error.response?.data?.detail || 'Failed to fetch repositories'
-        this.graphdbErrorMessage = errorMessage
+        this.graphdbErrorMessage = error.response?.data?.detail || 'Failed to fetch repositories'
         this.repositories = []
       } finally {
-
         this.graphdbLoading = false
       }
     },
 
     async createRepository() {
       if (!this.newRepositoryName.trim()) return
-      
       this.graphdbLoading = true
       try {
         await axios.post('/api/graphdb/create-repository', {
@@ -1479,7 +1206,7 @@ export default {
           password: this.graphdbConfig.password || null
         })
         this.graphdbStatusMessage = `Repository '${this.newRepositoryName}' created successfully`
-        this.newRepositoryName = '' // Clear the input
+        this.newRepositoryName = ''
         await this.listRepositories()
       } catch (error) {
         this.graphdbErrorMessage = error.response?.data?.detail || 'Failed to create repository'
@@ -1491,7 +1218,6 @@ export default {
     async countTriples(repositoryName = null) {
       const repoName = repositoryName || this.graphdbConfig.repositoryName
       if (!repoName) return
-
       this.graphdbLoading = true
       try {
         const response = await axios.post('/api/graphdb/count-triples', {
@@ -1508,12 +1234,6 @@ export default {
       }
     },
 
-    confirmDeleteRepository(repositoryName) {
-      this.repositoryToDelete = repositoryName
-      if (!this.repositoryToDelete) return
-      this.showDeleteConfirm = true
-    },
-
     async deleteRepository() {
       this.graphdbLoading = true
       try {
@@ -1524,12 +1244,9 @@ export default {
           password: this.graphdbConfig.password || null
         })
         this.graphdbStatusMessage = `Repository '${this.repositoryToDelete}' deleted successfully`
-        
-        // Clear selection if we deleted the currently selected repository
         if (this.graphdbConfig.repositoryName === this.repositoryToDelete) {
           this.graphdbConfig.repositoryName = ''
         }
-        
         this.showDeleteConfirm = false
         this.repositoryToDelete = ''
         await this.listRepositories()
@@ -1542,7 +1259,6 @@ export default {
     },
 
     addCommonNamespace(commonNamespace) {
-      // Check if this namespace prefix already exists
       const exists = this.formData.customNamespaces.some(ns => ns.prefix === commonNamespace.prefix)
       if (!exists) {
         this.formData.customNamespaces.push({ ...commonNamespace })
@@ -1550,16 +1266,25 @@ export default {
     },
 
     handleImageError() {
+      if (this.imageUrl) {
+        URL.revokeObjectURL(this.imageUrl)
+      }
       this.imageUrl = null
       console.error('Failed to load UML diagram image')
     },
 
     async loadImagePreview(file) {
       this.loadingImage = true
-      this.imageUrl = null
+      if (this.imageUrl) {
+        URL.revokeObjectURL(this.imageUrl)
+        this.imageUrl = null
+      }
       try {
         const response = await axios.get(`/api/rdf/preview/${file.id}`, {
-          responseType: 'blob'
+          responseType: 'blob',
+          headers: this.authStore?.token
+            ? { Authorization: `Bearer ${this.authStore.token}` }
+            : {}
         })
         this.imageUrl = URL.createObjectURL(response.data)
       } catch (error) {
@@ -1588,7 +1313,6 @@ export default {
 
     async uploadSelected() {
       const uploads = []
-      
       if (this.uploadSelections.rdf && this.hasGeneratedData) {
         uploads.push(this.uploadRDFGraph())
       }
@@ -1604,12 +1328,10 @@ export default {
       if (this.uploadSelections.namespaces && this.formData.enableCustomNamespaces) {
         uploads.push(this.uploadCustomNamespaces())
       }
-
       if (uploads.length === 0) {
         this.graphdbErrorMessage = 'No items selected for upload'
         return
       }
-
       try {
         await Promise.all(uploads)
         this.graphdbStatusMessage = 'All selected items uploaded successfully'
@@ -1663,98 +1385,7 @@ export default {
         default:
           return ''
       }
-    },
-    
-    async loadUserProfile() {
-      // Rename this method to match the call, or keep the original name
-      await this.loadUserDefaults()
-    },
-
-    async loadUserDefaults() {
-      try {
-        // First check if user is authenticated but user data is missing
-        if (this.authStore.isAuthenticated && !this.authStore.user) {
-          console.log('◒ User is authenticated but user data missing, fetching profile...')
-          try {
-            await this.authStore.fetchUserProfile()
-            console.log('✔ Successfully fetched user profile from API')
-          } catch (error) {
-            console.warn('⚠ Failed to fetch user profile from API:', error)
-            // If the API call fails with 500, the token might be invalid
-            if (error.response?.status === 500) {
-              console.warn('◒ API returned 500, token might be invalid. Clearing auth state.')
-            }
-          }
-        }
-
-        // Now try to get user info from the properly loaded auth store
-        if (this.authStore.user) {
-          const user = this.authStore.user
-          console.log('🔍 Auth store user data:', user)
-          
-          // Populate the first creator with user info
-          if (this.formData.creators.length > 0) {
-            if (user.name && !this.formData.creators[0].fullName) {
-              this.formData.creators[0].fullName = user.name
-              console.log('✔ Set first creator name from auth store:', user.name)
-            }
-            if (user.orcid && !this.formData.creators[0].orcid) {
-              // Remove http prefix if present
-              const orcid = user.orcid.replace('https://orcid.org/', '')
-              this.formData.creators[0].orcid = orcid
-              console.log('✔ Set first creator orcid from auth store:', orcid)
-            }
-          }
-        }
-
-        // Enhanced fallback: Try to decode JWT token directly
-        if (this.authStore.token && this.formData.creators.length > 0 && !this.formData.creators[0].fullName) {
-          try {
-            const token = this.authStore.token
-            const payload = JSON.parse(atob(token.split('.')[1]))
-            console.log('🔍 JWT payload:', payload)
-            
-            // Generate name from email if needed
-            if (payload.sub && payload.sub.includes('@')) {
-              const emailParts = payload.sub.split('@')[0]
-              const nameFromEmail = emailParts.replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-              this.formData.creators[0].fullName = nameFromEmail
-              console.log('✔ Generated name from email:', nameFromEmail)
-            }
-          } catch (jwtError) {
-            console.warn('⚠ Failed to decode JWT token:', jwtError)
-          }
-        }
-
-        // Set reasonable fallback defaults for first creator
-        if (this.formData.creators.length > 0) {
-          if (!this.formData.creators[0].fullName) {
-            this.formData.creators[0].fullName = 'BiodataFuse User'
-            console.log('◒ Using fallback creator name')
-          }
-          if (!this.formData.creators[0].orcid) {
-            this.formData.creators[0].orcid = '0000-0000-0000-0000'
-            console.log('◒ Using fallback creator orcid')
-          }
-        }
-
-        console.log('✔ Final form data creators:', this.formData.creators)
-        
-      } catch (error) {
-        console.warn('⚠ Could not load user defaults:', error)
-        // Ensure we have some defaults even if everything fails
-        if (this.formData.creators.length > 0) {
-          if (!this.formData.creators[0].fullName) this.formData.creators[0].fullName = 'BiodataFuse User'
-          if (!this.formData.creators[0].orcid) this.formData.creators[0].orcid = '0000-0000-0000-0000'
-        }
-      }
-    },
-
-    // ...existing code...
+    }
   }
 }
 </script>
-
-<style scoped>
-/* Add any component-specific styles here */
-</style>
