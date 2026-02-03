@@ -794,6 +794,23 @@ export default {
     }
   },
 
+  watch: {
+    selectedVisualization: {
+      handler(newVal) {
+        if (newVal && this.selectedUmlFile) {
+          this.loadImagePreview(this.selectedUmlFile)
+        } else {
+          // Clear image when no visualization selected
+          if (this.imageUrl) {
+            URL.revokeObjectURL(this.imageUrl)
+            this.imageUrl = null
+          }
+        }
+      },
+      immediate: false
+    }
+  },
+
   mounted() {
     this.loadStoredData()
     if (this.selectedUmlFile) {
@@ -806,7 +823,7 @@ export default {
 
   methods: {
     goBack() {
-      window.location.href = '/visualize&analysis'
+      window.location.href = '/visualize&analysis' // Patch for issue https://github.com/BioDataFuse/biodatafuseUI/issues/29
     },
 
     handleInput() {

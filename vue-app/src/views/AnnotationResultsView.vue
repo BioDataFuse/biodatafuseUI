@@ -229,6 +229,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ExclamationCircleIcon, ArrowRightIcon } from '@heroicons/vue/24/outline'
+import axios from 'axios'
 
 const router = useRouter()
 const loading = ref(true)
@@ -236,6 +237,9 @@ const error = ref(null)
 const annotationResults = ref(null)
 const currentAnnotationPage = ref(1)
 const rowsPerAnnotationPage = 5
+
+// Get identifier set ID from localStorage
+const identifierSetId = localStorage.getItem('currentIdentifierSetId')
 
 const steps = [
   { name: 'Input Identifiers', status: 'complete' },
@@ -362,19 +366,28 @@ function downloadJSON(type) {
   link.click();
 }
 
-onMounted(() => {
-  const stored = localStorage.getItem('annotationResults')
-  if (stored) {
-    try {
-      annotationResults.value = JSON.parse(stored)
-    } catch (e) {
-      error.value = 'Failed to parse annotation results.'
-      console.error("JSON parse error:", e)
-    }
-  } else {
-    router.push('/query/datasources')
+onMounted(async () => {
+  if (!identifierSetId) {
+    router.push('/query')
+    return
   }
-  loading.value = false
+
+  try {
+    // Fetch annotation results from the API instead of localStorage
+    // This avoids QuotaExceededError for large payloads (>5-10 MB)
+    const response = await axios.get(`/api/datasources/${identifierSetId}/annotations`)
+    annotationResults.value = response.data
+  } catch (err) {
+    if (err.response?.status === 404) {
+      // No annotations found, redirect to datasources page
+      router.push('/query/datasources')
+    } else {
+      error.value = err.response?.data?.detail || 'Failed to load annotation results.'
+      console.error("API error:", err)
+    }
+  } finally {
+    loading.value = false
+  }
 })
 
 function goBack() {
