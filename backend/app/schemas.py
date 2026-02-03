@@ -181,19 +181,26 @@ class CytoscapeResponse(BaseModel):
 
 
 # RDF Generation Schemas
+class CreatorInfo(BaseModel):
+    """Creator information for RDF graph metadata"""
+    full_name: str
+    orcid: str  # ORCID without http prefix (e.g., "0000-0000-0000-0000")
+
+
 class RDFGenerationRequest(BaseModel):
     identifier_set_id: int
     base_uri: str
     version_iri: str
-    author_name: str
-    author_email: str
-    orcid: str
+    title: Optional[str] = None
+    description: Optional[str] = None
+    creators: List[CreatorInfo]  # List of creators with full_name and orcid
     graph_name: str
     generate_shacl: bool = True
     shacl_threshold: float = 0.001
     generate_uml_diagram: bool = True
     generate_shex: bool = True
     shex_threshold: float = 0.001
+    custom_namespaces: Optional[List[Dict[str, str]]] = None
 
 class GeneratedFile(BaseModel):
     id: str

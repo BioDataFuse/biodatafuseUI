@@ -6,6 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .graph_service import GraphService
 from .. import models
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class CytoscapeService:
     def __init__(self, db: AsyncSession):
@@ -17,24 +21,37 @@ class CytoscapeService:
             annotations: models.Annotation,
             graph_dir: Path,
     ) -> models.CytoscapeFile:
+        """
+        Build a Cytoscape-compatible graph from annotations.
         
+        Returns a CytoscapeFile object with status 'completed' or 'error'.
+        """
         cytoscape = models.CytoscapeFile(
             identifier_set_id=set_id
         )
         self.db.add(cytoscape)
         await self.db.commit()
 
-        pygraph, error = GraphService.create_pygraph(annotations, graph_dir)
-        if error:
-                return None, f"Graph error: {error}"
+        try:
+            pygraph, error = GraphService.create_pygraph(annotations, graph_dir)
+            if error:
+                raise ValueError(error)
 
-        cytoscape_graph_json = cytoscape_graph.convert_graph_to_json(pygraph)
-        cytoscape.cytoscape_graph = cytoscape_graph_json
-        cytoscape.status = "completed"
+            cytoscape_graph_json = cytoscape_graph.convert_graph_to_json(pygraph)
+            cytoscape.cytoscape_graph = cytoscape_graph_json
+            cytoscape.status = "completed"
+
+        except ValueError as e:
+            logger.warning(f"Graph creation warning for set {set_id}: {str(e)}")
+            cytoscape.status = "error"
+            cytoscape.error_message = str(e)
+        except Exception as e:
+            logger.error(f"Error building graph for set {set_id}: {str(e)}")
+            cytoscape.status = "error"
+            cytoscape.error_message = f"Unexpected error: {str(e)}"
 
         await self.db.commit()
         await self.db.refresh(cytoscape)
-
         return cytoscape
     
     async def load_graph_into_cytoscape(self, annotations: models.Annotation, graph_dir: Path, graph_name: str):

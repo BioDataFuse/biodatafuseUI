@@ -1,9 +1,11 @@
 from typing import Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
+from ..models import Annotation
 from ..schemas import DataSourceProcessingResponse, DataSourceRequest
 from ..services.datasource_service import DataSourceService
 from ..services.identifier_service import IdentifierService
@@ -19,6 +21,71 @@ async def get_available_datasources(#TODO: not being used, not sure if needed
     """Get list of available data sources."""
     datasource_service = DataSourceService(db)
     return await datasource_service.get_available_sources()
+
+
+@router.get("/{set_id}/annotations", response_model=DataSourceProcessingResponse)
+async def get_annotations(
+    set_id: int,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve annotation results for a given identifier set.
+    
+    This endpoint allows fetching previously computed annotation results
+    without storing them in browser localStorage.
+    
+    Parameters:
+        set_id (int): The ID of the identifier set.
+        current_user: The currently authenticated user (injected by FastAPI dependency).
+        db (AsyncSession): The database session (injected by FastAPI dependency).
+        
+    Returns:
+        DataSourceProcessingResponse: The annotation results.
+        
+    Raises:
+        HTTPException: If the identifier set is not found, not owned by the user,
+                       or if no annotations exist.
+    """
+    try:
+        # Verify ownership of identifier set
+        identifier_service = IdentifierService(db)
+        identifier_set = await identifier_service.get_identifier_set(set_id)
+        if not identifier_set:
+            raise HTTPException(status_code=404, detail="Identifier set not found")
+        if identifier_set.user_id != current_user.id:
+            raise HTTPException(
+                status_code=403, detail="Not authorized to access this identifier set"
+            )
+        
+        # Get annotation for the identifier set
+        result = await db.execute(
+            select(Annotation)
+            .where(Annotation.identifier_set_id == set_id)
+            .order_by(Annotation.id.desc())
+        )
+        annotation = result.scalars().first()
+        
+        if not annotation:
+            raise HTTPException(status_code=404, detail="Annotations not found for this identifier set")
+        
+        return DataSourceProcessingResponse(
+            identifier_set_id=set_id,
+            status="completed",
+            combined_df=annotation.combined_df,
+            combined_metadata=annotation.combined_metadata,
+            opentargets_df=annotation.opentargets_df,
+            captured_warnings=annotation.captured_warnings,
+            error_message=annotation.error_message,
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occurred while retrieving annotations: {str(e)}",
+        )
 
 
 @router.post("/{set_id}/process", response_model=DataSourceProcessingResponse)

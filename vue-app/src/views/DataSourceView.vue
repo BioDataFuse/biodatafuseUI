@@ -297,7 +297,9 @@ async function continueToAnnotations() {
 
     if (response.data.status === 'completed') {
       results.value = response.data
-      localStorage.setItem('annotationResults', JSON.stringify(response.data))
+      // Don't store full results in localStorage - they may exceed quota for large payloads
+      // Results will be fetched from the API in AnnotationResultsView using the identifier set ID
+      // which is already stored as 'currentIdentifierSetId'
       router.push('/query/annotations');
     } else {
       throw new Error(response.data.message || 'Processing failed')

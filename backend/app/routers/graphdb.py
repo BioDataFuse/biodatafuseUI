@@ -345,7 +345,7 @@ async def generate_bdf_graph(
     base_uri: str = Body(...),
     version_iri: str = Body(...),
     orcid: str = Body(...),
-    author: str = Body(...),
+    creators: list = Body(...),
     combined_df: dict = Body(...),
     combined_metadata: list = Body(...),
 ):
@@ -355,7 +355,7 @@ async def generate_bdf_graph(
             base_uri=base_uri,
             version_iri=version_iri,
             orcid=orcid,
-            author=author,
+            creators=creators,
         )
         bdf.generate_rdf(combined_df, combined_metadata)
         # Serialize to a temp file

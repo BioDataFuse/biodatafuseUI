@@ -58,14 +58,20 @@ async def generate_rdf(
         rdf_service = RDFService(db)
         generation_id = str(uuid.uuid4())
         
+        # Convert creators from Pydantic models to dicts
+        creators_list = [
+            {"full_name": creator.full_name, "orcid": creator.orcid}
+            for creator in request.creators
+        ] if request.creators else []
+        
         # Generate the main RDF graph using the service
         result = await rdf_service.generate_rdf_graph(
             identifier_set_id=request.identifier_set_id,
             base_uri=request.base_uri,
             version_iri=request.version_iri,
-            author_name=request.author_name,
-            author_email=request.author_email,
-            orcid=request.orcid,
+            title=request.title,
+            description=request.description,
+            creators=creators_list,
             graph_name=request.graph_name,
             generate_shacl=request.generate_shacl,
             shacl_threshold=request.shacl_threshold,
@@ -73,7 +79,7 @@ async def generate_rdf(
             generate_shex=request.generate_shex,
             shex_threshold=request.shex_threshold,
             user_id=current_user.id,
-            custom_namespaces=request.custom_namespaces if hasattr(request, 'custom_namespaces') else None,
+            custom_namespaces=request.custom_namespaces if request.custom_namespaces else None,
         )
         
         # Extract generated files from the result
@@ -97,9 +103,7 @@ async def generate_rdf(
             graph_name=request.graph_name,
             base_uri=request.base_uri,
             version_iri=request.version_iri,
-            author_name=request.author_name,
-            author_email=request.author_email,
-            orcid=request.orcid,
+            creators=creators_list,  # Store creators list instead of individual author fields
             generate_shacl=request.generate_shacl,
             shacl_threshold=request.shacl_threshold,
             generate_uml_diagram=request.generate_uml_diagram,
