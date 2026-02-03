@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 import warnings
@@ -330,6 +331,13 @@ class DataSourceService:
                             )
                             dataframes.append(pubchem_assay_df)
                             metadata.append(pubchem_assay_metadata)
+                            # Clean up pubchem cache file created by pyBiodatafuse
+                            cache_file = "pubchem_cache_results.json"
+                            if os.path.exists(cache_file):
+                                try:
+                                    os.remove(cache_file)
+                                except Exception:
+                                    pass  # Ignore cleanup errors
                         elif source_name == "molmedb_gene":
                             inhibitor_df, inhibitor_metadata = molmedb.get_gene_compound_inhibitor(bridgedb_df=bridgedb_df)
                             dataframes.append(inhibitor_df)
