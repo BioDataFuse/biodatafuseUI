@@ -30,6 +30,15 @@
               yojana.gadiya@gmail.com
             </a>
           </li>
+          <li>
+            <span class="font-medium text-gray-900">Javier Millán Acosta</span> —
+            <a href="mailto:javier.millan.acosta@example.com" class="text-indigo-600 hover:underline">
+              javier.millanacosta@maastrichtuniversity.nl
+            </a>
+         <a href="https://github.com/jmillanacosta" class="text-indigo-600 hover:underline ml-2" target="_blank">
+              GitHub
+         </a>
+          </li>
         </ul>
       </div>
     </div>
