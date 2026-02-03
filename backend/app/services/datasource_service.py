@@ -159,7 +159,7 @@ class DataSourceService:
             },
             "aop_wiki_rdf": {
                 "name": f"Adverse Outcome Pathways (AOP-Wiki)",
-                "description": "Approved Adverse Outcome Pathways and their components",
+                "description": "Adverse Outcome Pathways and their components",
                 "requires_key": False,
                 "requires_map_name": False,
                 "base_url": constants.AOPWIKI_ENDPOINT,
