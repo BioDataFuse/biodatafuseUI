@@ -84,23 +84,17 @@
                 />
                 <input
                   type="text"
-                  v-model="formData.authorName"
-                  placeholder="Your name"
+                  v-model="formData.title"
+                  placeholder="Graph Title (optional)"
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <!-- Right Column -->
               <div class="space-y-3">
                 <input
-                  type="email"
-                  v-model="formData.authorEmail"
-                  placeholder="your.email@example.com"
-                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <input
-                  type="url"
-                  v-model="formData.orcid"
-                  placeholder="ORCID (e.g., https://orcid.org/0000-0000-0000-0000)"
+                  type="text"
+                  v-model="formData.description"
+                  placeholder="Graph Description (optional)"
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <div class="flex items-center space-x-4">
@@ -117,6 +111,43 @@
                     UML
                   </label>
                 </div>
+              </div>
+            </div>
+
+            <!-- Creators Section -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Creators <span class="text-gray-500">(Full Name and ORCID)</span>
+              </label>
+              <div class="space-y-2">
+                <div v-for="(creator, index) in formData.creators" :key="index" class="flex gap-2">
+                  <input
+                    v-model="creator.fullName"
+                    placeholder="Full Name"
+                    class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <input
+                    v-model="creator.orcid"
+                    placeholder="ORCID (e.g., 0000-0000-0000-0000)"
+                    class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button 
+                    v-if="formData.creators.length > 1"
+                    @click="removeCreator(index)" 
+                    class="text-red-500 hover:text-red-700 p-2"
+                    title="Remove creator"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                </div>
+                <button @click="addCreator" class="text-sm text-blue-600 hover:text-blue-800 inline-flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  Add Creator
+                </button>
               </div>
             </div>
 
@@ -157,7 +188,7 @@
               :disabled="loading || !isFormValid"
               class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              <span v-if="loading" class="animate-spin mr-2">🔄</span>
+              <span v-if="loading" class="animate-spin mr-2">◒</span>
               <span>{{ loading ? 'Generating...' : 'Generate RDF Graph' }}</span>
             </button>
           </div>
@@ -356,10 +387,7 @@
                         <li>Your graph ttl: your BioDataFuse query result in RDF</li>
                         <li>Your SHACL/ShEX shapes ttl: your BioDataFuse graph shapes for validation</li>
                         <li>
-                            Your SHACL prefixes ttl: your BioDataFuse graph prefixes to avoid having to state them in your SPARQL queries.
-                            <span class="italic text-gray-500">
-                              <br> Note: custom prefixes are still not implemented.</span>
-                            <span class="text-xs"></span>
+                            Your SHACL prefixes ttl: your BioDataFuse graph prefixes to avoid having to state them in your SPARQL queries. Custom prefixes can be defined in the form above.
                         </li>
                       </li>
                       <li>Click "Import" to load the data</li>
@@ -582,7 +610,7 @@
                     :disabled="!hasSelectedItems || isAnyUploading"
                     class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                   >
-                    <span v-if="isAnyUploading" class="animate-spin mr-2">🔄</span>
+                    <span v-if="isAnyUploading" class="animate-spin mr-2">◒</span>
                     <span>{{ isAnyUploading ? 'Uploading...' : 'Upload Selected' }}</span>
                   </button>
                 </div>
@@ -635,7 +663,7 @@
           class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
         >
           <span v-if="graphdbLoading">Deleting...</span>
-          <span v-else">Delete Repository</span>
+          <span v-else>Delete Repository</span>
         </button>
       </div>
     </div>
@@ -645,17 +673,12 @@
 <script>
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-function goBack() {
-  router.push('/visualize&analysis')
-}
 
 export default {
   name: 'GraphDBView',
   setup() {
     const authStore = useAuthStore()
+    
     return {
       authStore
     }
@@ -672,9 +695,9 @@ export default {
       formData: {
         baseUri: 'https://biodatafuse.org/example/',
         versionIri: 'https://biodatafuse.org/example/test.owl',
-        authorName: '', // Will be populated from user login
-        authorEmail: '', // Will be populated from user login
-        orcid: 'https://orcid.org/0000-0000-0000-0000',
+        title: '',
+        description: '',
+        creators: [{ fullName: '', orcid: '' }],  // List of creators with fullName and orcid
         graphName: 'my_graph',
         generateShacl: true,
         shaclThreshold: 0.001,
@@ -741,12 +764,21 @@ export default {
       return this.generatedData && this.generatedData.generated_files && this.generatedData.generated_files.length > 0
     },
     isFormValid() {
-      return this.formData.baseUri.trim() && 
-             this.formData.versionIri.trim() &&
-             this.formData.authorName.trim() && 
-             this.formData.authorEmail.trim() && 
-             this.formData.orcid.trim() &&
-             this.formData.graphName.trim()
+      // Check basic required fields
+      if (!this.formData.baseUri.trim() || 
+          !this.formData.versionIri.trim() ||
+          !this.formData.graphName.trim()) {
+        return false
+      }
+      
+      // Check that at least one creator is provided with both fullName and orcid
+      if (!this.formData.creators || this.formData.creators.length === 0) {
+        return false
+      }
+      
+      // Check that at least the first creator has both fullName and orcid
+      const firstCreator = this.formData.creators[0]
+      return firstCreator.fullName.trim() && firstCreator.orcid.trim()
     },
     isConnectionValid() {
       return this.connectionStatus && this.connectionStatus.type === 'success'
@@ -835,14 +867,18 @@ export default {
   },
   
   methods: {
+    goBack() {
+      this.$router.push({ path: '/visualize&analysis' })
+    },
+    
     resetAllState() {
       // Reset form data
       this.formData = {
         baseUri: 'https://biodatafuse.org/example/',
         versionIri: 'https://biodatafuse.org/example/test.owl',
-        authorName: '',
-        authorEmail: '',
-        orcid: 'https://orcid.org/0000-0000-0000-0000',
+        title: '',
+        description: '',
+        creators: [{ fullName: '', orcid: '' }],
         graphName: 'my_graph',
         generateShacl: true,
         shaclThreshold: 0.001,
@@ -923,19 +959,30 @@ export default {
           throw new Error('No valid identifier set found. Please complete the previous steps in the query builder.')
         }
 
+        // Convert creators to the format expected by the backend
+        const creators = this.formData.creators
+          .filter(creator => creator.fullName.trim() && creator.orcid.trim())
+          .map(creator => ({
+            full_name: creator.fullName.trim(),
+            orcid: creator.orcid.trim().replace('https://orcid.org/', '')  // Remove http prefix if present
+          }))
+
         const response = await axios.post('/api/rdf/generate', {
           identifier_set_id: Number(identifierSetId),
           base_uri: this.formData.baseUri,
           version_iri: this.formData.versionIri,
-          author_name: this.formData.authorName,
-          author_email: this.formData.authorEmail,
-          orcid: this.formData.orcid,
+          title: this.formData.title || null,
+          description: this.formData.description || null,
+          creators: creators,
           graph_name: this.formData.graphName,
           generate_shacl: this.formData.generateShacl,
           shacl_threshold: this.formData.shaclThreshold,
           generate_uml_diagram: this.formData.generateUmlDiagram,
           generate_shex: this.formData.generateShex,
-          shex_threshold: this.formData.shexThreshold
+          shex_threshold: this.formData.shexThreshold,
+          custom_namespaces: this.formData.enableCustomNamespaces 
+            ? this.formData.customNamespaces.filter(ns => ns.prefix && ns.uri)
+            : null
         })
 
         this.generatedData = response.data
@@ -964,7 +1011,7 @@ export default {
           (this.graphdbConfig.baseUrl.includes('localhost') || this.graphdbConfig.baseUrl.includes('127.0.0.1')) &&
           (!this.connectionStatus || this.connectionStatus.type !== 'success')) {
         
-        console.log('🔄 Auto-testing localhost connection...')
+        console.log('◒ Auto-testing localhost connection...')
         
         // Add a small delay to avoid too frequent requests
         if (this.autoTestTimeout) {
@@ -1002,7 +1049,7 @@ export default {
         
         const response = await axios.post('/api/graphdb/test-connection', requestData)
         
-        console.log('✅ Frontend: Connection test successful:', response.data)
+        console.log('✔ Frontend: Connection test successful:', response.data)
         this.connectionStatus = { type: 'success', message: response.data.message }
         
         // Automatically fetch repositories after successful connection
@@ -1087,7 +1134,7 @@ export default {
 
         const response = await axios.post('/api/graphdb/upload-rdf', payload)
         
-        console.log('✅ RDF upload successful:', response.data)
+        console.log('✔ RDF upload successful:', response.data)
         this.graphdbStatusMessage = response.data.message || 'RDF graph uploaded successfully'
         this.uploadStatus.rdf = 'success'
         
@@ -1268,6 +1315,16 @@ export default {
 
     removeNamespace(index) {
       this.formData.customNamespaces.splice(index, 1)
+    },
+
+    addCreator() {
+      this.formData.creators.push({ fullName: '', orcid: '' })
+    },
+
+    removeCreator(index) {
+      if (this.formData.creators.length > 1) {
+        this.formData.creators.splice(index, 1)
+      }
     },
 
     selectRepository(repositoryId) {
@@ -1617,15 +1674,15 @@ export default {
       try {
         // First check if user is authenticated but user data is missing
         if (this.authStore.isAuthenticated && !this.authStore.user) {
-          console.log('🔄 User is authenticated but user data missing, fetching profile...')
+          console.log('◒ User is authenticated but user data missing, fetching profile...')
           try {
             await this.authStore.fetchUserProfile()
-            console.log('✅ Successfully fetched user profile from API')
+            console.log('✔ Successfully fetched user profile from API')
           } catch (error) {
-            console.warn('⚠️ Failed to fetch user profile from API:', error)
+            console.warn('⚠ Failed to fetch user profile from API:', error)
             // If the API call fails with 500, the token might be invalid
             if (error.response?.status === 500) {
-              console.warn('🔄 API returned 500, token might be invalid. Clearing auth state.')
+              console.warn('◒ API returned 500, token might be invalid. Clearing auth state.')
             }
           }
         }
@@ -1635,65 +1692,61 @@ export default {
           const user = this.authStore.user
           console.log('🔍 Auth store user data:', user)
           
-          if (user.name) {
-            this.formData.authorName = user.name
-            console.log('✅ Set authorName from auth store:', user.name)
-          }
-          if (user.email) {
-            this.formData.authorEmail = user.email
-            console.log('✅ Set authorEmail from auth store:', user.email)
-          }
-          if (user.orcid) {
-            this.formData.orcid = user.orcid
-            console.log('✅ Set orcid from auth store:', user.orcid)
+          // Populate the first creator with user info
+          if (this.formData.creators.length > 0) {
+            if (user.name && !this.formData.creators[0].fullName) {
+              this.formData.creators[0].fullName = user.name
+              console.log('✔ Set first creator name from auth store:', user.name)
+            }
+            if (user.orcid && !this.formData.creators[0].orcid) {
+              // Remove http prefix if present
+              const orcid = user.orcid.replace('https://orcid.org/', '')
+              this.formData.creators[0].orcid = orcid
+              console.log('✔ Set first creator orcid from auth store:', orcid)
+            }
           }
         }
 
         // Enhanced fallback: Try to decode JWT token directly
-        if (this.authStore.token && (!this.formData.authorEmail || !this.formData.authorName)) {
+        if (this.authStore.token && this.formData.creators.length > 0 && !this.formData.creators[0].fullName) {
           try {
             const token = this.authStore.token
             const payload = JSON.parse(atob(token.split('.')[1]))
             console.log('🔍 JWT payload:', payload)
             
-            if (payload.sub && payload.sub.includes('@') && !this.formData.authorEmail) {
-              this.formData.authorEmail = payload.sub
-              console.log('✅ Got email from JWT token:', payload.sub)
-            }
-
             // Generate name from email if needed
-            if (this.formData.authorEmail && !this.formData.authorName) {
-              const emailParts = this.formData.authorEmail.split('@')[0]
+            if (payload.sub && payload.sub.includes('@')) {
+              const emailParts = payload.sub.split('@')[0]
               const nameFromEmail = emailParts.replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-              this.formData.authorName = nameFromEmail
-              console.log('✅ Generated name from email:', nameFromEmail)
+              this.formData.creators[0].fullName = nameFromEmail
+              console.log('✔ Generated name from email:', nameFromEmail)
             }
           } catch (jwtError) {
-            console.warn('⚠️ Failed to decode JWT token:', jwtError)
+            console.warn('⚠ Failed to decode JWT token:', jwtError)
           }
         }
 
-        // Set reasonable fallback defaults
-        if (!this.formData.authorName) {
-          this.formData.authorName = 'BiodataFuse User'
-          console.log('🔄 Using fallback author name')
-        }
-        if (!this.formData.authorEmail) {
-          this.formData.authorEmail = 'user@biodatafuse.org'
-          console.log('🔄 Using fallback author email')
+        // Set reasonable fallback defaults for first creator
+        if (this.formData.creators.length > 0) {
+          if (!this.formData.creators[0].fullName) {
+            this.formData.creators[0].fullName = 'BiodataFuse User'
+            console.log('◒ Using fallback creator name')
+          }
+          if (!this.formData.creators[0].orcid) {
+            this.formData.creators[0].orcid = '0000-0000-0000-0000'
+            console.log('◒ Using fallback creator orcid')
+          }
         }
 
-        console.log('✅ Final form data:', {
-          authorName: this.formData.authorName,
-          authorEmail: this.formData.authorEmail,
-          orcid: this.formData.orcid
-        })
+        console.log('✔ Final form data creators:', this.formData.creators)
         
       } catch (error) {
-        console.warn('⚠️ Could not load user defaults:', error)
+        console.warn('⚠ Could not load user defaults:', error)
         // Ensure we have some defaults even if everything fails
-        if (!this.formData.authorName) this.formData.authorName = 'BiodataFuse User'
-        if (!this.formData.authorEmail) this.formData.authorEmail = 'user@biodatafuse.org'
+        if (this.formData.creators.length > 0) {
+          if (!this.formData.creators[0].fullName) this.formData.creators[0].fullName = 'BiodataFuse User'
+          if (!this.formData.creators[0].orcid) this.formData.creators[0].orcid = '0000-0000-0000-0000'
+        }
       }
     },
 
