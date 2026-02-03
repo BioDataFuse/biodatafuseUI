@@ -154,10 +154,11 @@ cython_debug/
 .DS_Store
 frontend.sh
 backend.sh
-biodatafuse.db
+backend/biodatafuse.db
 data/processed/*
 *.log
 logs/
 debug.log
 error.log
 access.log
+backend/biodatafuse.db
