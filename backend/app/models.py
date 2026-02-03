@@ -90,9 +90,9 @@ class RDFGeneration(Base):
     graph_name = Column(String, nullable=False)
     base_uri = Column(String, nullable=False)
     version_iri = Column(String, nullable=False)
-    author_name = Column(String, nullable=False)
-    author_email = Column(String, nullable=False)
-    orcid = Column(String, nullable=False)
+    title = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    creators = Column(JSON, nullable=False)  # List of {"full_name": str, "orcid": str}
     generate_shacl = Column(Boolean, default=True)
     shacl_threshold = Column(Float, default=0.001)
     generate_uml_diagram = Column(Boolean, default=True)

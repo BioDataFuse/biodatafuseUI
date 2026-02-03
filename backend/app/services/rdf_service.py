@@ -65,10 +65,10 @@ class RDFService:
         identifier_set_id: int,
         base_uri: str,
         version_iri: str,
-        author_name: str,
-        author_email: str,
-        orcid: str,
+        creators: List[Dict[str, str]],
         graph_name: str,
+        title: str = None,
+        description: str = None,
         generate_shacl: bool = True,
         shacl_threshold: float = 0.001,
         generate_uml_diagram: bool = True,
@@ -113,12 +113,22 @@ class RDFService:
             
             logger.info(f"🧬 Creating BDFGraph instance...")
             
-            # Create BDFGraph instance
+            # Convert creators to the format expected by BDFGraph
+            # creators is a list of {"full_name": str, "orcid": str}
+            creators_dict = [
+                {creator["full_name"]: creator["orcid"]} 
+                for creator in creators
+            ] if creators else None
+            
+            logger.info(f"📝 Creators: {creators_dict}")
+            
+            # Create BDFGraph instance with the new creators parameter
             bdf = BDFGraph(
                 base_uri=base_uri,
                 version_iri=version_iri,
-                orcid=orcid,
-                author=author_name,
+                title=title,
+                description=description,
+                creators=creators_dict,
             )
             
             logger.info(f"📈 Generating RDF from annotation data...")
@@ -209,7 +219,8 @@ class RDFService:
                     get_shacl_prefixes(
                         namespaces=namespaces_dict,
                         path=str(prefixes_file_path),
-                        new_uris=bdf.new_uris
+                        new_uris=bdf.new_uris,
+                        print_string_output=False
                     )
                     
                     # Add SHACL prefixes file if it was created
