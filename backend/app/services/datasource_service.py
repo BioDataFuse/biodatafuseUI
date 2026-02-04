@@ -183,12 +183,41 @@ class DataSourceService:
         elif key in ["kegg", "aop_wiki_rdf"]:
             return "both gene and compound"
 
+    # ========================================================================
+    # DATASOURCE METADATA CACHE
+    # ========================================================================
+    # Cache stores: {"data": [...], "timestamp": datetime}
+    # Cache is valid for 3 days to avoid repeated API calls to external sources
+    # ========================================================================
+    _metadata_cache: Dict = {}
+    _CACHE_TTL_DAYS = 3  # TODO decide method to cache this 
+
+    @staticmethod
+    def _is_cache_valid() -> bool:
+        """Check if cached metadata is still valid (less than 3 days old)."""
+        if not DataSourceService._metadata_cache:
+            return False
+        
+        cached_time = DataSourceService._metadata_cache.get("timestamp")
+        if not cached_time:
+            return False
+        
+        age = datetime.now() - cached_time
+        return age.days < DataSourceService._CACHE_TTL_DAYS
+
     @staticmethod
     async def get_datasource_metadata() -> List[Dict]:
         """
         Get metadata (version and endpoint) for all available data sources.
         Fetches version info from pyBiodatafuse annotators where available.
+        
+        CACHING: Results are cached for 3 days to avoid repeated API calls.
         """
+        # Return cached data if valid
+        if DataSourceService._is_cache_valid():
+            return DataSourceService._metadata_cache["data"]
+        
+        # Cache miss or expired - fetch fresh data
         import concurrent.futures
         
         from pyBiodatafuse.annotators import (
@@ -323,6 +352,12 @@ class DataSourceService:
                 for source in sources_metadata
             ]
             results = await asyncio.gather(*futures)
+        
+        # Store results in cache with current timestamp
+        DataSourceService._metadata_cache = {
+            "data": results,
+            "timestamp": datetime.now()
+        }
         
         return results
 
