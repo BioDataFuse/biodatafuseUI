@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -12,6 +12,26 @@ from ..services.identifier_service import IdentifierService
 from .auth import get_current_user
 
 router = APIRouter(prefix="/datasources", tags=["Data Sources"])
+
+
+@router.get("/metadata", response_model=List[Dict[str, Any]])
+async def get_datasource_metadata():
+    """
+    Get metadata (version and endpoint) for all available data sources.
+    
+    This endpoint returns version information and API endpoints for each
+    data source, fetched from the pyBiodatafuse library.
+    
+    Returns:
+        List[Dict]: List of data sources with their metadata including:
+            - id: Source identifier
+            - name: Display name
+            - description: Source description  
+            - endpoint: API endpoint URL
+            - version: Current version (if available)
+    """
+    from ..services.datasource_service import DataSourceService
+    return await DataSourceService.get_datasource_metadata()
 
 
 @router.get("", response_model=List[Dict])
