@@ -14,32 +14,6 @@
         https://pybiodatafuse.readthedocs.io/en/latest/
       </a>
 
-      <!-- Data Sources Section -->
-      <h2 class="text-2xl font-bold text-gray-800 mt-16 mb-4">Supported Data Sources</h2>
-      <p class="text-gray-600 mb-6">
-        BioDataFuse integrates data from multiple biological databases. Below is a list of currently supported data sources with their version and endpoint information.
-      </p>
-
-      <div v-if="loadingMetadata" class="text-gray-500 text-sm">Loading data sources...</div>
-      <div v-else-if="metadataError" class="text-red-500 text-sm">{{ metadataError }}</div>
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div
-          v-for="source in datasourceMetadata"
-          :key="source.id"
-          class="bg-gray-50 rounded-lg p-4 shadow border border-gray-200"
-        >
-          <h4 class="text-lg font-semibold text-indigo-700">{{ source.name }}</h4>
-          <p class="text-gray-600 text-sm mt-1">{{ source.description }}</p>
-          <p class="text-xs text-gray-400 mt-2">
-            <span v-if="source.version && source.version !== 'unknown'">Version: {{ source.version }}</span>
-            <span v-if="source.version && source.version !== 'unknown' && source.endpoint"> · </span>
-            <span v-if="source.endpoint">
-              Endpoint: <a :href="source.endpoint" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-500 break-all">{{ source.endpoint }}</a>
-            </span>
-          </p>
-        </div>
-      </div>
-
       <!-- Notebook Section Title -->
       <h2 class="text-2xl font-bold text-gray-800 mt-16 mb-4">Example Workflows & Notebooks</h2>
       <p class="text-gray-600 mb-6">
@@ -196,30 +170,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { ref } from 'vue'
 
 const showGeneSteps = ref(false)
 const showMetaboliteSteps = ref(false)
 const showDEGSteps = ref(false)
 const showPCSSteps = ref(false)
-
-// Data sources metadata
-const datasourceMetadata = ref([])
-const loadingMetadata = ref(true)
-const metadataError = ref(null)
-
-onMounted(async () => {
-  try {
-    const response = await axios.get('/api/datasources/metadata')
-    datasourceMetadata.value = response.data
-  } catch (err) {
-    metadataError.value = 'Failed to load data source metadata'
-    console.error('Error fetching metadata:', err)
-  } finally {
-    loadingMetadata.value = false
-  }
-})
 </script>
 
 <style scoped>
