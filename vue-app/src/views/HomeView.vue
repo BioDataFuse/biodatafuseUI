@@ -73,6 +73,9 @@
           <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
             Supported Data Sources
           </p>
+          <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+            BioDataFuse integrates data from multiple biological databases with version and endpoint information.
+          </p>
         </div>
 
         <div class="mt-10">
@@ -80,6 +83,18 @@
             <div v-for="db in databases" :key="db.name" class="relative bg-white p-6 rounded-lg shadow">
               <h3 class="text-lg font-medium text-gray-900">{{ db.name }}</h3>
               <p class="mt-2 text-base text-gray-500">{{ db.description }}</p>
+              
+              <!-- Version and Endpoint metadata -->
+              <p v-if="getDbMetadata(db.name)" class="text-xs text-gray-400 mt-2">
+                <span v-if="getDbMetadata(db.name).version && getDbMetadata(db.name).version !== 'unknown'">
+                  Version: {{ getDbMetadata(db.name).version }}
+                </span>
+                <span v-if="getDbMetadata(db.name).version && getDbMetadata(db.name).version !== 'unknown' && getDbMetadata(db.name).endpoint"> · </span>
+                <span v-if="getDbMetadata(db.name).endpoint">
+                  <a :href="getDbMetadata(db.name).endpoint" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-500 break-all">Endpoint</a>
+                </span>
+              </p>
+              
               <div class="mt-4">
                 <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium" :class="db.tagClass">
                   {{ db.type }}
@@ -134,12 +149,51 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import {
   Squares2X2Icon,
   BeakerIcon,
   CircleStackIcon,
   LightBulbIcon
 } from '@heroicons/vue/24/outline'
+
+// Datasource metadata from API
+const datasourceMetadata = ref({})
+
+// Map database names to API source IDs
+const dbNameToId = {
+  'AOP WIKI RDF': 'aopwiki',
+  'Bgee': 'bgee',
+  'DisGeNET': 'disgenet',
+  'IntAct': 'intact',
+  'KEGG': 'kegg',
+  'MINERVA': 'minerva',
+  'MolMeDB': 'molmedb',
+  'OpenTargets': 'opentargets',
+  'PubChem': 'pubchem',
+  'STRING': 'stringdb',
+  'WikiPathways': 'wikipathways',
+  'MitoCarta': 'mitocarta',
+}
+
+// Helper to get metadata for a database by name
+const getDbMetadata = (dbName) => {
+  const id = dbNameToId[dbName]
+  return id ? datasourceMetadata.value[id] : null
+}
+
+// Fetch metadata on mount
+onMounted(async () => {
+  try {
+    const response = await axios.get('/api/datasources/metadata')
+    response.data.forEach(meta => {
+      datasourceMetadata.value[meta.id] = meta
+    })
+  } catch (err) {
+    console.error('Error fetching datasource metadata:', err)
+  }
+})
 
 const features = [
   {

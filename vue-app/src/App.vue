@@ -71,7 +71,23 @@
       <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
         <div class="mt-8 md:mt-0 md:order-1">
           <p class="text-center text-base text-gray-400">
-            &copy; 2026 BioDataFuse
+            © 2026 BioDataFuse · 
+            <a 
+              href="#"
+              @click.prevent="router.push('/contact')"
+              class="hover:text-indigo-500 cursor-pointer"
+            >
+              Contact
+            </a>
+             · 
+            <a 
+              href="https://github.com/BioDataFuse/biodatafuseUI/blob/main/LICENSE" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="hover:text-indigo-500"
+            >
+              MIT License
+            </a>
           </p>
         </div>
       </div>

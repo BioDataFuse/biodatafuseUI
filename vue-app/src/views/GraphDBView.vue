@@ -451,13 +451,31 @@
                   <div class="space-y-4">
                     <!-- Connection Type -->
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-2">Connection Type</label>
+                      <div class="flex items-center gap-2 mb-2">
+                        <label class="block text-sm font-medium text-gray-700">Connection Type</label>
+                        <div class="relative group">
+                          <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          <div class="absolute left-0 bottom-full mb-2 hidden group-hover:block w-80 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50">
+                            <p class="font-semibold mb-2">Choose based on your deployment:</p>
+                            <ul class="space-y-2">
+                              <li><strong>Docker Desktop (Windows, macOS):</strong> Use when running BioDataFuse UI via Docker on Windows or macOS. GraphDB runs on your host machine.</li>
+                              <li><strong>Docker Bridge (Linux):</strong> Use when running BioDataFuse UI via Docker on Linux. GraphDB runs on your host machine.</li>
+                              <li><strong>Local:</strong> Use when running BioDataFuse UI directly (not in Docker) and GraphDB is on the same machine.</li>
+                              <li><strong>Remote Server:</strong> Use when GraphDB is running on a different server (enter the full URL).</li>
+                            </ul>
+                            <div class="absolute left-4 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        </div>
+                      </div>
                       <select v-model="connectionType" @change="updateUrlForConnectionType" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
                         <option value="docker">Docker Desktop (Windows, macOS)</option>
                         <option value="docker-bridge">Docker Bridge (Linux)</option>
                         <option value="local">Local (localhost:7200)</option>
                         <option value="remote">Remote Server</option>
                       </select>
+                      <p class="mt-1 text-xs text-gray-500">{{ getConnectionTypeHint() }}</p>
                     </div>
 
                     <!-- GraphDB URL -->
@@ -1392,13 +1410,13 @@ export default {
     getConnectionTypeHint() {
       switch (this.connectionType) {
         case 'local':
-          return 'Use localhost when both this app and GraphDB are running directly on your computer'
+          return 'For non-Docker deployments: BioDataFuse UI and GraphDB both run directly on your machine'
         case 'docker':
-          return 'Use host.docker.internal for Docker Desktop on Mac/Windows bridge network'
+          return 'For Docker deployments on Windows/macOS: BioDataFuse UI runs in Docker, GraphDB runs on host'
         case 'docker-bridge':
-          return 'Use 172.17.0.1 for Linux Docker default bridge network'
+          return 'For Docker deployments on Linux: BioDataFuse UI runs in Docker, GraphDB runs on host'
         case 'remote':
-          return 'Use the full URL including protocol (http:// or https://) for remote GraphDB instances'
+          return 'GraphDB is running on a different server - enter the full URL'
         default:
           return ''
       }

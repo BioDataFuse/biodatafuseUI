@@ -183,6 +183,184 @@ class DataSourceService:
         elif key in ["kegg", "aop_wiki_rdf"]:
             return "both gene and compound"
 
+    # ========================================================================
+    # DATASOURCE METADATA CACHE
+    # ========================================================================
+    # Cache stores: {"data": [...], "timestamp": datetime}
+    # Cache is valid for 3 days to avoid repeated API calls to external sources
+    # ========================================================================
+    _metadata_cache: Dict = {}
+    _CACHE_TTL_DAYS = 3  # TODO decide method to cache this 
+
+    @staticmethod
+    def _is_cache_valid() -> bool:
+        """Check if cached metadata is still valid (less than 3 days old)."""
+        if not DataSourceService._metadata_cache:
+            return False
+        
+        cached_time = DataSourceService._metadata_cache.get("timestamp")
+        if not cached_time:
+            return False
+        
+        age = datetime.now() - cached_time
+        return age.days < DataSourceService._CACHE_TTL_DAYS
+
+    @staticmethod
+    async def get_datasource_metadata() -> List[Dict]:
+        """
+        Get metadata (version and endpoint) for all available data sources.
+        Fetches version info from pyBiodatafuse annotators where available.
+        
+        CACHING: Results are cached for 3 days to avoid repeated API calls.
+        """
+        # Return cached data if valid
+        if DataSourceService._is_cache_valid():
+            return DataSourceService._metadata_cache["data"]
+        
+        # Cache miss or expired - fetch fresh data
+        import concurrent.futures
+        
+        from pyBiodatafuse.annotators import (
+            bgee, stringdb, wikipathways, opentargets, intact
+        )
+        from pyBiodatafuse.annotators.kegg import check_version_kegg
+        
+        # Define sources with their metadata fetching functions
+        sources_metadata = [
+            {
+                "id": "bgee",
+                "name": constants.BGEE,
+                "description": "Gene expression levels in different tissues",
+                "endpoint": constants.BGEE_ENDPOINT,
+                "get_version": bgee.get_version_bgee,
+            },
+            {
+                "id": "disgenet",
+                "name": constants.DISGENET,
+                "description": "Gene-disease associations",
+                "endpoint": constants.DISGENET_ENDPOINT,
+                "version": None,  # Requires API key
+            },
+            {
+                "id": "opentargets",
+                "name": constants.OPENTARGETS,
+                "description": "Target discovery and prioritization",
+                "endpoint": constants.OPENTARGETS_ENDPOINT,
+                "get_version": opentargets.get_version_opentargets,
+            },
+            {
+                "id": "wikipathways",
+                "name": constants.WIKIPATHWAYS,
+                "description": "Biological pathways",
+                "endpoint": constants.WIKIPATHWAYS_ENDPOINT,
+                "get_version": wikipathways.get_version_wikipathways,
+            },
+            {
+                "id": "kegg",
+                "name": constants.KEGG,
+                "description": "Kyoto Encyclopedia of Genes and Genomes",
+                "endpoint": constants.KEGG_ENDPOINT,
+                "get_version": lambda: {"source_version": check_version_kegg()},
+            },
+            {
+                "id": "minerva",
+                "name": constants.MINERVA,
+                "description": "System biology networks",
+                "endpoint": constants.MINERVA_ENDPOINT,
+                "version": None,  # Requires map endpoint
+            },
+            {
+                "id": "stringdb",
+                "name": constants.STRING,
+                "description": "Protein-protein interaction network",
+                "endpoint": constants.STRING_ENDPOINT,
+                "get_version": stringdb.get_version_stringdb,
+            },
+            {
+                "id": "intact",
+                "name": constants.INTACT,
+                "description": "Molecular interaction network",
+                "endpoint": constants.INTACT_ENDPOINT,
+                "get_version": intact.check_version_intact,
+            },
+            {
+                "id": "molmedb",
+                "name": constants.MOLMEDB,
+                "description": "Molecular interactions with membranes",
+                "endpoint": constants.MOLMEDB_ENDPOINT,
+                "version": None,
+            },
+            {
+                "id": "pubchem",
+                "name": constants.PUBCHEM,
+                "description": "Chemical information",
+                "endpoint": constants.PUBCHEM_ENDPOINT,
+                "version": None,
+            },
+            {
+                "id": "aopwiki",
+                "name": "AOP-Wiki",
+                "description": "Adverse Outcome Pathways and their components",
+                "endpoint": constants.AOPWIKI_ENDPOINT,
+                "version": None,
+            },
+            {
+                "id": "mitocarta",
+                "name": constants.MITOCARTA,
+                "description": "Inventory of mammalian mitochondrial proteins and pathways",
+                "endpoint": constants.MITOCARTA_DOWNLOAD_URL,
+                "version": None,
+            },
+        ]
+        
+        def fetch_version(source):
+            """Fetch version for a single source."""
+            result = {
+                "id": source["id"],
+                "name": source["name"],
+                "description": source["description"],
+                "endpoint": source["endpoint"],
+                "version": source.get("version"),
+            }
+            
+            if "get_version" in source:
+                try:
+                    version_data = source["get_version"]()
+                    if isinstance(version_data, dict):
+                        if "source_version" in version_data:
+                            result["version"] = version_data["source_version"]
+                        elif constants.METADATA in version_data:
+                            meta = version_data[constants.METADATA]
+                            if isinstance(meta, dict) and "source_version" in meta:
+                                sv = meta["source_version"]
+                                if isinstance(sv, dict) and "apiVersion" in sv:
+                                    result["version"] = sv["apiVersion"]
+                                    if "data_version" in meta:
+                                        result["version"] += f" (data: {meta['data_version']})"
+                                else:
+                                    result["version"] = str(sv)
+                except Exception as e:
+                    result["version"] = None
+            
+            return result
+        
+        # Use thread pool to fetch versions concurrently
+        loop = asyncio.get_event_loop()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [
+                loop.run_in_executor(executor, fetch_version, source)
+                for source in sources_metadata
+            ]
+            results = await asyncio.gather(*futures)
+        
+        # Store results in cache with current timestamp
+        DataSourceService._metadata_cache = {
+            "data": results,
+            "timestamp": datetime.now()
+        }
+        
+        return results
+
     async def create_annotations_for_identifier_set(
         self,
         set_id: int,

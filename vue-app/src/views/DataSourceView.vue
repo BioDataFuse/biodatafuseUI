@@ -79,6 +79,17 @@
                     <div class="ml-3 flex-grow">
                       <label :for="source.id" class="font-medium text-gray-700">{{ source.name }}</label>
                       <p class="text-sm text-gray-500">{{ source.description }}</p>
+                      
+                      <!-- Source metadata (version & endpoint) -->
+                      <p v-if="getSourceMetadata(source.id) && (getSourceMetadata(source.id).version || getSourceMetadata(source.id).endpoint)" class="text-xs text-gray-400 mt-1">
+                        <span v-if="getSourceMetadata(source.id).version && getSourceMetadata(source.id).version !== 'unknown'">
+                          Version: {{ getSourceMetadata(source.id).version }}
+                        </span>
+                        <span v-if="getSourceMetadata(source.id).version && getSourceMetadata(source.id).version !== 'unknown' && getSourceMetadata(source.id).endpoint"> · </span>
+                        <span v-if="getSourceMetadata(source.id).endpoint">
+                          Endpoint: <a :href="getSourceMetadata(source.id).endpoint" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-500">{{ getSourceMetadata(source.id).endpoint }}</a>
+                        </span>
+                      </p>
 
                       <!-- API key input with optional link -->
                       <div v-if="source.requiresApiKey && selectedSources.includes(source.id)" class="mt-2">
@@ -182,6 +193,7 @@ const sourceMapName = ref({})
 const loading = ref(false)
 const error = ref(null)
 const results = ref(null)
+const sourceMetadata = ref({}) // Map of source id to metadata (version, endpoint)
 
 const steps = [
   { name: 'Input Identifiers', status: 'complete' },
@@ -211,6 +223,27 @@ const isFormValid = computed(() => {
   return hasAllRequiredKeys
 })
 
+// Helper function to get metadata for a source
+const getSourceMetadata = (sourceId) => {
+  // Map UI source IDs to metadata source IDs
+  const idMap = {
+    'wikipathways_pathways': 'wikipathways',
+    'wikipathways_interactions': 'wikipathways',
+    'opentargets_disease_compound': 'opentargets',
+    'opentargets_go': 'opentargets',
+    'opentargets_reactome': 'opentargets',
+    'opentargets_gene_compound': 'opentargets',
+    'intact_gene_interactions': 'intact',
+    'intact_compound_interactions': 'intact',
+    'molmedb_compounds': 'molmedb',
+    'molmedb_gene': 'molmedb',
+    'pubchem_assays': 'pubchem',
+    'aop_wiki_rdf': 'aopwiki',
+  }
+  const metaId = idMap[sourceId] || sourceId
+  return sourceMetadata.value[metaId] || null
+}
+
 // Load available data sources on mount
 onMounted(async () => {
   if (!identifierSetId) {
@@ -219,12 +252,22 @@ onMounted(async () => {
   }
 
   try {
-    const response = await axios.get('/api/datasources')
-    availableSources.value = response.data.map(source => ({
+    // Fetch both datasources and metadata in parallel
+    const [sourcesResponse, metadataResponse] = await Promise.all([
+      axios.get('/api/datasources'),
+      axios.get('/api/datasources/metadata').catch(() => ({ data: [] }))
+    ])
+    
+    availableSources.value = sourcesResponse.data.map(source => ({
       ...source,
-      requiresApiKey: source.requires_key, // Use the requires_key property from backend
-      requiresMapName: source.requires_map_name // Use the requires_map_name property from backend, default to "COVID19 Disease Map"
+      requiresApiKey: source.requires_key,
+      requiresMapName: source.requires_map_name
     }))
+    
+    // Build metadata map
+    metadataResponse.data.forEach(meta => {
+      sourceMetadata.value[meta.id] = meta
+    })
   } catch (err) {
     error.value = 'Error loading data sources: ' + (err.response?.data?.detail || err.message)
     console.error('Error:', err)
